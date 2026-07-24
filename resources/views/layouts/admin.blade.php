@@ -601,8 +601,8 @@
             display: block !important;
         }
 
-        .pulse-dot { width: 8px; height: 8px; background: #881337; border-radius: 50%; animation: shadow-pulse 2s infinite; }
-        @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(136, 19, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); } }
+        .pulse-dot { width: 8px; height: 8px; background: #059669; border-radius: 50%; animation: shadow-pulse 2s infinite; }
+        @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(5, 150, 105, 0); } 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); } }
 
         /* Minimize button styling */
         .sidebar-minimize-btn {

@@ -1,4 +1,4 @@
-
+﻿
 @extends('layouts.admin')
 
 @section('title', 'Permissions & Registrations')
@@ -110,7 +110,7 @@
                 @endphp
                 <div class="m-row" data-department="{{ $dept }}">
                     <div class="col-id" style="flex: 0 0 450px;">
-                        <div class="m-avatar" style="background: linear-gradient(135deg, #881337, #881337); display: flex; align-items: center; justify-content: center; color: white;">
+                        <div class="m-avatar" style="background: #0ea5e9; display: flex; align-items: center; justify-content: center; color: white;">
                             <i data-lucide="building" style="width: 22px; height: 22px;"></i>
                         </div>
                         <div class="m-identity">
@@ -189,7 +189,7 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4c0519; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                                     @if($user->role === 'Main Admin')
                                         Head of Admin(Authorizer)
                                     @elseif($user->role === 'Sub Main Admin')
@@ -199,7 +199,7 @@
                                     @endif
                                 </span>
                                 @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #4c0519; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
                                     {{ $user->department }}
                                 </span>
                                 @endif
@@ -281,11 +281,11 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4c0519; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                                     Director General
                                 </span>
                                 @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #4c0519; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
                                     {{ $user->department }}
                                 </span>
                                 @endif
@@ -343,9 +343,9 @@
 
     <!-- OTP Generation Card -->
     <div class="cfg-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary); background: white; border-radius: 28px; border: 1px solid #f1f5f9; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); overflow: hidden;">
-        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 2rem; border-bottom: 1px solid #f8fafc; background: linear-gradient(to right, #fafbff, white); flex-wrap: wrap; gap: 1.5rem;">
+        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 2rem; border-bottom: 1px solid #f8fafc; background: #fafbff; flex-wrap: wrap; gap: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 300px;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg, var(--primary), #881337); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                <div class="cfg-icon-box" style="background: #059669; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
                     <i data-lucide="key-round" style="width: 22px; height: 22px;"></i>
                 </div>
                 <div>
@@ -358,7 +358,7 @@
                     <label for="delegation-revocation-time" style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Auto-Revocation Time (Optional)</label>
                     <input type="datetime-local" id="delegation-revocation-time" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; font-weight: 700; color: #1e293b; outline: none; background: white; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
                 </div>
-                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: linear-gradient(135deg, var(--primary), #881337); border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(136, 19, 55, 0.25); transition: all 0.3s ease;">
+                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: #059669; border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(5, 150, 105, 0.25); transition: all 0.3s ease;">
                     <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
                     Generate OTP
                 </button>
@@ -368,11 +368,11 @@
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; background: #f8fafc; border-radius: 20px; padding: 1.5rem 2rem; border: 1px solid #f1f5f9;">
                 <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                     <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Active OTP Code:</span>
-                    <span id="active-otp-code" style="font-family: monospace; font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 4px; background: white; padding: 0.5rem 1.5rem; border-radius: 12px; border: 1.5px dashed var(--primary); display: inline-block;">{{ $currentOtp }}</span>
+                    <span id="active-otp-code" style="font-family: monospace; font-size: 2rem; font-weight: 900; color: #0ea5e9; letter-spacing: 4px; background: white; padding: 0.5rem 1.5rem; border-radius: 12px; border: 1.5px dashed #0ea5e9; display: inline-block;">{{ $currentOtp }}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                     <span style="font-size: 0.85rem; font-weight: 700; color: #475569;" id="otp-expiry-text">
-                        Status: <span id="otp-expiry-time" style="color: #881337; font-weight: 800;">
+                        Status: <span id="otp-expiry-time" style="color: #059669; font-weight: 800;">
                             @if($currentOtpExpires)
                                 Revocation Scheduled: <span style="color: #ef4444;">{{ \Carbon\Carbon::parse($currentOtpExpires)->format('d/m/y H:i') }}</span>
                             @else
@@ -530,12 +530,12 @@
                                                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; padding: 1px 4px; background: #f8fafc; border-radius: 4px; border: 1px solid #f1f5f9;">
                                                         <span style="font-weight: 700; color: #475569;">{{ $label }}</span>
                                                         @if($historyRecord->action === 'created')
-                                                            <span style="font-weight: 800; color: {{ $newVal ? '#881337' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
+                                                            <span style="font-weight: 800; color: {{ $newVal ? '#059669' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
                                                         @else
                                                             <span style="font-weight: 800;">
-                                                                <span style="color: {{ $oldVal ? '#881337' : '#dc2626' }}; text-decoration: text-decoration; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
+                                                                <span style="color: {{ $oldVal ? '#059669' : '#dc2626' }}; text-decoration: text-decoration; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
                                                                 <span style="color: #64748b; margin: 0 1px;">&rarr;</span>
-                                                                <span style="color: {{ $newVal ? '#881337' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
+                                                                <span style="color: {{ $newVal ? '#059669' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
                                                             </span>
                                                         @endif
                                                     </div>
@@ -587,7 +587,7 @@
         gap: 1rem;
         padding: 1.75rem 2rem;
         border-bottom: 1px solid #f8fafc;
-        background: linear-gradient(to right, #fafbff, white);
+        background: #fafbff;
     }
     .cfg-icon-box {
         width: 48px;
@@ -633,7 +633,7 @@
     }
     .cfg-text-input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1);
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
     }
     .btn-cfg-save {
         display: inline-flex;
@@ -643,16 +643,16 @@
         font-size: 0.9rem;
         font-weight: 900;
         color: white;
-        background: linear-gradient(135deg, var(--primary), #881337);
+        background: #059669;
         border: none;
         border-radius: 16px;
         cursor: pointer;
-        box-shadow: 0 4px 18px rgba(136, 19, 55, 0.25);
+        box-shadow: 0 4px 18px rgba(5, 150, 105, 0.25);
         transition: all 0.3s ease;
     }
     .btn-cfg-save:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(136, 19, 55, 0.35);
+        box-shadow: 0 10px 24px rgba(5, 150, 105, 0.35);
     }
     .otp-preset-btn {
         padding: 0.6rem 1.2rem;
@@ -701,11 +701,11 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     }
     .search-vault:focus-within {
-        border-color: #881337;
-        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.1);
+        border-color: #0ea5e9;
+        box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1);
         transform: translateY(-2px);
     }
-    .search-vault i { color: #881337; opacity: 0.6; margin-right: 1rem; width: 20px; }
+    .search-vault i { color: #0ea5e9; opacity: 0.6; margin-right: 1rem; width: 20px; }
     .search-vault input { border: none; outline: none; padding: 0.75rem 0; font-size: 0.95rem; font-weight: 600; color: #0f172a; width: 100%; background: transparent; }
     .search-vault input::placeholder { color: #94a3b8; font-weight: 500; }
     .search-kicker { font-size: 0.7rem; font-weight: 800; color: #64748b; background: #f1f5f9; padding: 4px 8px; border-radius: 8px; white-space: nowrap; border: 1px solid #e2e8f0; }
@@ -739,8 +739,8 @@
         position: relative;
     }
     .pager-tab svg { opacity: 0.7; flex-shrink: 0; }
-    .pager-tab:hover { background: #f8fafc; color: #881337; }
-    .pager-tab.active { background: #881337; color: white; box-shadow: 0 4px 14px rgba(136,19,55,0.25); }
+    .pager-tab:hover { background: #f8fafc; color: #0ea5e9; }
+    .pager-tab.active { background: #059669; color: white; box-shadow: 0 4px 14px rgba(5, 150, 105,0.25); }
     .pager-tab.active svg { opacity: 1; }
     .tab-badge {
         background: #ef4444;
@@ -777,12 +777,12 @@
     .col-ctrl { flex: 1; display: flex; justify-content: flex-start; align-items: center; }
     .col-req-ctrl { flex: 0 0 200px; display: flex; justify-content: flex-start; align-items: center; }
     .col-stat { flex: 0 0 160px; display: flex; justify-content: flex-end; }
-    .m-avatar { position: relative; width: 48px; height: 48px; border-radius: 16px; padding: 3px; background: linear-gradient(135deg, #e2e8f0, #f8fafc); flex-shrink: 0; }
+    .m-avatar { position: relative; width: 48px; height: 48px; border-radius: 16px; padding: 3px; background: #e2e8f0; flex-shrink: 0; }
     .m-avatar img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; }
     .m-pulse { position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; }
-    .m-pulse.online { background: #881337; animation: soft-pulse 2s infinite; }
+    .m-pulse.online { background: #059669; animation: soft-pulse 2s infinite; }
     .m-pulse.offline { background: #cbd5e1; }
-    @keyframes soft-pulse { 0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(136, 19, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); } }
+    @keyframes soft-pulse { 0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(5, 150, 105, 0); } 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); } }
     .m-identity { display: flex; flex-direction: column; gap: 2px; }
     .m-name { margin: 0; font-size: 0.95rem; font-weight: 850; color: var(--text-heading); letter-spacing: -0.01em; }
     .m-handle { font-size: 0.75rem; color: var(--accent); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
@@ -797,7 +797,7 @@
     .normal-toggle input:checked + .toggle-slider { background-color: var(--primary); }
     .normal-toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
     .badge-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; }
-    .badge-status.authorized { background: #f0fdf4; color: #881337; border: 1px solid #dcfce7; }
+    .badge-status.authorized { background: #f0fdf4; color: #059669; border: 1px solid #dcfce7; }
     .badge-status.revoked { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
     .badge-status i { width: 14px; height: 14px; }
     .syncing-row { opacity: 0.5; pointer-events: none; background: #f8fafc !important; }
@@ -824,8 +824,8 @@
         animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .reg-card:hover {
-        border-color: rgba(136,19,55,0.2);
-        box-shadow: 0 8px 28px rgba(136,19,55,0.08);
+        border-color: rgba(5, 150, 105,0.2);
+        box-shadow: 0 8px 28px rgba(5, 150, 105,0.08);
         transform: translateY(-2px);
     }
 
@@ -840,7 +840,7 @@
         width: 52px;
         height: 52px;
         border-radius: 18px;
-        background: linear-gradient(135deg, #881337, #9f1239);
+        background: #059669;
         color: white;
         display: flex;
         align-items: center;
@@ -848,11 +848,11 @@
         font-size: 1.3rem;
         font-weight: 900;
         flex-shrink: 0;
-        box-shadow: 0 6px 16px rgba(136,19,55,0.25);
+        box-shadow: 0 6px 16px rgba(5, 150, 105,0.25);
     }
 
     .reg-name { font-size: 0.97rem; font-weight: 850; color: #0f172a; letter-spacing: -0.01em; }
-    .reg-username { font-size: 0.75rem; color: #881337; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .reg-username { font-size: 0.75rem; color: #059669; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
     .reg-time { font-size: 0.72rem; color: #94a3b8; font-weight: 600; margin-top: 4px; }
 
     .reg-details {
@@ -873,8 +873,8 @@
         font-weight: 700;
         white-space: nowrap;
     }
-    .reg-pill.role { background: #eef2ff; color: #4c0519; border: 1px solid #c7d2fe; }
-    .reg-pill.dept { background: #f0fdf4; color: #4c0519; border: 1px solid #bbf7d0; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+    .reg-pill.role { background: #eef2ff; color: #065f46; border: 1px solid #c7d2fe; }
+    .reg-pill.dept { background: #f0fdf4; color: #065f46; border: 1px solid #bbf7d0; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
     .reg-pill.rank { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 
     .reg-actions {
@@ -903,9 +903,9 @@
         transition: all 0.25s ease;
     }
     .reg-select:hover, .reg-select:focus {
-        border-color: #881337;
+        border-color: #0ea5e9;
         background-color: white;
-        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.1);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
         transform: translateY(-1px);
     }
     .reg-select-icon {
@@ -921,7 +921,7 @@
     }
     .reg-select:focus + .reg-select-icon,
     .reg-select:hover + .reg-select-icon {
-        color: #881337;
+        color: #059669;
     }
 
     .reg-btn {
@@ -939,13 +939,13 @@
         letter-spacing: 0.01em;
     }
     .reg-btn.approve {
-        background: #881337;
+        background: #059669;
         color: white;
-        box-shadow: 0 4px 12px rgba(136,19,55,0.25);
+        box-shadow: 0 4px 12px rgba(5, 150, 105,0.25);
     }
     .reg-btn.approve:hover {
         background: #059669;
-        box-shadow: 0 6px 20px rgba(136,19,55,0.35);
+        box-shadow: 0 6px 20px rgba(5, 150, 105,0.35);
         transform: translateY(-1px);
     }
     .reg-btn.decline {
@@ -974,7 +974,7 @@
         width: 80px;
         height: 80px;
         background: #f0fdf4;
-        color: #881337;
+        color: #059669;
         border-radius: 24px;
         display: flex;
         align-items: center;
@@ -1177,7 +1177,7 @@
                 if (typeof showToast === 'function') {
                     showToast(msg, 'success');
                 } else {
-                    Swal.fire({ icon: 'success', title: 'Success', text: msg, confirmButtonColor: '#881337' });
+                    Swal.fire({ icon: 'success', title: 'Success', text: msg, confirmButtonColor: '#059669' });
                 }
             } else {
                 checkbox.checked = !isChecked;
@@ -1216,7 +1216,7 @@
                 if (expiryEl) {
                     if (data.expiry_text === 'Active (Never Expires)') {
                         expiryEl.innerHTML = 'Active (Never Expires)';
-                        expiryEl.style.color = '#881337';
+                        expiryEl.style.color = '#059669';
                     } else {
                         expiryEl.innerHTML = 'Revocation Scheduled: <span style="color: #ef4444;">' + data.expiry_text + '</span>';
                     }
@@ -1226,14 +1226,14 @@
                     icon: 'success',
                     title: 'OTP Generated',
                     text: 'The delegation OTP code is ' + data.otp + '. Give this code to any Store Officer to claim delegation. The code can only be used once.',
-                    confirmButtonColor: '#881337'
+                    confirmButtonColor: '#059669'
                 });
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#881337' });
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#059669' });
             }
         })
         .catch(() => {
-            Swal.fire({ icon: 'error', title: 'System Error', text: 'Failed to generate delegation OTP.', confirmButtonColor: '#881337' });
+            Swal.fire({ icon: 'error', title: 'System Error', text: 'Failed to generate delegation OTP.', confirmButtonColor: '#059669' });
         });
     }
 
@@ -1253,7 +1253,7 @@
                     icon: 'success',
                     title: 'OTP Revoked',
                     text: 'Delegation OTP has been revoked successfully.',
-                    confirmButtonColor: '#881337'
+                    confirmButtonColor: '#059669'
                 }).then(() => {
                     window.location.reload();
                 });
@@ -1310,7 +1310,7 @@
                             icon: 'warning',
                             title: 'Role Required',
                             text: 'Please select a role to assign before approving.',
-                            confirmButtonColor: '#881337'
+                            confirmButtonColor: '#059669'
                         });
                     }
                     return;
@@ -1406,7 +1406,7 @@
                         icon: 'success',
                         title: 'Success',
                         text: message,
-                        confirmButtonColor: '#881337'
+                        confirmButtonColor: '#059669'
                     });
                 }
             } catch (err) {
@@ -1419,7 +1419,7 @@
                         icon: 'error',
                         title: 'System Error',
                         text: errMsg,
-                        confirmButtonColor: '#881337'
+                        confirmButtonColor: '#059669'
                     });
                 }
                 if (buttons) {
@@ -1607,7 +1607,7 @@
                 const roleLabel = roleLabelMap[u.role] || u.role;
 
                 const deptBadge = u.department
-                    ? `<span class="badge-dept" style="font-size:0.65rem;background:#f0fdf4;color:#4c0519;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(76,5,25,0.1);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${u.department}">${u.department}</span>`
+                    ? `<span class="badge-dept" style="font-size:0.65rem;background:#f0fdf4;color:#065f46;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(76,5,25,0.1);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${u.department}">${u.department}</span>`
                     : '';
 
                 const perms = [
@@ -1643,7 +1643,7 @@
                             <h4 class="m-name">${u.name}</h4>
                             <div class="m-handle" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">
                                 <span>@ ${u.username}</span>
-                                <span class="badge-role" style="font-size:0.65rem;background:#eef2ff;color:#4c0519;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(67,56,202,0.1);">${roleLabel}</span>
+                                <span class="badge-role" style="font-size:0.65rem;background:#eef2ff;color:#065f46;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(67,56,202,0.1);">${roleLabel}</span>
                                 ${deptBadge}
                             </div>
                         </div>

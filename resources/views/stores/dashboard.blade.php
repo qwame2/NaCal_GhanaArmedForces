@@ -163,7 +163,7 @@
             </a>
 
             <a href="{{ route('admin.inventory') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); color: #881337; display: flex; align-items: center; justify-content: center; shrink: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); color: #7c3aed; display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="boxes" style="width: 20px; height: 20px;"></i>
                 </div>
                 <div>

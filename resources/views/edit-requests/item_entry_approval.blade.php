@@ -24,7 +24,7 @@
         max-width: 2000px !important;
     }
     .sra-table-row { border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
-    .sra-table-row:hover { background: rgba(136,19,55,0.03); }
+    .sra-table-row:hover { background: rgba(14,165,233,0.04); }
     .sra-table-row:last-child { border-bottom: none; }
     .sra-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     
@@ -49,7 +49,7 @@
     .custom-pagination .page-item.active .page-link {
         background: var(--primary); color: white;
         border-color: var(--primary);
-        box-shadow: 0 10px 25px rgba(136, 19, 55, 0.25);
+        box-shadow: 0 10px 25px rgba(5,150,105,0.25);
         transform: scale(1.1);
         z-index: 10;
     }
@@ -57,8 +57,8 @@
         border-color: var(--primary);
         color: var(--primary);
         transform: translateY(-4px);
-        background: #f5f3ff;
-        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.1);
+        background: rgba(14,165,233,0.06);
+        box-shadow: 0 8px 20px rgba(14,165,233,0.15);
     }
     .custom-pagination .page-item.disabled .page-link {
         opacity: 0.5;
@@ -81,21 +81,21 @@
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(136,19,55,0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Head of Stores — Entry Authorization</span>
+                <span style="background: rgba(5,150,105,0.1); color: #059669; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Head of Stores — Entry Authorization</span>
             </div>
-            <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Item Entry <span style="color: #881337;">Approval Panel</span></h2>
+            <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Item Entry <span style="background: linear-gradient(135deg, #059669, #0ea5e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Approval Panel</span></h2>
             <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Review, authorize, or rollback new stock entries entered by Store Officers.</p>
         </div>
     </div>
 
     @if(isset($pendingServiceSras) && $pendingServiceSras->count() > 0)
-        <div style="background: linear-gradient(135deg, rgba(136, 19, 55, 0.08) 0%, rgba(136, 19, 55, 0.12) 100%); border: 1.5px solid #881337; border-radius: 20px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(136, 19, 55, 0.12);">
+        <div style="background: linear-gradient(135deg, rgba(14,165,233,0.08) 0%, rgba(14,165,233,0.12) 100%); border: 1.5px solid #0ea5e9; border-radius: 20px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(14,165,233,0.12);">
             <div style="display: flex; align-items: center; gap: 14px;">
-                <div style="width: 44px; height: 44px; background: #881337; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.3);">
+                <div style="width: 44px; height: 44px; background: #0ea5e9; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(14,165,233,0.3);">
                     <i data-lucide="receipt" style="width: 22px; height: 22px;"></i>
                 </div>
                 <div>
-                    <div style="font-size: 0.95rem; font-weight: 900; color: #4c0519; margin-bottom: 2px;">
+                    <div style="font-size: 0.95rem; font-weight: 900; color: #0284c7; margin-bottom: 2px;">
                         Pending Service SRA Approvals ({{ $pendingServiceSras->count() }})
                     </div>
                     <div style="font-size: 0.83rem; color: #475569; font-weight: 600;">
@@ -103,7 +103,7 @@
                     </div>
                 </div>
             </div>
-            <a href="{{ route($sraNavRoute) }}" style="background: #881337; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(136, 19, 55, 0.3); transition: all 0.2s;">
+            <a href="{{ route($sraNavRoute) }}" style="background: #0ea5e9; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(14,165,233,0.3); transition: all 0.2s;">
                 <span>Review Service SRAs</span>
                 <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
             </a>
@@ -156,8 +156,8 @@
                                 $supplier = !empty(trim($payload['supplier_name'] ?? '')) 
                                     ? $payload['supplier_name'] 
                                     : (!empty(trim($payload['donor_name'] ?? '')) ? $payload['donor_name'] : 'N/A');
-                                $badgeColor = $req->status === 'approved' || $req->status === 'completed' ? 'rgba(136,19,55,0.1)' : 'rgba(239,68,68,0.1)';
-                                $badgeTextColor = $req->status === 'approved' || $req->status === 'completed' ? '#881337' : '#ef4444';
+                                $badgeColor = $req->status === 'approved' || $req->status === 'completed' ? 'rgba(5,150,105,0.1)' : 'rgba(239,68,68,0.1)';
+                                $badgeTextColor = $req->status === 'approved' || $req->status === 'completed' ? '#059669' : '#ef4444';
                                 $decisionText = $req->status === 'approved' || $req->status === 'completed' ? 'Authorized' : 'Rejected / Declined';
                             @endphp
                             @php
@@ -189,7 +189,7 @@
                                 </td>
                                 <td style="padding: 1.25rem 1.5rem; text-align: right;">
                                     @if($isApproved && $batchId)
-                                        <a href="{{ route('receiveditems.sra', $batchId) }}" target="_blank" onclick="event.stopPropagation();" style="background: rgba(136,19,55,0.08); color: #881337; border: 1px solid rgba(136,19,55,0.2); border-radius: 10px; padding: 0.5rem 1.25rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136,19,55,0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136,19,55,0.2)';">
+                                        <a href="{{ route('receiveditems.sra', $batchId) }}" target="_blank" onclick="event.stopPropagation();" style="background: rgba(5,150,105,0.08); color: #059669; border: 1px solid rgba(5,150,105,0.2); border-radius: 10px; padding: 0.5rem 1.25rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#059669'; this.style.color='white'; this.style.borderColor='#059669';" onmouseout="this.style.background='rgba(5,150,105,0.08)'; this.style.color='#059669'; this.style.borderColor='rgba(5,150,105,0.2)';">
                                             <i data-lucide="receipt" style="width: 14px; height: 14px;"></i> Receipt
                                         </a>
                                     @else

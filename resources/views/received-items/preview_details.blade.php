@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'SRA Receipt Review & Oversight')
 
@@ -36,7 +36,7 @@
     
     <!-- Back Navigation -->
     <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
-        <a href="{{ str_contains(url()->previous(), 'item-entry-approval') ? route('stores.item-entry-approval') : route('admin.messages') }}" style="display: inline-flex; align-items: center; gap: 8px; color: #881337; background: #fff; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='#fff'; this.style.borderColor='var(--border-color)';">
+        <a href="{{ str_contains(url()->previous(), 'item-entry-approval') ? route('stores.item-entry-approval') : route('admin.messages') }}" style="display: inline-flex; align-items: center; gap: 8px; color: #059669; background: #fff; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='#fff'; this.style.borderColor='var(--border-color)';">
             <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to {{ str_contains(url()->previous(), 'item-entry-approval') ? 'Item Entry Approval' : 'Oversight Board' }}
         </a>
     </div>
@@ -45,11 +45,11 @@
         <!-- ==================== ISSUE ENTRY DETAILS ==================== -->
         <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-radius: 24px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative; box-shadow: var(--shadow-luxe); margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div style="width: 64px; height: 64px; background: #881337; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.3);">
+                <div style="width: 64px; height: 64px; background: #059669; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(5,150,105, 0.3);">
                     <i data-lucide="package-minus" style="width: 32px; height: 32px;"></i>
                 </div>
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 800; color: #881337; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Disbursement Authorization</div>
+                    <div style="font-size: 0.75rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Disbursement Authorization</div>
                     <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Issuance Details</h2>
                     <p style="margin: 6px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Initiated by <b>{{ $recordedByName }}</b> on {{ $createdAt }}</p>
                 </div>
@@ -59,7 +59,7 @@
                 <div>
                     <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">User Department</label>
                     <div style="font-size: 1.1rem; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #881337;"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #059669;"></div>
                         {{ $batch['beneficiary'] ?? 'N/A' }}
                     </div>
                 </div>
@@ -71,32 +71,32 @@
                 <div style="width: 1px; height: 40px; background: #e2e8f0; align-self: center;"></div>
                 <div>
                     <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Issuance Type</label>
-                    <span style="font-size: 0.85rem; font-weight: 900; color: #881337; background: rgba(136, 19, 55, 0.1); padding: 4px 12px; border-radius: 8px; border: 1px dashed rgba(136, 19, 55, 0.3);">{{ $batch['issuance_type'] ?? 'N/A' }}</span>
+                    <span style="font-size: 0.85rem; font-weight: 900; color: #059669; background: rgba(5,150,105, 0.1); padding: 4px 12px; border-radius: 8px; border: 1px dashed rgba(5,150,105, 0.3);">{{ $batch['issuance_type'] ?? 'N/A' }}</span>
                 </div>
             </div>
         </div>
 
         <div style="background: white; padding: 2.5rem 0; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: var(--shadow-luxe); overflow: hidden; margin-bottom: 2rem;">
             <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 3rem 1.5rem; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="list-checks" style="width: 20px; color: #881337;"></i> Items to Disburse ({{ count($items) }})
+                <i data-lucide="list-checks" style="width: 20px; color: #059669;"></i> Items to Disburse ({{ count($items) }})
             </h3>
             <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin: 0 3rem;">
                 @foreach($items as $idx => $item)
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-bottom: 1px dashed #e2e8f0; background: {{ $idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}; transition: all 0.3s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='{{ $idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}'">
                     <div style="display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; border: 1px solid rgba(136, 19, 55, 0.2);">
+                        <div style="width: 48px; height: 48px; background: rgba(5,150,105, 0.1); color: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; border: 1px solid rgba(5,150,105, 0.2);">
                             {{ $idx + 1 }}
                         </div>
                         <div>
                             <div style="font-weight: 900; font-size: 1.1rem; color: #0f172a; margin-bottom: 4px;">{{ $item['description'] ?? '' }}</div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 0.7rem; font-weight: 800; color: #881337; background: rgba(136, 19, 55, 0.1); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CATEGORY {{ $item['category'] ?? '-' }}</span>
+                                <span style="font-size: 0.7rem; font-weight: 800; color: #059669; background: rgba(5,150,105, 0.1); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CATEGORY {{ $item['category'] ?? '-' }}</span>
                             </div>
                         </div>
                     </div>
                     <div style="text-align: right; background: white; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
                         <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Quantity to Issue</span>
-                        <div style="font-size: 1.5rem; font-weight: 900; color: #881337; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end;">
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #059669; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end;">
                             {{ number_format($item['qty'] ?? 0) }}
                             <span style="font-size: 0.85rem; color: #64748b; font-weight: 700;">{{ $item['unit'] ?? 'Package Types' }}</span>
                         </div>
@@ -166,7 +166,7 @@
 
         <!-- Proposed Changes Section (Only for edit request types) -->
         @if($requestType === 'edit_submission' && isset($data['previous_batch']))
-            <h3 style="font-size: 0.95rem; font-weight: 900; color: #881337; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+            <h3 style="font-size: 0.95rem; font-weight: 900; color: #059669; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="edit-3" style="width: 18px;"></i> Proposed Changes
             </h3>
         @endif
@@ -176,7 +176,7 @@
             <div style="padding: 1.5rem 2rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin: 0; font-size: 1.1rem; font-weight: 900; color: #0f172a;">Items in This Entry ({{ count($items) }})</h3>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <button class="sra-rollback-btn-right" onclick="window.rollbackEntry({{ $reqId }})" style="background: #881337; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.25);">
+                    <button class="sra-rollback-btn-right" onclick="window.rollbackEntry({{ $reqId }})" style="background: #059669; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(5,150,105, 0.25);">
                         <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group
                     </button>
                     <span style="background: #e0f2fe; color: #0369a1; font-size: 0.75rem; font-weight: 800; padding: 6px 16px; border-radius: 99px;">{{ count($items) }} ITEMS</span>
@@ -224,17 +224,17 @@
 
                             $varianceVal = floatval($item['qty'] ?? 0) - floatval($item['book_qty'] ?? 0);
                             $displayVariance = ($varianceVal > 0 ? '+' : '') . $varianceVal;
-                            $varianceColor = $varianceVal === 0 ? '#881337' : ($varianceVal > 0 ? '#881337' : '#ef4444');
+                            $varianceColor = $varianceVal === 0 ? '#059669' : ($varianceVal > 0 ? '#059669' : '#ef4444');
                         @endphp
                         <tr style="border-bottom: 1px solid #f8fafc; transition: 0.2s;" onmouseover="this.style.background='#fcfdff'" onmouseout="this.style.background='transparent'">
                             <td style="padding: 1rem 1.5rem; text-align: center;">
                                 <input type="checkbox" class="item-rollback-checkbox" data-desc="{{ $item['description'] ?? '' }}" style="width: 16px; height: 16px; cursor: pointer; accent-color: #ef4444;" onchange="updateRollbackBtn();">
                             </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; {!! $isDescChanged ? 'background: rgba(136, 19, 55, 0.1); border-left: 3px solid #881337;' : '' !!}">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; {!! $isDescChanged ? 'background: rgba(5,150,105, 0.1); border-left: 3px solid #059669;' : '' !!}">
                                 <div>{{ $item['description'] ?? '' }}</div>
                                 <div class="item-sns-display" data-sns="{{ $item['serial_number'] ?? '' }}"></div>
                                 @if($isDescChanged)
-                                    <div style="font-size: 0.65rem; color: #881337; margin-top: 4px;">Modified</div>
+                                    <div style="font-size: 0.65rem; color: #059669; margin-top: 4px;">Modified</div>
                                 @endif
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
@@ -246,30 +246,30 @@
                                     $stLoc = str_replace('Stores', 'Store', $rawLoc);
                                     $isStoreB = str_contains($stLoc, 'B');
                                 @endphp
-                                <span style="font-size: 0.75rem; font-weight: 800; color: {{ $isStoreB ? '#3b82f6' : '#881337' }}; background: {{ $isStoreB ? 'rgba(59, 130, 246, 0.1)' : 'rgba(136, 19, 55, 0.1)' }}; padding: 3px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                                <span style="font-size: 0.75rem; font-weight: 800; color: {{ $isStoreB ? '#3b82f6' : '#059669' }}; background: {{ $isStoreB ? 'rgba(59, 130, 246, 0.1)' : 'rgba(5,150,105, 0.1)' }}; padding: 3px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
                                     <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
                                     {{ $stLoc }}
                                 </span>
                             </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isQtyChanged ? '#881337' : '#0f172a' }}; {!! $isQtyChanged ? 'background: rgba(136, 19, 55, 0.1); border-left: 2px solid #881337;' : '' !!}">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isQtyChanged ? '#059669' : '#0f172a' }}; {!! $isQtyChanged ? 'background: rgba(5,150,105, 0.1); border-left: 2px solid #059669;' : '' !!}">
                                 {{ number_format($item['qty'] ?? 0) }}
                             </td>
                             @if($isDiscrepancy)
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #881337; text-align: right;">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #059669; text-align: right;">
                                     {{ number_format($item['book_qty'] ?? 0) }}
                                 </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: {{ $varianceColor }}; text-align: right;">
                                     {{ $displayVariance }}
                                 </td>
                             @else
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isStockChanged ? '#881337' : '#881337' }}; {!! $isStockChanged ? 'background: rgba(136, 19, 55, 0.1); border-left: 2px solid #881337;' : '' !!}">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isStockChanged ? '#059669' : '#059669' }}; {!! $isStockChanged ? 'background: rgba(5,150,105, 0.1); border-left: 2px solid #059669;' : '' !!}">
                                     {{ number_format($item['stock_balance'] ?? 0) }}
                                 </td>
                             @endif
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0284c7; text-align: right;">
                                 {{ number_format($item['total_in_system'] ?? 0) }}
                             </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; {!! $isRemarksChanged ? 'background: rgba(136, 19, 55, 0.1); border-left: 2px solid #881337;' : '' !!}">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; {!! $isRemarksChanged ? 'background: rgba(5,150,105, 0.1); border-left: 2px solid #059669;' : '' !!}">
                                 {{ $item['remarks'] ?: '-- No specific notes --' }}
                             </td>
                         </tr>
@@ -280,7 +280,7 @@
                             <td colspan="4" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Total Items in This Entry
                             </td>
-                            <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #881337;">
+                            <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #059669;">
                                 {{ number_format(collect($items)->sum('qty')) }}
                             </td>
                             @if($isDiscrepancy)
@@ -383,7 +383,7 @@
 
         <!-- Warning Review Banner -->
         <div style="margin-top: 2rem; padding: 1.5rem; background: #ecfdf5; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-            <div style="width: 32px; height: 32px; background: #881337; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 32px; height: 32px; background: #059669; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="info" style="width: 18px;"></i>
             </div>
             <div style="flex: 1;">
@@ -402,13 +402,13 @@
             @php
                 $approveFn = $requestType === 'edit_submission' ? "processEditRequestApproval($reqId)" : "processApproval('approved')";
             @endphp
-            <button id="approveBtn" onclick="{!! $approveFn !!}" style="background: #881337; color: white; border: none; padding: 12px 28px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
+            <button id="approveBtn" onclick="{!! $approveFn !!}" style="background: #059669; color: white; border: none; padding: 12px 28px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#065f46'" onmouseout="this.style.background='#059669'">
                 <i data-lucide="check-circle" style="width: 18px;"></i> {{ $requestType === 'edit_submission' ? 'Approve Changes' : 'Approve Entry' }}
             </button>
         </div>
         @else
-        <div style="margin-top: 2rem; padding: 1.75rem; background: {{ $status === 'approved' ? 'rgba(136, 19, 55, 0.08)' : 'rgba(239, 68, 68, 0.08)' }}; border-radius: 24px; border: 1.5px solid {{ $status === 'approved' ? '#881337' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; gap: 1rem; box-shadow: var(--shadow-luxe);">
-            <div style="font-weight: 950; color: {{ $status === 'approved' ? '#881337' : '#ef4444' }}; text-transform: uppercase; font-size: 1rem; display: flex; align-items: center; gap: 8px; letter-spacing: 0.05em;">
+        <div style="margin-top: 2rem; padding: 1.75rem; background: {{ $status === 'approved' ? 'rgba(5,150,105, 0.08)' : 'rgba(239, 68, 68, 0.08)' }}; border-radius: 24px; border: 1.5px solid {{ $status === 'approved' ? '#059669' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; gap: 1rem; box-shadow: var(--shadow-luxe);">
+            <div style="font-weight: 950; color: {{ $status === 'approved' ? '#059669' : '#ef4444' }}; text-transform: uppercase; font-size: 1rem; display: flex; align-items: center; gap: 8px; letter-spacing: 0.05em;">
                 <i data-lucide="{{ $status === 'approved' ? 'check-circle' : 'alert-circle' }}" style="width: 22px; height: 22px;"></i>
                 Oversight Decision: {{ $status === 'approved' ? 'APPROVED & SAVED' : 'REJECTED' }}
             </div>
@@ -429,8 +429,8 @@
                 btn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
             } else {
                 btn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group`;
-                btn.style.background = '#881337';
-                btn.style.boxShadow = '0 4px 12px rgba(136, 19, 55, 0.25)';
+                btn.style.background = '#059669';
+                btn.style.boxShadow = '0 4px 12px rgba(5,150,105, 0.25)';
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
@@ -441,9 +441,9 @@
         const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
         if (sns.length === 0) return '';
 
-        const badgeBg = isProposed ? 'rgba(136, 19, 55, 0.05)' : 'rgba(239, 68, 68, 0.05)';
-        const badgeColor = isProposed ? '#881337' : '#ef4444';
-        const borderColor = isProposed ? 'rgba(136, 19, 55, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        const badgeBg = isProposed ? 'rgba(5,150,105, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+        const badgeColor = isProposed ? '#059669' : '#ef4444';
+        const borderColor = isProposed ? 'rgba(5,150,105, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
         function makeChipHtml(sn) {
             const match = sn.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
@@ -604,13 +604,13 @@
                                         </div>
                                         <div style="background: #f0fdf4; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem; min-width: 140px; flex-shrink: 0;">
                                             <div style="text-align: center;">
-                                                <div style="font-size: 2rem; font-weight: 900; color: #881337; line-height: 1;">${stats.total_deliveries.toLocaleString()}</div>
-                                                <div style="font-size: 0.6rem; font-weight: 800; color: #9f1239; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Total Deliveries</div>
+                                                <div style="font-size: 2rem; font-weight: 900; color: #059669; line-height: 1;">${stats.total_deliveries.toLocaleString()}</div>
+                                                <div style="font-size: 0.6rem; font-weight: 800; color: #047857; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Total Deliveries</div>
                                             </div>
                                             <div style="height: 1px; background: #bbf7d0;"></div>
                                             <div style="text-align: center;">
-                                                <div style="font-size: 0.85rem; font-weight: 800; color: #4c0519; line-height: 1.2;">${stats.last_delivery}</div>
-                                                <div style="font-size: 0.6rem; font-weight: 800; color: #9f1239; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Last Delivery</div>
+                                                <div style="font-size: 0.85rem; font-weight: 800; color: #065f46; line-height: 1.2;">${stats.last_delivery}</div>
+                                                <div style="font-size: 0.6rem; font-weight: 800; color: #047857; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Last Delivery</div>
                                             </div>
                                         </div>
                                     </div>
@@ -692,7 +692,7 @@
         Swal.fire({
             html: `
                 <div style="text-align: left;">
-                    <div style="background: #881337; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                    <div style="background: #059669; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
                         <div style="display: flex; align-items: center; gap: 14px; position: relative;">
                             <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -727,7 +727,7 @@
                         <label style="font-size: 0.78rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px;">General Note (Optional)</label>
                         <textarea id="rb-general-note" placeholder="Overall feedback or instructions for the user..." rows="3"
                             style="width: 100%; font-size: 0.88rem; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; font-family: inherit; color: #1e293b; background: #f8fafc; outline: none; resize: vertical; box-sizing: border-box;"
-                            onfocus="this.style.borderColor='#881337'; this.style.boxShadow='0 0 0 4px rgba(136,19,55,0.1)'; this.style.background='white'"
+                            onfocus="this.style.borderColor='#059669'; this.style.boxShadow='0 0 0 4px rgba(5,150,105,0.1)'; this.style.background='white'"
                             onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"></textarea>
                     </div>
                 </div>
@@ -735,7 +735,7 @@
             showCancelButton: true,
             confirmButtonText: '&#8630;&nbsp; Send Back for Correction',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#881337',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#94a3b8',
             width: 600,
             customClass: {
@@ -922,7 +922,7 @@
             text: 'This will replace the original inventory batch data with the proposed edits.',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#881337',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#94a3b8',
             confirmButtonText: '&#10003; Approve & Save Changes'
         }).then(result => {

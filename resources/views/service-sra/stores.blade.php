@@ -7,7 +7,7 @@
 
 <style>
     .sra-table-row { border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
-    .sra-table-row:hover { background: rgba(136,19,55,0.03); }
+    .sra-table-row:hover { background: rgba(14,165,233,0.04); }
     .sra-table-row:last-child { border-bottom: none; }
     .sra-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; }
@@ -40,7 +40,7 @@
 <div class="animate-slide-up">
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Service SRA <span style="color: #881337;">Final Approval</span></h2>
+            <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Service SRA <span style="background: linear-gradient(135deg, #059669, #0ea5e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Final Approval</span></h2>
         </div>
     </div>
 
@@ -48,7 +48,7 @@
     <div style="display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; padding-bottom: 2px;">
         <button onclick="switchStoresTab('pending')" id="tab-btn-pending" style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid var(--primary); color: var(--primary); display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
             Awaiting Final Approval 
-            <span id="tab-pending-count" style="background: rgba(136,19,55,0.12); color: #881337; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $pending->total() }}</span>
+            <span id="tab-pending-count" style="background: rgba(5,150,105,0.12); color: #059669; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $pending->total() }}</span>
         </button>
         <button onclick="switchStoresTab('history')" id="tab-btn-history" style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-muted); display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
             Approved SRA 
@@ -60,7 +60,7 @@
     <div id="stores-pane-pending" style="display: block;">
         <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem;">
             <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
-                <i data-lucide="shield-check" style="color: #881337; width: 20px;"></i>
+                <i data-lucide="shield-check" style="color: #059669; width: 20px;"></i>
                 <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Awaiting Final Approval ({{ $pending->count() }})</h3>
             </div>
             @if($pending->isEmpty())
@@ -84,7 +84,7 @@
                         <tbody>
                             @foreach($pending as $sra)
                             <tr class="sra-table-row" style="cursor: pointer;" onclick="window.open('{{ route('stores.service-sra.review', $sra->id) }}', '_blank')">
-                                <td style="padding: 1rem 1.5rem; font-weight: 800; color: #881337;">{{ $sra->sra_number }}</td>
+                                <td style="padding: 1rem 1.5rem; font-weight: 800; color: #059669;">{{ $sra->sra_number }}</td>
                                 <td style="padding: 1rem 1.5rem;">
                                     <div style="font-weight: 700; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</div>
                                     <div style="font-size: 0.72rem; color: var(--text-muted);">{{ $sra->dept }}</div>
@@ -93,7 +93,7 @@
                                 <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">{{ $sra->admin_approved_by ?? '—' }}</td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">{{ $sra->date_of_delivery->format('d M Y') }}</td>
                                 <td style="padding: 1rem 1.5rem; text-align: center;">
-                                    <a href="{{ route('stores.service-sra.review', $sra->id) }}" target="_blank" onclick="event.stopPropagation();" style="background: rgba(136,19,55,0.08); color: #881337; border: 1px solid rgba(136,19,55,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                    <a href="{{ route('stores.service-sra.review', $sra->id) }}" target="_blank" onclick="event.stopPropagation();" style="background: rgba(14,165,233,0.1); color: #0284c7; border: 1px solid rgba(14,165,233,0.25); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;" onmouseover="this.style.background='#0ea5e9';this.style.color='white';this.style.borderColor='#0ea5e9';" onmouseout="this.style.background='rgba(14,165,233,0.1)';this.style.color='#0284c7';this.style.borderColor='rgba(14,165,233,0.25)';">
                                         <i data-lucide="shield-check" style="width: 13px;"></i> Final Review
                                     </a>
                                 </td>
@@ -120,7 +120,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </span>
                         @else
-                            <a href="{{ $pending->appends(['history_page' => request('history_page')])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#881337';this.style.color='white';this.style.borderColor='#881337';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                            <a href="{{ $pending->appends(['history_page' => request('history_page')])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#059669';this.style.color='white';this.style.borderColor='#059669';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </a>
                         @endif
@@ -128,15 +128,15 @@
                         {{-- Page Numbers --}}
                         @foreach($pending->appends(['history_page' => request('history_page')])->getUrlRange(max(1, $pending->currentPage()-2), min($pending->lastPage(), $pending->currentPage()+2)) as $page => $url)
                             @if($page == $pending->currentPage())
-                                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: #881337; color: white; font-weight: 900; font-size: 0.82rem; border: 1.5px solid #881337; box-shadow: 0 4px 12px rgba(136,19,55,0.3);">{{ $page }}</span>
+                                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: #059669; color: white; font-weight: 900; font-size: 0.82rem; border: 1.5px solid #059669; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">{{ $page }}</span>
                             @else
-                                <a href="{{ $url }}" style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: var(--bg-card); color: var(--text-main); font-weight: 700; font-size: 0.82rem; border: 1.5px solid var(--border-color); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='rgba(136,19,55,0.08)';this.style.borderColor='rgba(136,19,55,0.3)';this.style.color='#881337';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
+                                <a href="{{ $url }}" style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: var(--bg-card); color: var(--text-main); font-weight: 700; font-size: 0.82rem; border: 1.5px solid var(--border-color); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='rgba(5,150,105,0.08)';this.style.borderColor='rgba(5,150,105,0.3)';this.style.color='#059669';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
                             @endif
                         @endforeach
 
                         {{-- Next --}}
                         @if($pending->hasMorePages())
-                            <a href="{{ $pending->appends(['history_page' => request('history_page')])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#881337';this.style.color='white';this.style.borderColor='#881337';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                            <a href="{{ $pending->appends(['history_page' => request('history_page')])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#059669';this.style.color='white';this.style.borderColor='#059669';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                             </a>
                         @else
@@ -194,9 +194,9 @@
                                         $decidedAt = $sra->auditor_approved_at ? \Carbon\Carbon::parse($sra->auditor_approved_at)->format('d M Y H:i') : ($sra->updated_at ? $sra->updated_at->format('d M Y H:i') : '—');
                                     @endphp
                                     <tr class="sra-table-row">
-                                        <td style="padding: 1rem 1.5rem; font-weight: 800; color: #881337;">
+                                        <td style="padding: 1rem 1.5rem; font-weight: 800; color: #059669;">
                                             {{ $refNo }}
-                                            <span class="sra-badge" style="background: rgba(136,19,55,0.08); color: #881337; margin-left: 6px; font-size: 0.65rem;">Inventory SRA</span>
+                                            <span class="sra-badge" style="background: rgba(5,150,105,0.08); color: #059669; margin-left: 6px; font-size: 0.65rem;">Inventory SRA</span>
                                         </td>
                                         <td style="padding: 1rem 1.5rem;">
                                             <div style="font-weight: 600; color: var(--text-main);">{{ $submittedBy }}</div>
@@ -210,16 +210,16 @@
                                         </td>
                                         <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted);">{{ $decidedAt }}</td>
                                         <td style="padding: 1rem 1.5rem; text-align: center;">
-                                            <a href="{{ route('receiveditems.sra', $sra->id) }}" target="_blank" style="background: rgba(136,19,55,0.08); color: #881337; border: 1px solid rgba(136,19,55,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                            <a href="{{ route('receiveditems.sra', $sra->id) }}" target="_blank" style="background: rgba(5,150,105,0.08); color: #059669; border: 1px solid rgba(5,150,105,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
                                                 <i data-lucide="file-text" style="width: 13px;"></i> View Receipt
                                             </a>
                                         </td>
                                     </tr>
                                 @else
                                     <tr class="sra-table-row">
-                                        <td style="padding: 1rem 1.5rem; font-weight: 800; color: #881337;">
+                                        <td style="padding: 1rem 1.5rem; font-weight: 800; color: #059669;">
                                             {{ $sra->sra_number }}
-                                            <span class="sra-badge" style="background: rgba(136,19,55,0.08); color: #881337; margin-left: 6px; font-size: 0.65rem;">Service SRA</span>
+                                            <span class="sra-badge" style="background: rgba(14,165,233,0.1); color: #0284c7; border: 1px solid rgba(14,165,233,0.2); margin-left: 6px; font-size: 0.65rem;">Service SRA</span>
                                         </td>
                                         <td style="padding: 1rem 1.5rem;">
                                             <div style="font-weight: 600; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</div>
@@ -234,7 +234,7 @@
                                         <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted);">{{ $sra->stores_approved_at?->format('d M Y H:i') ?? ($sra->updated_at ? $sra->updated_at->format('d M Y H:i') : '—') }}</td>
                                         <td style="padding: 1rem 1.5rem; text-align: center;">
                                             @if($sra->stores_status === 'approved')
-                                                <a href="{{ route('service-sra.receipt', $sra->id) }}" target="_blank" style="background: rgba(136,19,55,0.08); color: #881337; border: 1px solid rgba(136,19,55,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                                <a href="{{ route('service-sra.receipt', $sra->id) }}" target="_blank" style="background: rgba(5,150,105,0.08); color: #059669; border: 1px solid rgba(5,150,105,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
                                                     <i data-lucide="file-text" style="width: 13px;"></i> View Receipt
                                                 </a>
                                             @else
@@ -265,7 +265,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </span>
                         @else
-                            <a href="{{ $history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#881337';this.style.color='white';this.style.borderColor='#881337';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                            <a href="{{ $history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#059669';this.style.color='white';this.style.borderColor='#059669';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </a>
                         @endif
@@ -273,15 +273,15 @@
                         {{-- Page Numbers --}}
                         @foreach($history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->getUrlRange(max(1, $history->currentPage()-2), min($history->lastPage(), $history->currentPage()+2)) as $page => $url)
                             @if($page == $history->currentPage())
-                                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: #881337; color: white; font-weight: 900; font-size: 0.82rem; border: 1.5px solid #881337; box-shadow: 0 4px 12px rgba(136,19,55,0.3);">{{ $page }}</span>
+                                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: #059669; color: white; font-weight: 900; font-size: 0.82rem; border: 1.5px solid #059669; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">{{ $page }}</span>
                             @else
-                                <a href="{{ $url }}" style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: var(--bg-card); color: var(--text-main); font-weight: 700; font-size: 0.82rem; border: 1.5px solid var(--border-color); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='rgba(136,19,55,0.08)';this.style.borderColor='rgba(136,19,55,0.3)';this.style.color='#881337';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
+                                <a href="{{ $url }}" style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: var(--bg-card); color: var(--text-main); font-weight: 700; font-size: 0.82rem; border: 1.5px solid var(--border-color); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='rgba(5,150,105,0.08)';this.style.borderColor='rgba(5,150,105,0.3)';this.style.color='#059669';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
                             @endif
                         @endforeach
 
                         {{-- Next --}}
                         @if($history->hasMorePages())
-                            <a href="{{ $history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#881337';this.style.color='white';this.style.borderColor='#881337';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                            <a href="{{ $history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#059669';this.style.color='white';this.style.borderColor='#059669';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                             </a>
                         @else

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Communication Hub')
 
@@ -6,8 +6,8 @@
 <div class="animate-slide-up" style="height: calc(100vh - 180px); display: flex; gap: 2rem; padding: 1.5rem;">
     <!-- Sidebar: Directory -->
     <div class="glass-card" style="width: 380px; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04);">
-        <div style="padding: 2rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(145deg, var(--bg-card), var(--bg-main));">
-            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Staff <span style="color: #881337;">Directory</span></h3>
+        <div style="padding: 2rem; border-bottom: 1px solid var(--border-color); background: var(--bg-card);">
+            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Staff <span style="color: #059669;">Directory</span></h3>
             <div class="search-vault">
                 <i data-lucide="search"></i>
                 <input type="text" id="networkSearch" placeholder="Search users..." oninput="filterNetwork()">
@@ -31,9 +31,9 @@
                     @if($user->avatar)
                     <img src="{{ asset('storage/' . $user->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     @else
-                    <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);">{{ substr($user->name, 0, 1) }}</div>
+                    <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);">{{ substr($user->name, 0, 1) }}</div>
                     @endif
-                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $user->is_online ? '#881337' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $user->is_online ? '#059669' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; min-width: 0;">
@@ -73,13 +73,13 @@
                         <span id="activeUnreadBadge" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; padding: 2px 8px; border-radius: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); border: 2px solid white;">0</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <span id="statusDot" style="width: 10px; height: 10px; background: #881337; border-radius: 50%;"></span>
+                        <span id="statusDot" style="width: 10px; height: 10px; background: #059669; border-radius: 50%;"></span>
                         <span id="activeRole" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Role</span>
                     </div>
                 </div>
             </div>
             <div style="display: flex; gap: 1rem;">
-                <button class="comms-btn" title="Encryption Status"><i data-lucide="lock" style="color: #881337;"></i></button>
+                <button class="comms-btn" title="Encryption Status"><i data-lucide="lock" style="color: #059669;"></i></button>
                 <button class="comms-btn" title="Audit Records"><i data-lucide="file-text"></i></button>
                 <button class="comms-btn" title="Session Options"><i data-lucide="more-horizontal"></i></button>
             </div>
@@ -199,12 +199,12 @@
     }
 
     .search-vault:focus-within {
-        border-color: #881337;
-        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.1);
+        border-color: #059669;
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.1);
     }
 
     .search-vault i {
-        color: #881337;
+        color: #059669;
         opacity: 0.6;
         margin-right: 0.75rem;
         width: 18px;
@@ -241,8 +241,8 @@
     }
 
     .msg-input-vault:focus-within {
-        border-color: #881337;
-        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.1);
+        border-color: #059669;
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.1);
         transform: translateY(-2px);
     }
 
@@ -265,7 +265,7 @@
     }
 
     .send-action-btn {
-        background: #881337;
+        background: #059669;
         color: white;
         border: none;
         width: 44px;
@@ -275,14 +275,14 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 8px 16px rgba(136, 19, 55, 0.3);
+        box-shadow: 0 8px 16px rgba(5, 150, 105, 0.3);
         transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         flex-shrink: 0;
     }
 
     .send-action-btn:hover {
         transform: scale(1.08);
-        box-shadow: 0 10px 20px rgba(136, 19, 55, 0.4);
+        box-shadow: 0 10px 20px rgba(5, 150, 105, 0.4);
     }
 
     .network-item:hover {
@@ -358,7 +358,7 @@
         background: var(--primary);
         color: white;
         border-bottom-right-radius: 6px;
-        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.2);
+        box-shadow: 0 8px 20px rgba(5, 150, 105, 0.2);
     }
 
     .recipient .comms-bubble {
@@ -500,9 +500,9 @@
         const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
         if (sns.length === 0) return '';
 
-        const badgeBg = isProposed ? 'rgba(136, 19, 55, 0.05)' : 'rgba(239, 68, 68, 0.05)';
-        const badgeColor = isProposed ? '#881337' : '#ef4444';
-        const borderColor = isProposed ? 'rgba(136, 19, 55, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        const badgeBg = isProposed ? 'rgba(14, 165, 233, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+        const badgeColor = isProposed ? '#059669' : '#ef4444';
+        const borderColor = isProposed ? 'rgba(5, 150, 105, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
         function makeChipHtml(sn) {
             const match = sn.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
@@ -598,7 +598,7 @@
         if (avatar) {
             avatarDiv.innerHTML = `<img src="${avatar}" style="width: 52px; height: 52px; border-radius: 16px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">`;
         } else {
-            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);">${name.charAt(0)}</div>`;
+            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);">${name.charAt(0)}</div>`;
         }
 
         document.querySelectorAll('.network-item').forEach(el => el.classList.remove('active'));
@@ -770,7 +770,7 @@
                         const isRecipientOnline = onlineStatuses[activeUserId];
 
                         if (isRead) {
-                            ticksHtml = '<i data-lucide="check-check" style="color: #881337; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                            ticksHtml = '<i data-lucide="check-check" style="color: #059669; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         } else if (isRecipientOnline) {
                             ticksHtml = '<i data-lucide="check-check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         } else {
@@ -865,13 +865,13 @@
                     const isOnline = statuses[userId];
                     const dot = document.querySelector(`#user-${userId} div[style*="border-radius: 50%"]`);
                     if (dot) {
-                        dot.style.background = isOnline ? '#881337' : '#94a3b8';
+                        dot.style.background = isOnline ? '#059669' : '#94a3b8';
                     }
 
                     // Also update header dot if active
                     if (activeUserId == userId) {
                         const statusDot = document.getElementById('statusDot');
-                        if (statusDot) statusDot.style.background = isOnline ? '#881337' : '#94a3b8';
+                        if (statusDot) statusDot.style.background = isOnline ? '#059669' : '#94a3b8';
                     }
                 });
             });
@@ -963,7 +963,7 @@
             Swal.fire({
                 html: `
                     <div style="text-align: left;">
-                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                        <div style="background: #ef4444; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
                             <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 14px; position: relative;">
@@ -983,7 +983,7 @@
 
                         <textarea id="swal-reject-reason" placeholder="e.g., Incorrect quantity specified, missing documentation, requires further verification..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
 
-                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(136, 19, 55, 0.07); border: 1px solid rgba(136, 19, 55, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(5, 150, 105, 0.07); border: 1px solid rgba(5, 150, 105, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
                             <svg style="width: 16px; height: 16px; color: #047857; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">A reason is mandatory and will be permanently logged in the audit system.</span>
                         </div>
@@ -1062,8 +1062,8 @@
                     if (typeof window.playNotificationSound === 'function') {
                         window.playNotificationSound('sent');
                     }
-                    const color = status === 'approved' ? '#881337' : '#dc2626';
-                    const bgColor = status === 'approved' ? 'rgba(136, 19, 55, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                    const color = status === 'approved' ? '#059669' : '#dc2626';
+                    const bgColor = status === 'approved' ? 'rgba(5, 150, 105, 0.1)' : 'rgba(220, 38, 38, 0.1)';
                     const text = status === 'approved' ?
                         (data.is_remainder ? 'REMAINDER COMMITTED' : 'APPROVED & SAVED') :
                         'REJECTED';
@@ -1074,7 +1074,7 @@
 
                     if (status === 'approved' && data.batch_id) {
                         const printUrl = `{{ url('/received-items') }}/${data.batch_id}/sra`;
-                        html += `<br><a href="${printUrl}" target="_blank" style="display: inline-block; background: #881337; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);">Download / Print SRA</a>`;
+                        html += `<br><a href="${printUrl}" target="_blank" style="display: inline-block; background: #059669; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);">Download / Print SRA</a>`;
                     }
 
                     if (actionsDiv) {
@@ -1157,7 +1157,7 @@
             Swal.fire({
                 html: `
                     <div style="text-align: left;">
-                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                        <div style="background: #ef4444; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
                             <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 14px; position: relative;">
@@ -1237,7 +1237,7 @@
                     if (typeof window.playNotificationSound === 'function') {
                         window.playNotificationSound('sent');
                     }
-                    const badgeHtml = `<div style="padding: 12px 20px; border-radius: 12px; background: ${status === 'approved' ? 'rgba(136, 19, 55, 0.1)' : 'rgba(220, 38, 38, 0.1)'}; color: ${status === 'approved' ? '#881337' : '#dc2626'}; font-weight: 900; border: 1.5px solid ${status === 'approved' ? '#881337' : '#dc2626'}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                    const badgeHtml = `<div style="padding: 12px 20px; border-radius: 12px; background: ${status === 'approved' ? 'rgba(5, 150, 105, 0.1)' : 'rgba(220, 38, 38, 0.1)'}; color: ${status === 'approved' ? '#059669' : '#dc2626'}; font-weight: 900; border: 1.5px solid ${status === 'approved' ? '#059669' : '#dc2626'}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                         <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> RECOVERY ${status.toUpperCase()}
                     </div>`;
 
@@ -1270,7 +1270,7 @@
             Swal.fire({
                 html: `
                     <div style="text-align: left;">
-                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                        <div style="background: #ef4444; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
                             <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 14px; position: relative;">
@@ -1350,8 +1350,8 @@
                     if (typeof window.playNotificationSound === 'function') {
                         window.playNotificationSound('sent');
                     }
-                    const color = status === 'approved' ? '#881337' : '#dc2626';
-                    const bgColor = status === 'approved' ? 'rgba(136, 19, 55, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                    const color = status === 'approved' ? '#059669' : '#dc2626';
+                    const bgColor = status === 'approved' ? 'rgba(5, 150, 105, 0.1)' : 'rgba(220, 38, 38, 0.1)';
                     const htmlBadge = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                         <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> VERIFICATION ${status.toUpperCase()}
                     </div>`;
@@ -1408,15 +1408,15 @@
                     <button onclick="window.processRecoveryApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
                         <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                     </button>
-                    <button onclick="window.processRecoveryApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
+                    <button onclick="window.processRecoveryApproval(${reqId}, 'approved', this)" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#065f46'" onmouseout="this.style.background='#059669'">
                         <i data-lucide="check-circle" style="width: 18px;"></i> Approve Re-integration
                     </button>
                 </div>
             `;
         } else {
             const isApproved = data.status === 'approved';
-            const color = isApproved ? '#881337' : '#dc2626';
-            const bgColor = isApproved ? 'rgba(136, 19, 55, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+            const color = isApproved ? '#059669' : '#dc2626';
+            const bgColor = isApproved ? 'rgba(5, 150, 105, 0.1)' : 'rgba(220, 38, 38, 0.1)';
             const labelText = isApproved ? 'RECOVERY APPROVED' : 'RECOVERY REJECTED';
             footerHtml = `
                 <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
@@ -1434,11 +1434,11 @@
                 </button>
 
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div style="width: 64px; height: 64px; background: #881337; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.3);">
+                    <div style="width: 64px; height: 64px; background: #059669; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);">
                         <i data-lucide="refresh-cw" style="width: 32px; height: 32px;"></i>
                     </div>
                     <div>
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #881337; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Item Recovery Oversight</div>
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Item Recovery Oversight</div>
                         <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Return Verification</h2>
                         <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
                     </div>
@@ -1453,7 +1453,7 @@
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Category</span>
-                        <span style="font-size: 1rem; font-weight: 800; color: #881337; background: rgba(136, 19, 55, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${item.category}</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: #059669; background: rgba(5, 150, 105, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${item.category}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Beneficiary</span>
@@ -1462,7 +1462,7 @@
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Return Quantity</span>
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;">
-                            <span style="font-size: 2.25rem; font-weight: 900; color: #881337; line-height: 1;">${item.return_qty}</span>
+                            <span style="font-size: 2.25rem; font-weight: 900; color: #059669; line-height: 1;">${item.return_qty}</span>
                             <span style="font-size: 1rem; font-weight: 800; color: #64748b;">of ${item.issued_qty} <span style="text-transform: uppercase; font-size: 0.85rem;">${item.unit || 'units'}</span></span>
                         </div>
                     </div>
@@ -1472,13 +1472,13 @@
                     <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="message-square" style="width: 14px;"></i> User Remarks
                     </div>
-                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #881337; padding-left: 15px;">
+                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #059669; padding-left: 15px;">
                         ${item.remarks || '-- No specific notes provided --'}
                     </div>
                 </div>
 
-                <div style="margin-top: 2rem; padding: 1.25rem; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.2); border-radius: 16px; display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 32px; height: 32px; background: #881337; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div style="margin-top: 2rem; padding: 1.25rem; background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(5, 150, 105, 0.2); border-radius: 16px; display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; background: #059669; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="shield-check" style="width: 18px;"></i>
                     </div>
                     <div style="font-size: 0.85rem; font-weight: 700; color: #065f46;">
@@ -1586,15 +1586,15 @@
                     <button onclick="window.processVerificationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
                         <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                     </button>
-                    <button onclick="window.processVerificationApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
+                    <button onclick="window.processVerificationApproval(${reqId}, 'approved', this)" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#065f46'" onmouseout="this.style.background='#059669'">
                         <i data-lucide="check-circle" style="width: 18px;"></i> Approve Reconciliation
                     </button>
                 </div>
             `;
         } else {
             const isApproved = data.status === 'approved';
-            const color = isApproved ? '#881337' : '#dc2626';
-            const bgColor = isApproved ? 'rgba(136, 19, 55, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+            const color = isApproved ? '#059669' : '#dc2626';
+            const bgColor = isApproved ? 'rgba(5, 150, 105, 0.1)' : 'rgba(220, 38, 38, 0.1)';
             const labelText = isApproved ? 'VERIFICATION APPROVED' : 'VERIFICATION REJECTED';
             footerHtml = `
                 <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
@@ -1609,9 +1609,9 @@
         if (data.request_type === 'stock_verification') {
             const payload = data.payload;
             const variance = parseFloat(payload.variance);
-            const varColor = variance === 0 ? '#881337' : (variance > 0 ? '#881337' : '#ef4444');
-            const varBg = variance === 0 ? 'rgba(136, 19, 55, 0.06)' : (variance > 0 ? 'rgba(136, 19, 55, 0.06)' : 'rgba(239, 68, 68, 0.06)');
-            const varBorder = variance === 0 ? 'rgba(136, 19, 55, 0.2)' : (variance > 0 ? 'rgba(136, 19, 55, 0.2)' : 'rgba(239, 68, 68, 0.2)');
+            const varColor = variance === 0 ? '#059669' : (variance > 0 ? '#059669' : '#ef4444');
+            const varBg = variance === 0 ? 'rgba(5, 150, 105, 0.06)' : (variance > 0 ? 'rgba(5, 150, 105, 0.06)' : 'rgba(239, 68, 68, 0.06)');
+            const varBorder = variance === 0 ? 'rgba(5, 150, 105, 0.2)' : (variance > 0 ? 'rgba(5, 150, 105, 0.2)' : 'rgba(239, 68, 68, 0.2)');
             const varSign = variance > 0 ? '+' : '';
 
             bodyHtml = `
@@ -1622,7 +1622,7 @@
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Condition</span>
-                        <span style="font-size: 1rem; font-weight: 800; color: #881337; background: rgba(136, 19, 55, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${payload.condition}</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: #059669; background: rgba(5, 150, 105, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${payload.condition}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">System Stock</span>
@@ -1642,7 +1642,7 @@
                     <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="message-square" style="width: 14px;"></i> Verifier Remarks
                     </div>
-                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #881337; padding-left: 15px;">
+                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #059669; padding-left: 15px;">
                         ${payload.remarks || '-- No specific notes provided --'}
                     </div>
                 </div>
@@ -1652,7 +1652,7 @@
             let rowsHtml = '';
             items.forEach(si => {
                 const variance = parseFloat(si.variance);
-                const varStyle = variance === 0 ? 'color:#881337;' : (variance > 0 ? 'color:#881337;' : 'color:#ef4444;');
+                const varStyle = variance === 0 ? 'color:#059669;' : (variance > 0 ? 'color:#059669;' : 'color:#ef4444;');
                 const varSign = variance > 0 ? '+' : '';
                 rowsHtml += `
                     <tr style="border-bottom: 1px solid #e2e8f0; color: #475569;">
@@ -1660,7 +1660,7 @@
                         <td style="padding: 12px;">${si.current_stock}</td>
                         <td style="padding: 12px; font-weight: 700; color: #0f172a;">${si.physical_count}</td>
                         <td style="padding: 12px; font-weight: 800; ${varStyle}">${varSign}${si.variance}</td>
-                        <td style="padding: 12px;"><span style="font-size: 0.8rem; font-weight: 700; color: #881337; background: rgba(136, 19, 55, 0.08); padding: 4px 10px; border-radius: 6px;">${si.condition}</span></td>
+                        <td style="padding: 12px;"><span style="font-size: 0.8rem; font-weight: 700; color: #059669; background: rgba(5, 150, 105, 0.08); padding: 4px 10px; border-radius: 6px;">${si.condition}</span></td>
                         <td style="padding: 12px; font-style: italic; font-size: 0.85rem; max-width: 250px; word-break: break-word;">${si.remarks || '--'}</td>
                     </tr>
                 `;
@@ -1692,7 +1692,7 @@
         const isBatch = data.request_type === 'batch_stock_verification';
         const title = isBatch ? 'Batch Stock Reconciliation' : 'Stock Reconciliation';
         const iconName = isBatch ? 'clipboard-list' : 'check-square';
-        const iconGradient = isBatch ? 'linear-gradient(135deg, #881337 0%, #1d4ed8 100%)' : 'linear-gradient(135deg, #881337 0%, #1d4ed8 100%)';
+        const iconGradient = isBatch ? '#0ea5e9' : '#0ea5e9';
         const iconShadow = '0 10px 25px rgba(59, 130, 246, 0.3)';
 
         const html = `
@@ -1706,7 +1706,7 @@
                         <i data-lucide="${iconName}" style="width: 32px; height: 32px;"></i>
                     </div>
                     <div>
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #881337; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Strategic Stock Oversight</div>
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Strategic Stock Oversight</div>
                         <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">${title}</h2>
                         <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
                     </div>
@@ -1735,7 +1735,7 @@
             Swal.fire({
                 html: `
                     <div style="text-align: left;">
-                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                        <div style="background: #ef4444; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
                             <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 14px; position: relative;">
@@ -1757,7 +1757,7 @@
                             <textarea id="swal-decline-reason" placeholder="e.g. Insufficient justification provided, items currently out of stock, request lacks proper authority sign-off..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
                         </div>
 
-                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(136, 19, 55, 0.07); border: 1px solid rgba(136, 19, 55, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(5, 150, 105, 0.07); border: 1px solid rgba(5, 150, 105, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
                             <svg style="width: 16px; height: 16px; color: #047857; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">A reason is mandatory and will be logged in the system.</span>
                         </div>
@@ -1835,8 +1835,8 @@
                     }
                     const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
                     if (actionsDiv) {
-                        const color = status === 'approved' ? '#881337' : '#dc2626';
-                        const bgColor = status === 'approved' ? 'rgba(136, 19, 55, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                        const color = status === 'approved' ? '#059669' : '#dc2626';
+                        const bgColor = status === 'approved' ? 'rgba(5, 150, 105, 0.1)' : 'rgba(220, 38, 38, 0.1)';
                         actionsDiv.innerHTML = `<div style="padding: 8px 12px; border-radius: 8px; background: ${bgColor}; color: ${color}; font-weight: 800; border: 1px solid ${color}; display: inline-block;">Request ${status.toUpperCase()}</div>`;
                     }
                 } else {
@@ -2047,10 +2047,10 @@
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
                         ${item.unit || 'Package Types'}
                     </td>
-                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #881337; text-align: right; background: rgba(136, 19, 55, 0.02); border-left: 2px solid #881337;">${(parseFloat(item.expected) || 0).toLocaleString()}</td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #059669; text-align: right; background: rgba(14, 165, 233, 0.02); border-left: 2px solid #059669;">${(parseFloat(item.expected) || 0).toLocaleString()}</td>
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${(parseFloat(item.current) || 0).toLocaleString()}</td>
-                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #881337; text-align: right; background: rgba(136, 19, 55, 0.05); border-left: 2px solid #881337;">+${(parseFloat(item.adding) || 0).toLocaleString()}</td>
-                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #881337; text-align: right; background: rgba(136, 19, 55, 0.03); border-left: 2px solid #881337;">${(parseFloat(item.projected) || 0).toLocaleString()}</td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #059669; text-align: right; background: rgba(14, 165, 233, 0.05); border-left: 2px solid #059669;">+${(parseFloat(item.adding) || 0).toLocaleString()}</td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #059669; text-align: right; background: rgba(14, 165, 233, 0.03); border-left: 2px solid #059669;">${(parseFloat(item.projected) || 0).toLocaleString()}</td>
                 </tr>
                 `;
             });
@@ -2066,15 +2066,15 @@
                     <button onclick="window.processSraCreationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
                         <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                     </button>
-                    <button onclick="window.processSraCreationApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
+                    <button onclick="window.processSraCreationApproval(${reqId}, 'approved', this)" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#065f46'" onmouseout="this.style.background='#059669'">
                         <i data-lucide="check-circle" style="width: 18px;"></i> Approve Entry
                     </button>
                 </div>
             `;
         } else {
             const isApproved = data.status === 'approved';
-            const color = isApproved ? '#881337' : '#dc2626';
-            const bgColor = isApproved ? 'rgba(136, 19, 55, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+            const color = isApproved ? '#059669' : '#dc2626';
+            const bgColor = isApproved ? 'rgba(5, 150, 105, 0.1)' : 'rgba(220, 38, 38, 0.1)';
             const labelText = isApproved ? 'REMAINDER COMMITTED' : 'REJECTED';
             footerHtml = `
                 <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0; position: relative;">
@@ -2096,7 +2096,7 @@
                 </button>
 
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div style="width: 56px; height: 56px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 56px; height: 56px; background: rgba(5, 150, 105, 0.1); color: #059669; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
                         <i data-lucide="package-search" style="width: 28px; height: 28px;"></i>
                     </div>
                     <div>
@@ -2118,7 +2118,7 @@
                 <!-- Summary Stats -->
                 <div style="display:flex; gap:1.5rem; margin-bottom:1.5rem;">
                     <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <div style="width: 48px; height: 48px; background: rgba(5, 150, 105, 0.1); color: #059669; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="layers" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
@@ -2127,7 +2127,7 @@
                         </div>
                     </div>
                     <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.15); color: #047857; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <div style="width: 48px; height: 48px; background: rgba(5, 150, 105, 0.15); color: #047857; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="package" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
@@ -2136,19 +2136,19 @@
                         </div>
                     </div>
                     <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <div style="width: 48px; height: 48px; background: rgba(5, 150, 105, 0.1); color: #059669; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="package-plus" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
                             <div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Qty Adding</div>
-                            <div style="font-size:1.75rem; font-weight:900; color:#881337; line-height:1;">+${totalAdding.toLocaleString()}</div>
+                            <div style="font-size:1.75rem; font-weight:900; color:#059669; line-height:1;">+${totalAdding.toLocaleString()}</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Items Table -->
                 <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="list-checks" style="width: 20px; color: #881337;"></i> Remainder Item Details
+                    <i data-lucide="list-checks" style="width: 20px; color: #059669;"></i> Remainder Item Details
                 </h3>
                 <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
                     <table style="width: 100%; border-collapse: collapse;">
@@ -2156,10 +2156,10 @@
                             <tr>
                                 <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
-                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #881337; text-transform: uppercase; letter-spacing: 0.05em;">Total Expected</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.05em;">Total Expected</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Current Stock</th>
-                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #881337; text-transform: uppercase; letter-spacing: 0.05em;">+ Adding</th>
-                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #881337; text-transform: uppercase; letter-spacing: 0.05em;">New Projected</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.05em;">+ Adding</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.05em;">New Projected</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2170,16 +2170,16 @@
                                 <td colspan="2" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
                                     Total Remainder Quantities
                                 </td>
-                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #881337; background: rgba(136, 19, 55, 0.02); border-left: 2px solid #881337;">
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #059669; background: rgba(14, 165, 233, 0.02); border-left: 2px solid #059669;">
                                     ${totalExpected.toLocaleString()}
                                 </td>
                                 <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #0f172a;">
                                     ${totalCurrent.toLocaleString()}
                                 </td>
-                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #881337; background: rgba(136, 19, 55, 0.05); border-left: 2px solid #881337;">
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #059669; background: rgba(14, 165, 233, 0.05); border-left: 2px solid #059669;">
                                     +${totalAdding.toLocaleString()}
                                 </td>
-                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #881337; background: rgba(136, 19, 55, 0.03); border-left: 2px solid #881337;">
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #059669; background: rgba(14, 165, 233, 0.03); border-left: 2px solid #059669;">
                                     ${totalProjected.toLocaleString()}
                                 </td>
                             </tr>
@@ -2188,7 +2188,7 @@
                 </div>
 
                 <div style="padding: 1.5rem; background: #ecfdf5; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1.25rem;">
-                    <div style="width: 40px; height: 40px; background: #881337; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <div style="width: 40px; height: 40px; background: #059669; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="shield-alert" style="width: 20px;"></i>
                     </div>
                     <div style="flex: 1;">
@@ -2292,8 +2292,8 @@
                     <i data-lucide="x" style="width: 18px;"></i>
                 </button>
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div style="width: 56px; height: 56px; background: rgba(136, 19, 55, 0.05); color: #881337; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
-                        <svg class="animate-spin" style="width:28px;height:28px;color:#881337;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.2"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path></svg>
+                    <div style="width: 56px; height: 56px; background: rgba(14, 165, 233, 0.05); color: #059669; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <svg class="animate-spin" style="width:28px;height:28px;color:#059669;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.2"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path></svg>
                     </div>
                     <div>
                         <h2 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${title || 'Loading Details...'}</h2>
@@ -2387,7 +2387,7 @@
                 const html = `
                     <div style="text-align: left; padding: 10px;">
                         <div style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
-                            <div style="width: 50px; height: 50px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <div style="width: 50px; height: 50px; background: rgba(5, 150, 105, 0.1); color: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                 <i data-lucide="building-2" style="width: 24px; height: 24px;"></i>
                             </div>
                             <div>
@@ -2399,11 +2399,11 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                             <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
                                 <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total Deliveries</div>
-                                <div style="font-size: 1.5rem; font-weight: 900; color: #881337;">${stats.total_deliveries.toLocaleString()}</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; color: #059669;">${stats.total_deliveries.toLocaleString()}</div>
                             </div>
                             <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
                                 <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total Items Supplied</div>
-                                <div style="font-size: 1.5rem; font-weight: 900; color: #881337;">${stats.total_items.toLocaleString()}</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; color: #059669;">${stats.total_items.toLocaleString()}</div>
                             </div>
                         </div>
 
@@ -2476,7 +2476,7 @@
                     html: html,
                     showConfirmButton: true,
                     confirmButtonText: 'Close',
-                    confirmButtonColor: '#881337',
+                    confirmButtonColor: '#059669',
                     width: 500,
                     customClass: {
                         popup: 'rounded-xl shadow-2xl border border-slate-100',
@@ -2625,7 +2625,7 @@
         Swal.fire({
             html: `
                 <div style="text-align: left;">
-                    <div style="background: #881337; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                    <div style="background: #059669; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
                         <div style="display: flex; align-items: center; gap: 14px; position: relative;">
                             <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -2660,7 +2660,7 @@
                         <label style="font-size: 0.78rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px;">General Note (Optional)</label>
                         <textarea id="rb-general-note" placeholder="Overall feedback or instructions for the user..." rows="3"
                             style="width: 100%; font-size: 0.88rem; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; font-family: inherit; color: #1e293b; background: #f8fafc; outline: none; resize: vertical; box-sizing: border-box;"
-                            onfocus="this.style.borderColor='#881337'; this.style.boxShadow='0 0 0 4px rgba(136,19,55,0.1)'; this.style.background='white'"
+                            onfocus="this.style.borderColor='#059669'; this.style.boxShadow='0 0 0 4px rgba(5, 150, 105,0.1)'; this.style.background='white'"
                             onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"></textarea>
                     </div>
                 </div>
@@ -2668,7 +2668,7 @@
             showCancelButton: true,
             confirmButtonText: '&#8630;&nbsp; Send Back for Correction',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#881337',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#94a3b8',
             width: 600,
             customClass: {
@@ -2770,7 +2770,7 @@
                     // Update the action area in chat bubble
                     const actionsDiv = document.getElementById(`sra-creation-actions-${reqId}`);
                     if (actionsDiv) {
-                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: rgba(136,19,55,0.1); color: #047857; font-weight: 900; border: 1.5px solid #881337; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: rgba(5, 150, 105,0.1); color: #047857; font-weight: 900; border: 1.5px solid #059669; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                             <i data-lucide="rotate-ccw" style="width: 16px;"></i> ROLLED BACK — AWAITING CORRECTION
                         </div>`;
                         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -2806,8 +2806,8 @@
                 btn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
             } else {
                 btn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group`;
-                btn.style.background = '#881337';
-                btn.style.boxShadow = '0 4px 12px rgba(136, 19, 55, 0.25)';
+                btn.style.background = '#059669';
+                btn.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.25)';
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
@@ -2818,7 +2818,7 @@
         this.style.background = checkedCount > 0 ? '#dc2626' : '#047857';
     }).on('mouseleave', '.sra-rollback-btn-right', function() {
         const checkedCount = $('.item-rollback-checkbox:checked').length;
-        this.style.background = checkedCount > 0 ? '#ef4444' : '#881337';
+        this.style.background = checkedCount > 0 ? '#ef4444' : '#059669';
     });
 
     // Relocate oversight elements to body to ensure fixed overlay covers viewport without parent transforms clipping it
