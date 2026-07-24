@@ -1,24 +1,28 @@
 :root {
-    --primary: #881337;
-    --primary-light: #9f1239;
-    --primary-dark: #4c0519;
-    --secondary: #000000;
-    --accent: #881337;
+    --primary: #059669;
+    --primary-light: #10b981;
+    --primary-dark: #047857;
+    --primary-glow: rgba(5, 150, 105, 0.15);
+    --secondary: #0284c7;
+    --accent: #0284c7;
+    --accent-light: #38bdf8;
+    --accent-dark: #0369a1;
+    --accent-glow: rgba(2, 132, 199, 0.15);
     --danger: #ef4444;
-    --bg-main: #f3f4f6;
+    --bg-main: #f8fafc;
     --bg-sidebar: #ffffff;
     --bg-card: #ffffff;
-    --bg-nav: rgba(255, 255, 255, 0.8);
-    --text-main: #000000;
-    --text-muted: #4b5563;
-    --border-color: #e5e7eb;
+    --bg-nav: rgba(255, 255, 255, 0.95);
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --border-color: #e2e8f0;
     --sidebar-width: 320px;
     --sidebar-mini-width: 88px;
     --header-height: 80px;
     --radius-xl: 1.5rem;
     --radius-lg: 1rem;
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    --card-shadow-hover: 0 20px 25px -5px rgba(5, 150, 105, 0.12), 0 10px 10px -5px rgba(2, 132, 199, 0.08);
     --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -671,12 +675,12 @@ body {
 
 .status-success {
     background: #ecfdf5;
-    color: #881337;
+    color: #059669;
 }
 
 .status-warning {
-    background: #ecfdf5;
-    color: #881337;
+    background: #e0f2fe;
+    color: #0284c7;
 }
 
 .status-danger {

@@ -153,7 +153,7 @@
             </div>
             <div>
                 <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">NACOC</h1>
-                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></div>
+                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Stores Inventory Management System<span style="color:#059669;">(NSIMs)</span></div>
             </div>
         </div>
 
@@ -237,7 +237,15 @@
                         <span>Analytical Reports</span>
                     </a>
                 </li>
-            @elseif(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores']))
+            @elseif(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores', 'Dept. Head (Stores)']))
+                @if(auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)' || (auth()->user()->isDepartmentHead() && in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])))
+                <li class="nav-item">
+                    <a href="{{ route('stores.dashboard') }}" class="nav-link {{ request()->routeIs('stores.dashboard') ? 'active' : '' }}" data-tooltip="Stores Dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                @endif
                 <li class="nav-item">
                     <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="{{ in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']) ? 'Review & Approve Requests' : 'Review Requests' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -292,9 +300,8 @@
                 @php
                     $isSraStoresHead = auth()->check() && !auth()->user()->isMainAdminOrSub() && (
                         auth()->user()->role === 'Head of Stores'
-                        || auth()->user()->role === 'Store Officer'
                         || auth()->user()->role === 'Dept. Head (Stores)'
-                        || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])
+                        || (auth()->user()->isDepartmentHead() && in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']))
                     );
                 @endphp
                 @if($isSraStoresHead)
@@ -344,10 +351,22 @@
                 @endif
             @else
                 <li class="nav-item">
+                    @php
+                        $isStoresDashLink = auth()->user()->role === 'Head of Stores' 
+                            || auth()->user()->role === 'Dept. Head (Stores)' 
+                            || (auth()->user()->isDepartmentHead() && in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']));
+                    @endphp
+                    @if($isStoresDashLink)
+                    <a href="{{ route('stores.dashboard') }}" class="nav-link {{ request()->routeIs('stores.dashboard') ? 'active' : '' }}" data-tooltip="Stores Dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    @else
                     <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}" data-tooltip="Dashboard View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                         <span>Dashboard</span>
                     </a>
+                    @endif
                 </li>
                 @if((strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) && !$isActingStoresHead)
                 <li class="nav-item">
@@ -1598,30 +1617,30 @@
         </style>
 
         <div id="signature-warning-overlay" class="modal-overlay" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; z-index: 10000000 !important; padding: 1.25rem; box-sizing: border-box;">
-            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(136, 19, 55, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
+            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(5, 150, 105, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
                 <!-- Top Accent Line -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: #881337;"></div>
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: #059669;"></div>
 
                 <!-- Animated Signature Icon Box -->
-                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(136,19,55,0.12), rgba(136,19,55,0.04)); border: 2px solid rgba(136,19,55,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(136, 19, 55, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
-                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #881337;"></i>
+                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(5,150,105,0.12), rgba(5,150,105,0.04)); border: 2px solid rgba(5,150,105,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(5, 150, 105, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
+                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #059669;"></i>
                 </div>
 
                 <!-- Heading & Intro -->
                 <h3 style="font-size: 1.6rem; font-weight: 950; color: #0f172a; margin: 0 0 0.75rem; letter-spacing: -0.03em; line-height: 1.25;">Digital Signature Required</h3>
                 <p style="color: #475569; font-size: 0.92rem; line-height: 1.65; margin: 0 0 1.75rem; font-weight: 600;">
-                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #881337; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
+                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #059669; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
                 </p>
 
                 <!-- Instructions Card -->
                 <div style="background: #f8fafc; border-radius: 20px; padding: 1.25rem 1.5rem; border: 1px solid #e2e8f0; text-align: left; margin-bottom: 2rem;">
                     <div style="font-size: 0.72rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; margin-bottom: 0.85rem;">
-                        <i data-lucide="info" style="width: 14px; height: 14px; color: #881337;"></i>
+                        <i data-lucide="info" style="width: 14px; height: 14px; color: #059669;"></i>
                         How to Upload:
                     </div>
                     <ol style="font-size: 0.82rem; color: #334155; margin: 0; padding-left: 1.2rem; line-height: 1.6; font-weight: 600;">
-                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #881337;">User Settings</strong> page.</li>
-                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #881337;">Official Digital Signature</strong> section.</li>
+                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #059669;">User Settings</strong> page.</li>
+                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #059669;">Official Digital Signature</strong> section.</li>
                         <li>Upload a photo of your signature (background is auto-cleaned).</li>
                     </ol>
                 </div>
@@ -1631,7 +1650,7 @@
                     <button type="button" onclick="dismissSignatureWarning()" class="modern-action-btn secondary" style="flex: 1; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; cursor: pointer; font-weight: 800; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; transition: all 0.2s ease;">
                         Configure Later
                     </button>
-                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #881337 0%, #4c0519 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.35); border: none; transition: all 0.25s ease;">
+                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(5, 150, 105, 0.35); border: none; transition: all 0.25s ease;">
                         <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
                         <span>Upload Signature Now</span>
                     </a>

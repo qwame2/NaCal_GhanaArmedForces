@@ -4,11 +4,11 @@
 <div class="animate-slide-up">
     <div class="page-header dashboard-header-mobile">
         <!-- Background Accent -->
-        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(136, 19, 55, 0.05); border-radius: 50%;"></div>
+        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(5, 150, 105, 0.05); border-radius: 50%;"></div>
 
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: var(--bg-main); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">System Live</span>
+                <span style="background: var(--bg-main); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">STORE OFFICER</span>
                 <span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
                     <i data-lucide="calendar" style="width: 14px;"></i>
                     {{ date('d/m/y') }}
@@ -29,7 +29,7 @@
                 disabled title="Unauthorized: Permission Required"
                 @else
                 class="btn-primary"
-                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: var(--primary); color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); text-decoration: none; box-shadow: 0 10px 20px -5px rgba(136, 19, 55, 0.3);"
+                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: var(--primary); color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); text-decoration: none; box-shadow: 0 10px 20px -5px rgba(5, 150, 105, 0.3);"
                 @endif>
                 <i data-lucide="plus" style="width: 20px;"></i>
                 New Entry
@@ -145,22 +145,22 @@
 
     <!-- Stats Grid -->
     <div class="stats-grid">
-        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #881337; animation-delay: 0.1s;">
-            <div class="stat-icon" style="background: rgba(136, 19, 55, 0.15); color: #881337;">
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #059669; animation-delay: 0.1s;">
+            <div class="stat-icon" style="background: rgba(5, 150, 105, 0.15); color: #059669;">
                 <i data-lucide="layers"></i>
             </div>
             <div class="stat-info">
                 <span class="stat-label">Total Inventory</span>
                 <span class="stat-value">{{ number_format($totalInventory) }}</span>
-                <div class="stat-trend" style="color: {{ $trendValue >= 0 ? '#881337' : '#ef4444' }};">
+                <div class="stat-trend" style="color: {{ $trendValue >= 0 ? '#059669' : '#ef4444' }};">
                     <i data-lucide="{{ $trendValue >= 0 ? 'arrow-up-right' : 'arrow-down-right' }}" style="width: 14px;"></i>
                     {{ number_format(abs($trendValue), 1) }}% vs last month
                 </div>
             </div>
         </div>
 
-        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #881337; animation-delay: 0.2s;">
-            <div class="stat-icon" style="background: rgba(136, 19, 55, 0.15); color: #881337;">
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #0284c7; animation-delay: 0.2s;">
+            <div class="stat-icon" style="background: rgba(2, 132, 199, 0.15); color: #0284c7;">
                 <i data-lucide="trending-up"></i>
             </div>
             <div class="stat-info">
@@ -173,14 +173,14 @@
             </div>
         </div>
 
-        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #881337; animation-delay: 0.3s;">
-            <div class="stat-icon" style="background: rgba(136, 19, 55, 0.15); color: #881337;">
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #059669; animation-delay: 0.3s;">
+            <div class="stat-icon" style="background: rgba(5, 150, 105, 0.15); color: #059669;">
                 <i data-lucide="activity"></i>
             </div>
             <div class="stat-info">
                 <span class="stat-label">Total Variance</span>
                 <span class="stat-value">{{ $totalVariance > 0 ? '+' : '' }}{{ number_format($totalVariance) }}</span>
-                <div class="stat-trend" style="color: {{ $totalVariance > 0 ? '#881337' : ($totalVariance < 0 ? '#ef4444' : '#881337') }};">
+                <div class="stat-trend" style="color: {{ $totalVariance > 0 ? '#059669' : ($totalVariance < 0 ? '#ef4444' : '#059669') }};">
                     <i data-lucide="{{ $totalVariance > 0 ? 'trending-up' : ($totalVariance < 0 ? 'trending-down' : 'minus') }}" style="width: 14px;"></i>
                     {{ $totalVariance > 0 ? 'Net Surplus' : ($totalVariance < 0 ? 'Net Shortage' : 'Balanced') }}
                 </div>
@@ -205,7 +205,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-label">Low Stock Monitor</span>
-                <div class="stat-trend" style="color: {{ ($isLedgeCritical || $lowStockCount > 0) ? '#ef4444' : '#881337' }}; margin-top: 0.5rem;">
+                <div class="stat-trend" style="color: {{ ($isLedgeCritical || $lowStockCount > 0) ? '#ef4444' : '#059669' }}; margin-top: 0.5rem;">
                     <i data-lucide="{{ ($isLedgeCritical || $lowStockCount > 0) ? 'bell' : 'check-circle' }}" style="width: 14px;"></i>
                     @if($lowStockCount > 0 && $isLedgeCritical)
                         {{ $lowStockCount }} items & Categories critical
@@ -244,7 +244,7 @@
                     @php
                         $isCritical = $l['percentage'] <= 50 || ($l['is_override'] ?? false);
                         $statusLabel = $isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST';
-                        $statusColor = $isCritical ? '#ef4444' : '#881337';
+                        $statusColor = $isCritical ? '#ef4444' : '#0284c7';
                     @endphp
                     <div class="popover-item" style="display: block; padding: 0.75rem 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.03);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
@@ -290,7 +290,7 @@
 
                 @if(!$isLedgeCritical && $lowStockCount == 0)
                 <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
-                    <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #881337; opacity: 0.8;"></i>
+                    <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #059669; opacity: 0.8;"></i>
                     <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Systems Healthy</p>
                     <p style="font-size: 0.7rem;">Inventory levels meet all administrative thresholds.</p>
                 </div>
@@ -305,10 +305,10 @@
 
     @if(auth()->user()->role === 'Officer' && !auth()->user()->isDelegatedApprover())
     <!-- Delegation OTP Entry Card -->
-    <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--primary); margin-bottom: 2rem; padding: 2rem; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(136, 19, 55, 0.05) 100%);">
+    <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--primary); margin-bottom: 2rem; padding: 2rem; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(5, 150, 105, 0.05) 100%);">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 1.25rem;">
-                <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(136, 19, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(5, 150, 105, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <i data-lucide="shield-check" style="width: 26px; height: 26px;"></i>
                 </div>
                 <div>
@@ -318,7 +318,7 @@
             </div>
             <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                 <input type="text" id="delegation-otp-input" placeholder="Enter 6-digit OTP" maxlength="6" style="padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid var(--border-color); font-weight: 700; font-size: 0.95rem; text-align: center; letter-spacing: 2px; width: 180px; outline: none; background: var(--bg-card); color: var(--text-main); transition: var(--transition);" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
-                <button type="button" class="btn-primary" onclick="claimDelegationAccess()" style="padding: 0.75rem 1.5rem; font-weight: 800; border-radius: 12px; font-size: 0.9rem; border: none; background: var(--primary); color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2); transition: all 0.3s ease;">
+                <button type="button" class="btn-primary" onclick="claimDelegationAccess()" style="padding: 0.75rem 1.5rem; font-weight: 800; border-radius: 12px; font-size: 0.9rem; border: none; background: var(--primary); color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2); transition: all 0.3s ease;">
                     Verify & Claim
                 </button>
             </div>
@@ -331,7 +331,7 @@
         var otp = input.value.trim();
         if (!otp || otp.length < 4) {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'warning', title: 'OTP Required', text: 'Please enter the OTP code provided by the Head of Stores.', confirmButtonColor: '#881337' });
+                Swal.fire({ icon: 'warning', title: 'OTP Required', text: 'Please enter the OTP code provided by the Head of Stores.', confirmButtonColor: '#059669' });
             } else { alert('Please enter the OTP code.'); }
             return;
         }
@@ -344,18 +344,18 @@
         .then(function(data) {
             if (data.success) {
                 if (typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'success', title: 'Access Granted', text: data.message || 'Delegated admin authority activated.', confirmButtonColor: '#881337' })
+                    Swal.fire({ icon: 'success', title: 'Access Granted', text: data.message || 'Delegated admin authority activated.', confirmButtonColor: '#059669' })
                         .then(function() { window.location.reload(); });
                 } else { alert(data.message || 'Access granted.'); window.location.reload(); }
             } else {
                 if (typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'error', title: 'Invalid OTP', text: data.message || 'The OTP is invalid or expired.', confirmButtonColor: '#881337' });
+                    Swal.fire({ icon: 'error', title: 'Invalid OTP', text: data.message || 'The OTP is invalid or expired.', confirmButtonColor: '#059669' });
                 } else { alert(data.message || 'Invalid OTP.'); }
             }
         })
         .catch(function() {
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred. Please try again.', confirmButtonColor: '#881337' });
+                Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred. Please try again.', confirmButtonColor: '#059669' });
             } else { alert('Error. Please try again.'); }
         });
     }
@@ -364,10 +364,10 @@
 
     @if(auth()->user()->role === 'Officer' && auth()->user()->isDelegatedApprover())
     <!-- Active Delegation Status Banner -->
-    <div class="glass-card pop-in float-card" style="border-left: 4px solid #881337; margin-bottom: 2rem; padding: 1.5rem 2rem; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(136, 19, 55, 0.05) 100%);">
+    <div class="glass-card pop-in float-card" style="border-left: 4px solid #059669; margin-bottom: 2rem; padding: 1.5rem 2rem; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(5, 150, 105, 0.05) 100%);">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(136, 19, 55, 0.1); color: #881337; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(5, 150, 105, 0.1); color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <i data-lucide="shield" style="width: 22px; height: 22px;"></i>
                 </div>
                 <div>
@@ -462,7 +462,7 @@
 
             .activity-row:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 8px 24px rgba(136, 19, 55, 0.08);
+                box-shadow: 0 8px 24px rgba(5, 150, 105, 0.08);
             }
 
             /* Every cell: label on left, value on right */
@@ -557,7 +557,7 @@
                 <td data-label="Entry Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('d/m/y H:i') }}</td>
                 <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('d/m/y') : '-' }}</td>
                 <td data-label="Product">{{ $transaction->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $transaction->unit ?? 'Package Types' }})</span></td>
-                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
+                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(5, 150, 105, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
                 @php
                 $rawSup = $transaction->supplier_name;
                 $acqType = $transaction->acquisition_type ?? 'Supplier';
@@ -574,22 +574,22 @@
                 $isIssuedOut = $transaction->hasActiveTemporaryLoan();
                 if ($isIssuedOut) {
                     $supStatusDisplay = 'ISSUED OUT';
-                    $supColor = '#881337';
+                    $supColor = '#059669';
                 } else {
                     $supStatusDisplay = $transaction->supplier_status ?? 'N/A';
                     if ($acqType === 'Donor') {
                         $supStatusDisplay = 'Donor';
-                        $supColor = '#9f1239';
+                        $supColor = '#0284c7';
                     } else {
                         $supColor = '#94a3b8';
-                        if (str_contains(strtolower($supStatusDisplay), 'full delivery')) $supColor = '#881337';
+                        if (str_contains(strtolower($supStatusDisplay), 'full delivery')) $supColor = '#059669';
                         elseif (str_contains(strtolower($supStatusDisplay), 'partial delivery')) $supColor = '#ef4444';
                     }
                 }
                 @endphp
                 <td data-label="Supplier / Donor" style="color: var(--text-main);">
                     @if($acqType === 'Donor')
-                        <div style="font-weight: 800; color: #9f1239;">{{ $dName }}</div>
+                        <div style="font-weight: 800; color: #0284c7;">{{ $dName }}</div>
                     @else
                         <div>{{ $cleanSupDisplay ?: '-' }}</div>
                     @endif
@@ -754,7 +754,7 @@
                     labels: rawLabels,
                     colors: isEmpty
                         ? ['#cbd5e1']
-                        : ['#881337','#9f1239','#be123c','#e11d48','#f43f5e','#fb7185','#3b82f6','#10b981','#f59e0b','#8b5cf6'],
+                        : ['#059669','#0284c7','#10b981','#0369a1','#38bdf8','#047857','#0891b2','#0e7490','#10b981','#0284c7'],
                     dataLabels: {
                         enabled: !isEmpty,
                         formatter: function(v) { return v.toFixed(1) + '%'; },

@@ -255,6 +255,16 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return redirect()->route('main-admin.requisitions');
         }
 
+        // Redirect Head of Stores to their designated page
+        $isStoresHeadUser = auth()->user()->role === 'Head of Stores'
+            || auth()->user()->role === 'Dept. Head (Stores)'
+            || (auth()->user()->isDepartmentHead() && in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']))
+            || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 && auth()->user()->role !== 'Officer' && auth()->user()->role !== 'Requisitioner');
+
+        if ($isStoresHeadUser) {
+            return redirect()->route('stores.dashboard');
+        }
+
         // STRICT ROLE ENFORCEMENT: Admins are not allowed in the Personnel Dashboard
         if (auth()->user()->is_admin) {
             return redirect()->route('admin.index')->with('warning', 'Strategic Oversight required. Redirecting to Command Center.');
@@ -759,7 +769,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Admin (Head of Admin) approval
     Route::get('/admin/service-sra', [ServiceSraController::class, 'adminIndex'])->name('admin.service-sra.index');
     Route::post('/admin/service-sra/{id}/process', [ServiceSraController::class, 'adminProcess'])->name('admin.service-sra.process');
-    // Head of Stores final approval
+    // Head of Stores final approval & Dashboard
+    Route::get('/stores/dashboard', [\App\Http\Controllers\HeadOfStoresController::class, 'dashboard'])->name('stores.dashboard');
     Route::get('/stores/service-sra', [ServiceSraController::class, 'storesIndex'])->name('stores.service-sra.index');
     Route::get('/stores/service-sra/{id}/review', [ServiceSraController::class, 'storesReview'])->name('stores.service-sra.review');
     Route::post('/stores/service-sra/{id}/process', [ServiceSraController::class, 'storesProcess'])->name('stores.service-sra.process');
