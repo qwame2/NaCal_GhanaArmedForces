@@ -955,7 +955,7 @@
 
     {{-- Header --}}
     <div style="margin-bottom:2rem;">
-        <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
+        
         <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Stores Requisition</h1>
         <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Review and process department item requests</p>
     </div>
