@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -621,11 +621,7 @@
                 <div class="sig-cell">
                     <div class="sig-top-label" style="text-align: center;">Taken on charge</div>
                     <div>
-                        <div class="sig-line" style="text-align: center;">
-                            @if($storesUser && $storesUser->signature)
-                                <img src="{{ asset('storage/' . $storesUser->signature) }}" style="max-height: 95px; object-fit: contain; vertical-align: middle; margin-bottom: -20px; transform: translateY(12px);">
-                            @endif
-                        </div>
+                        <div class="sig-line" style="text-align: center;"></div>
                         <div class="sig-label">Storekeeper/Officer-in-Charge</div>
                         <div class="sig-name-date">
                             <div><strong>Name:</strong> {{ $sra->stores_approved_by ?: '____________________' }}</div>
@@ -637,14 +633,7 @@
                 <div class="sig-cell">
                     <div class="sig-top-label" style="text-align: center;">Verified by</div>
                     <div>
-                        <div class="sig-line" style="text-align: center;">
-                            @php
-                                $auditorUser = null;
-                                if ($sra->auditor_status === 'approved' && $sra->auditor_approved_by) {
-                                    $auditorUser = \App\Models\User::where('name', $sra->auditor_approved_by)->first();
-                                }
-                            @endphp
-                        </div>
+                        <div class="sig-line" style="text-align: center;"></div>
                         <div class="sig-label">Internal Audit/Stores Verifier</div>
                         <div class="sig-name-date">
                             <div><strong>Name:</strong> {{ $sra->auditor_approved_by ?: '____________________' }}</div>

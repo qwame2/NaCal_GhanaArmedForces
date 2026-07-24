@@ -137,11 +137,6 @@ class AppServiceProvider extends ServiceProvider
                         $table->string('service_number')->nullable();
                     });
                 }
-                if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'signature')) {
-                    \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
-                        $table->string('signature')->nullable();
-                    });
-                }
                 if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_approved_by')) {
                     \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
                         $table->string('origin_approved_by')->nullable();

@@ -1,4 +1,4 @@
-﻿@extends('layouts.auth')
+@extends('layouts.auth')
 
 @php
     $adminUser = \App\Models\User::where('is_admin', true)->where('is_active', true)->first();
@@ -221,7 +221,7 @@
             text-transform: uppercase !important;
         }
         .register-submit-btn:hover {
-            background: linear-gradient(135deg, #065f46 0%, #6d28d9 100%) !important;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
             transform: translateY(-4px) !important;
             box-shadow: 0 20px 45px rgba(5, 150, 105,0.45) !important;
         }
@@ -494,7 +494,7 @@
                                     <div class="icon-box">
                                         <i data-lucide="key-round"></i>
                                     </div>
-                                    <input type="password" name="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
+                                    <input type="password" name="password" placeholder="Enter password" required>
                                     <button type="button" class="password-toggle" onclick="togglePassword(this)">
                                         <i data-lucide="eye"></i>
                                     </button>
@@ -599,7 +599,7 @@
                                     <label>Password <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="key-round"></i></div>
-                                        <input type="password" name="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <input type="password" name="password" placeholder="Enter password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
                                         <button type="button" class="password-toggle" onclick="togglePassword(this)">
                                             <i data-lucide="eye"></i>
                                         </button>
@@ -610,7 +610,7 @@
                                     <label>Confirm Password <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="check-circle-2"></i></div>
-                                        <input type="password" name="password_confirmation" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <input type="password" name="password_confirmation" placeholder="Confirm password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
                                         <button type="button" class="password-toggle" onclick="togglePassword(this)">
                                             <i data-lucide="eye"></i>
                                         </button>
@@ -804,7 +804,7 @@
                                     <label>Password <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="key-round"></i></div>
-                                        <input type="password" name="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <input type="password" name="password" placeholder="Enter password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
                                         <button type="button" class="password-toggle" onclick="togglePassword(this)">
                                             <i data-lucide="eye"></i>
                                         </button>
@@ -815,7 +815,7 @@
                                     <label>Confirm Password <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="check-circle-2"></i></div>
-                                        <input type="password" name="password_confirmation" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <input type="password" name="password_confirmation" placeholder="Confirm password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
                                         <button type="button" class="password-toggle" onclick="togglePassword(this)">
                                             <i data-lucide="eye"></i>
                                         </button>

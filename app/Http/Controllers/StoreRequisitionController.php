@@ -631,7 +631,6 @@ class StoreRequisitionController extends Controller
             // Processor relationship dummy object
             $dummyProcessor = new \App\Models\User();
             $dummyProcessor->name = $receipt->approved_by_stores_head ?? 'Store Officer';
-            $dummyProcessor->signature = null;
             $req->setRelation('processor', $dummyProcessor);
             $req->processed_at = \Carbon\Carbon::parse($receipt->collected_at ?? $receipt->created_at);
 

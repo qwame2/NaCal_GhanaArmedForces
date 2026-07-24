@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -306,7 +306,7 @@
             Swal.fire({
                 title: action === 'approve' ? 'Approve SRA Receipt?' : 'Decline SRA Receipt?',
                 text: action === 'approve' 
-                    ? 'Confirming this receipt will log your digital signature and move the items to live stock.' 
+                    ? 'Confirming this receipt will move the items to live stock.' 
                     : 'Decline this receipt if there are discrepancies or issues. A reason is required.',
                 icon: 'warning',
                 input: action === 'decline' ? 'textarea' : null,

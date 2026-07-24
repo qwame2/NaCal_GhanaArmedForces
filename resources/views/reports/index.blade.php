@@ -12,9 +12,13 @@
         <div class="rpt-orb rpt-orb-2"></div>
         <div class="rpt-orb rpt-orb-3"></div>
         <div style="position: relative; z-index: 1;">
-            
-            <h2 class="rpt-hero-title"><span class="rpt-hero-accent">Reports</span></h2>
-            <p class="rpt-hero-sub">Collect data from different time periods for official review.</p>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                <span class="rpt-engine-badge" style="background: var(--primary-glow); color: var(--primary); font-size: 0.68rem; font-weight: 900; padding: 0.3rem 0.9rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid var(--primary-glow);">REPORTING ENGINE</span>
+                <span class="rpt-divider-dot" style="width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); opacity: 0.4; flex-shrink: 0;"></span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Verification & Validation Tool</span>
+            </div>
+            <h2 class="rpt-hero-title" style="font-size: 2.6rem; font-weight: 950; color: var(--primary); margin: 0; letter-spacing: -0.045em; line-height: 1.1;">Reports</h2>
+            <p class="rpt-hero-sub" style="color: var(--text-muted); font-size: 0.95rem; font-weight: 600; margin-top: 8px;">Collect data from different time periods for official review.</p>
         </div>
         <div style="display: flex; gap: 1rem; position: relative; z-index: 1; flex-wrap: wrap; align-items: center;">
             <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
@@ -27,16 +31,16 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="report-filter-card glass-card hide-in-print">
+    <div class="report-filter-card glass-card hide-in-print" style="padding: 1.75rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2rem; background: var(--bg-card); box-shadow: var(--card-shadow);">
         <form method="GET" action="{{ route('reports.index') }}" id="report-filter-form">
             <input type="hidden" name="period" id="form-period-input" value="{{ $period }}">
 
             <!-- Custom Date Range Panel -->
             <div id="custom-date-bar" class="date-range-panel {{ $period === 'custom' ? 'is-open' : '' }}">
-                <div class="date-range-inner">
-                    <div class="date-range-header">
+                <div class="date-range-inner" style="border-radius: 20px; overflow: hidden; border: 1px solid var(--primary-glow); box-shadow: 0 4px 24px rgba(0,0,0,0.02);">
+                    <div class="date-range-header" style="background: var(--bg-main); border-bottom: 1px solid var(--border-color);">
                         <div class="date-range-header-left">
-                            <span class="date-range-icon-wrap">
+                            <span class="date-range-icon-wrap" style="background: var(--primary);">
                                 <i data-lucide="calendar-range" style="width:18px;height:18px;"></i>
                             </span>
                             <div>
@@ -48,12 +52,12 @@
                             <button type="button" id="reset-date-btn" onclick="resetCustomDates()" class="date-reset-btn" style="display: {{ ($rawStartDate || $rawEndDate) ? 'inline-flex' : 'none' }};">
                                 <i data-lucide="rotate-ccw" style="width:11px;height:11px;"></i> Reset Dates
                             </button>
-                            <div class="date-range-badge">CUSTOM</div>
+                            <div class="date-range-badge" style="color: var(--primary); background: var(--primary-glow); border-color: var(--primary-glow);">CUSTOM</div>
                         </div>
                     </div>
                     <div class="date-inputs-row">
                         <div class="date-input-group">
-                            <label for="start-date-input" class="date-input-label">
+                            <label for="start-date-input" class="date-input-label" style="color: var(--primary);">
                                 <i data-lucide="play-circle" style="width:12px;height:12px;"></i> From
                             </label>
                             <div class="date-input-wrapper">
@@ -62,14 +66,14 @@
                             </div>
                         </div>
                         <div class="date-range-arrow">
-                            <div class="arrow-line"></div>
-                            <div class="arrow-dot">
-                                <i data-lucide="arrow-right" style="width:14px;height:14px;color:#059669;"></i>
+                            <div class="arrow-line" style="background: var(--primary-glow);"></div>
+                            <div class="arrow-dot" style="background: var(--primary-glow); border-color: var(--primary-glow);">
+                                <i data-lucide="arrow-right" style="width:14px;height:14px;color:var(--primary);"></i>
                             </div>
-                            <div class="arrow-line"></div>
+                            <div class="arrow-line" style="background: var(--primary-glow);"></div>
                         </div>
                         <div class="date-input-group">
-                            <label for="end-date-input" class="date-input-label">
+                            <label for="end-date-input" class="date-input-label" style="color: var(--primary);">
                                 <i data-lucide="stop-circle" style="width:12px;height:12px;"></i> To
                             </label>
                             <div class="date-input-wrapper">
@@ -82,12 +86,12 @@
             </div>
 
             <!-- Item Filter Row -->
-            <div class="item-filter-panel">
+            <div class="item-filter-panel" style="border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: none; background: transparent;">
                 <!-- Panel Header -->
-                <div class="item-filter-header">
+                <div class="item-filter-header" style="background: transparent; border-bottom: none; padding: 1rem 0; margin-bottom: 0.5rem;">
                     <div class="item-filter-header-left">
-                        <span class="item-filter-icon-wrap">
-                            <i data-lucide="package-search" style="width:17px;height:17px;"></i>
+                        <span class="item-filter-icon-wrap" style="background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+                            <i data-lucide="package" style="width:17px;height:17px;color:white;"></i>
                         </span>
                         <div>
                             <div class="item-filter-title">Filter by Item(s)</div>
@@ -95,21 +99,21 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 0.75rem; align-items: center;">
-                        <button type="button" id="select-issued-items-btn" class="glass-btn-sm" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.8rem; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                            <i data-lucide="package-minus" style="width: 13px; height: 13px; color: #059669;"></i>
-                            Select Issued Items
+                        <button type="button" id="select-issued-items-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.8rem; border: none; background: transparent; color: var(--text-main); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: var(--transition);">
+                            <i data-lucide="package-minus" style="width: 14px; height: 14px; color: #f59e0b;"></i>
+                            SELECT ISSUED ITEMS
                         </button>
                         @if(!empty($selectedItems))
-                            <span class="item-filter-count-badge">{{ count($selectedItems) }} selected</span>
+                            <span class="item-filter-count-badge" style="color: var(--primary); background: var(--primary-glow); border-color: var(--primary-glow);">{{ count($selectedItems) }} selected</span>
                         @else
-                            <span class="item-filter-all-badge">All Items</span>
+                            <span class="item-filter-all-badge" style="background: var(--bg-main); border-color: var(--border-color); color: var(--text-muted);">All Items</span>
                         @endif
                     </div>
                 </div>
 
                 <!-- Selector + Actions -->
-                <div class="item-filter-body">
-                    <div class="item-selector-wrap">
+                <div class="item-filter-body" style="display: flex; align-items: center; gap: 1rem; padding: 0; background: transparent; width: 100%;">
+                    <div class="item-selector-wrap" style="flex: 1; position: relative;">
                         <select name="items[]" id="items-select" class="select2" multiple style="width: 100%;">
                             @foreach($groupedItems as $groupName => $descriptions)
                                 <optgroup label="{{ $groupName }}">
@@ -120,15 +124,15 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="filter-actions">
-                        <button type="submit" class="filter-apply-btn {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                    <div class="filter-actions" style="display: flex; gap: 0.75rem; flex-shrink: 0; align-items: center;">
+                        <button type="submit" class="filter-apply-btn {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" style="height: 52px; display: inline-flex; align-items: center; gap: 8px; padding: 0 1.75rem; border-radius: 14px; border: none; background: var(--primary); color: white; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; box-shadow: 0 4px 14px var(--primary-glow); transition: var(--transition);">
                             <i data-lucide="bar-chart-2" style="width:16px;height:16px;"></i>
-                            <span>Generate Report</span>
+                            <span>GENERATE REPORT</span>
                         </button>
                         @if(!empty($selectedItems) || $period === 'custom')
-                            <a href="{{ route('reports.index', ['period' => 'monthly']) }}" class="filter-clear-btn">
+                            <a href="{{ route('reports.index', ['period' => 'monthly']) }}" class="filter-clear-btn" style="height: 52px; display: inline-flex; align-items: center; gap: 8px; padding: 0 1.25rem; border-radius: 14px; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; transition: var(--transition);" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';this.style.background='rgba(239,68,68,0.06)';" onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-muted)';this.style.background='transparent';">
                                 <i data-lucide="rotate-ccw" style="width:15px;height:15px;"></i>
-                                <span>Reset</span>
+                                <span>RESET</span>
                             </a>
                         @endif
                     </div>
@@ -139,10 +143,10 @@
 
 
     <!-- Generated Report Title Bar -->
-    <div class="print-header" style="display: none; margin-bottom: 2rem; border-bottom: 4px solid #1e3a8a; padding-bottom: 20px; text-align: center;">
+    <div class="print-header" style="display: none; margin-bottom: 2rem; border-bottom: 4px solid #0f4c20; padding-bottom: 20px; text-align: center;">
         <img src="{{ asset('img/NACOC1.png') }}" style="width: 110px; margin-bottom: 12px;">
-        <h1 style="font-size: 26pt; font-family: 'Times New Roman', serif; margin: 0; letter-spacing: 1.5px; color: #1e3a8a;">NARCOTICS CONTROL COMMISSION</h1>
-        <h3 style="font-size: 15pt; font-family: 'Arial', sans-serif; font-weight: bold; margin: 8px 0 0; color: #059669; text-transform: uppercase;">Official Inventory Operations Report</h3>
+        <h1 style="font-size: 26pt; font-family: 'Times New Roman', serif; margin: 0; letter-spacing: 1.5px; color: #0f4c20;">NARCOTICS CONTROL COMMISSION</h1>
+        <h3 style="font-size: 15pt; font-family: 'Arial', sans-serif; font-weight: bold; margin: 8px 0 0; color: #16a34a; text-transform: uppercase;">Official Inventory Operations Report</h3>
         <p style="font-size: 12pt; font-family: 'Times New Roman', serif; margin: 10px 0 0; color: #64748b; font-weight: bold;">{{ strtoupper($dateLabel) }}</p>
 
         <div style="display: flex; justify-content: center; gap: 40px; margin-top: 15px; font-family: 'Courier New', monospace; font-size: 10pt; color: #333;">
@@ -154,8 +158,8 @@
 
     <div class="print-actions-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <h3 class="print-date-label" style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin: 0;">{{ $dateLabel }}</h3>
-        <button onclick="triggerPrintMode()" id="print-report-btn" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'disabled' : '' }} style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #059669 0%, #059669 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(5, 150, 105, 0.25);">
-            <i data-lucide="printer" style="width: 18px;"></i> Export or Print
+        <button onclick="triggerPrintMode()" id="print-report-btn" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'disabled' : '' }} style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px var(--primary-glow); transition: var(--transition);">
+            <i data-lucide="printer" style="width: 18px;"></i> EXPORT OR PRINT
         </button>
     </div>
 
@@ -165,36 +169,36 @@
     <div class="stats-charts-print-layout">
     <!-- Quick Stats -->
     <div class="stats-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-        <div class="glass-card stat-card stat-card-received">
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(5,150,105,0.15), rgba(6,182,212,0.1)); color: #059669; box-shadow: 0 8px 20px rgba(5,150,105,0.18);">
-                <i data-lucide="package-plus"></i>
+        <div class="glass-card stat-card stat-card-received" style="padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981; width: 62px; height: 62px; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none;">
+                <i data-lucide="package" style="width: 28px; height: 28px;"></i>
             </div>
             <div style="flex: 1;">
-                <div class="stat-label">Total Received</div>
-                <div class="stat-value" style="color: #059669;">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Item(s)</span></div>
-                <div class="stat-subtitle">{{ $totalReceivedBatches }} Received Batches</div>
+                <div class="stat-label" style="font-size: 0.73rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 4px;">TOTAL RECEIVED</div>
+                <div class="stat-value" style="color: #10b981; font-size: 2.1rem; font-weight: 950; line-height: 1;">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit" style="font-size: 1rem; color: var(--text-muted); font-weight: 700;">Item(s)</span></div>
+                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px;">{{ $totalReceivedBatches }} Received Batches</div>
             </div>
         </div>
 
-        <div class="glass-card stat-card stat-card-issued">
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(5,150,105,0.15), rgba(251,191,36,0.1)); color: #059669; box-shadow: 0 8px 20px rgba(5,150,105,0.18);">
-                <i data-lucide="package-minus"></i>
+        <div class="glass-card stat-card stat-card-issued" style="padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; width: 62px; height: 62px; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none;">
+                <i data-lucide="package-minus" style="width: 28px; height: 28px;"></i>
             </div>
             <div style="flex: 1;">
-                <div class="stat-label">Total Issued</div>
-                <div class="stat-value" style="color: #059669;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Item(s)</span></div>
-                <div class="stat-subtitle">{{ $totalIssuedBatches }} Issued Records</div>
+                <div class="stat-label" style="font-size: 0.73rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 4px;">TOTAL ISSUED</div>
+                <div class="stat-value" style="color: #f59e0b; font-size: 2.1rem; font-weight: 950; line-height: 1;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit" style="font-size: 1rem; color: var(--text-muted); font-weight: 700;">Item(s)</span></div>
+                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px;">{{ $totalIssuedBatches }} Issued Records</div>
             </div>
         </div>
 
-        <div class="glass-card stat-card stat-card-net">
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(5,150,105,0.15), rgba(139,92,246,0.1)); color: #059669; box-shadow: 0 8px 20px rgba(5,150,105,0.18);">
-                <i data-lucide="activity"></i>
+        <div class="glass-card stat-card stat-card-net" style="padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);">
+            <div class="stat-icon" style="background: var(--primary-glow); color: var(--primary); width: 62px; height: 62px; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none;">
+                <i data-lucide="activity" style="width: 28px; height: 28px;"></i>
             </div>
             <div style="flex: 1;">
-                <div class="stat-label">Stock Balance</div>
-                <div class="stat-value" style="color: #059669;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Item(s)</span></div>
-                <div class="stat-subtitle">Period Surplus (Received − Issued)</div>
+                <div class="stat-label" style="font-size: 0.73rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 4px;">STOCK BALANCE</div>
+                <div class="stat-value" style="color: var(--primary); font-size: 2.1rem; font-weight: 950; line-height: 1;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit" style="font-size: 1rem; color: var(--text-muted); font-weight: 700;">Item(s)</span></div>
+                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px;">Period Surplus (Received − Issued)</div>
             </div>
         </div>
     </div>
@@ -203,8 +207,8 @@
     <div class="glass-card print-chart-card rpt-chart-card received-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ ($totalReceivedQty > 0 || $totalIssuedQty > 0) ? '' : 'display: none;' }}">
         <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="rpt-section-icon" style="background: #059669;">
-                    <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
+                <span class="rpt-section-icon" style="background: #10b981; box-shadow: 0 4px 14px rgba(16,185,129,0.3);">
+                    <i data-lucide="bar-chart-2" style="width:17px;height:17px;color:white;"></i>
                 </span>
                 <div>
                     <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em;">Stock Receipts Visualization</div>
@@ -222,8 +226,8 @@
 
             <div id="received-chart-wrap" style="{{ (count($selectedItems) !== 1 && $totalReceivedQty > 0 && $receivedDistribution->count() > 0) ? '' : 'display: none;' }}">
                 <div class="rpt-chart-group">
-                    <div class="rpt-chart-label" style="color: #059669;">
-                        <span class="rpt-chart-dot" style="background:#059669;"></span>
+                    <div class="rpt-chart-label" style="color: #16a34a;">
+                        <span class="rpt-chart-dot" style="background:#16a34a;"></span>
                         Stock Receipts — Top {{ $receivedDistribution->count() }} Items
                     </div>
                     <div id="received-bar-chart" style="width: 100%;"></div>
@@ -237,7 +241,7 @@
     <div class="glass-card print-chart-card rpt-chart-card issued-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ (count($selectedItems) !== 1 && $totalIssuedQty > 0 && $issuedDistribution->count() > 0) ? '' : 'display: none;' }}">
         <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="rpt-section-icon" style="background: #0ea5e9;">
+                <span class="rpt-section-icon" style="background: #16a34a;">
                     <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
                 </span>
                 <div>
@@ -249,8 +253,8 @@
         <div style="display: flex; flex-direction: column; gap: 2.5rem;">
             <div id="issued-chart-wrap" style="width: 100%;">
                 <div class="rpt-chart-group">
-                    <div class="rpt-chart-label" style="color: #059669;">
-                        <span class="rpt-chart-dot" style="background:#059669;"></span>
+                    <div class="rpt-chart-label" style="color: #16a34a;">
+                        <span class="rpt-chart-dot" style="background:#16a34a;"></span>
                         Issuance — Top {{ $issuedDistribution->count() }} Items
                     </div>
                     <div id="issued-bar-chart" style="width: 100%;"></div>
@@ -447,7 +451,7 @@
                                         Issued
                                     </span>
                                     @if($row['status'] === 'Temporary')
-                                        <span style="font-size: 0.65rem; font-weight: 800; color: #b45309; background: rgba(5,150,105,0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(5,150,105,0.2); text-transform: uppercase;">
+                                        <span style="font-size: 0.65rem; font-weight: 800; color: #b45309; background: rgba(22,163,74,0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(22,163,74,0.2); text-transform: uppercase;">
                                             Temporary
                                         </span>
                                     @else
@@ -556,24 +560,24 @@
     /* ══════════════════════════════════════════════
        HERO HEADER
     ══════════════════════════════════════════════ */
-    .rpt-hero { box-shadow: 0 8px 40px rgba(5,150,105,0.06), 0 2px 8px rgba(0,0,0,0.03); }
+    .rpt-hero { box-shadow: 0 8px 40px rgba(22,163,74,0.06), 0 2px 8px rgba(0,0,0,0.03); }
     .rpt-orb {
         position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
         animation: rptOrbFloat 8s ease-in-out infinite;
     }
     .rpt-orb-1 {
         width: 320px; height: 320px; top: -140px; right: -60px;
-        background: radial-gradient(circle, rgba(5,150,105,0.13) 0%, transparent 65%);
+        background: radial-gradient(circle, rgba(22,163,74,0.13) 0%, transparent 65%);
         animation-delay: 0s;
     }
     .rpt-orb-2 {
         width: 200px; height: 200px; bottom: -80px; right: 200px;
-        background: radial-gradient(circle, rgba(5,150,105,0.09) 0%, transparent 65%);
+        background: radial-gradient(circle, rgba(22,163,74,0.09) 0%, transparent 65%);
         animation-delay: 3s;
     }
     .rpt-orb-3 {
         width: 150px; height: 150px; top: -40px; left: 300px;
-        background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 65%);
+        background: radial-gradient(circle, rgba(22,163,74,0.08) 0%, transparent 65%);
         animation-delay: 5s;
     }
     @keyframes rptOrbFloat {
@@ -581,12 +585,12 @@
         50%       { transform: translate(8px, -12px) scale(1.03); }
     }
     .rpt-engine-badge {
-        background: linear-gradient(135deg, rgba(5,150,105,0.15), rgba(139,92,246,0.1));
-        color: #059669;
+        background: linear-gradient(135deg, rgba(22,163,74,0.15), rgba(22,163,74,0.1));
+        color: #16a34a;
         font-size: 0.68rem; font-weight: 900;
         padding: 0.3rem 0.9rem; border-radius: 99px;
         text-transform: uppercase; letter-spacing: 0.08em;
-        border: 1px solid rgba(5,150,105,0.2);
+        border: 1px solid rgba(22,163,74,0.2);
     }
     .rpt-divider-dot {
         width: 4px; height: 4px; border-radius: 50%;
@@ -598,7 +602,7 @@
         letter-spacing: -0.045em; line-height: 1.1;
     }
     .rpt-hero-accent {
-        background: linear-gradient(135deg, #059669, #047857);
+        background: linear-gradient(135deg, #16a34a, #15803d);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         background-clip: text;
     }
@@ -610,9 +614,9 @@
     /* ══════════════════════════════════════════════
        STAT CARDS
     ══════════════════════════════════════════════ */
-    .stat-card-received { border-top: 3px solid rgba(5,150,105,0.5) !important; }
-    .stat-card-issued   { border-top: 3px solid rgba(5,150,105,0.5) !important; }
-    .stat-card-net      { border-top: 3px solid rgba(5,150,105,0.5) !important; }
+    .stat-card-received { border-top: 3px solid rgba(22,163,74,0.5) !important; }
+    .stat-card-issued   { border-top: 3px solid rgba(22,163,74,0.5) !important; }
+    .stat-card-net      { border-top: 3px solid rgba(22,163,74,0.5) !important; }
     .stat-card {
         position: relative; overflow: hidden;
         transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;
@@ -635,7 +639,7 @@
         width: 38px; height: 38px; border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
         color: white; flex-shrink: 0;
-        box-shadow: 0 4px 14px rgba(5,150,105,0.3);
+        box-shadow: 0 4px 14px rgba(22,163,74,0.3);
     }
 
     /* ══════════════════════════════════════════════
@@ -674,7 +678,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 1.25rem 1.75rem;
-        background: linear-gradient(135deg, rgba(5,150,105,0.07) 0%, rgba(5,150,105,0.04) 100%);
+        background: linear-gradient(135deg, rgba(22,163,74,0.07) 0%, rgba(22,163,74,0.04) 100%);
         border-bottom: 1px solid var(--border-color);
         flex-wrap: wrap;
         gap: 0.75rem;
@@ -682,9 +686,9 @@
     .unified-ledger-header-left { display: flex; align-items: center; gap: 0.85rem; }
     .unified-ledger-icon {
         width: 42px; height: 42px; border-radius: 13px;
-        background: linear-gradient(135deg, #059669, #0ea5e9);
+        background: linear-gradient(135deg, #16a34a, #15803d);
         display: flex; align-items: center; justify-content: center;
-        color: white; box-shadow: 0 6px 16px rgba(14,165,233,0.25); flex-shrink: 0;
+        color: white; box-shadow: 0 6px 16px rgba(22,163,74,0.25); flex-shrink: 0;
     }
     .unified-ledger-title { font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em; }
     .unified-ledger-subtitle { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
@@ -694,48 +698,48 @@
         font-size: 0.7rem; font-weight: 800; padding: 0.3rem 0.8rem;
         border-radius: 99px; letter-spacing: 0.03em;
     }
-    .received-meta  { background: rgba(5,150,105,0.1);  color: #059669; border: 1px solid rgba(5,150,105,0.25); }
-    .issued-meta    { background: rgba(14,165,233,0.1); color: #0284c7; border: 1px solid rgba(14,165,233,0.25); }
-    .total-meta     { background: rgba(5,150,105,0.08); color: #059669; border: 1px solid rgba(5,150,105,0.2);  }
+    .received-meta  { background: rgba(22,163,74,0.1);  color: #16a34a; border: 1px solid rgba(22,163,74,0.25); }
+    .issued-meta    { background: rgba(22,163,74,0.1); color: #16a34a; border: 1px solid rgba(22,163,74,0.25); }
+    .total-meta     { background: rgba(22,163,74,0.08); color: #16a34a; border: 1px solid rgba(22,163,74,0.2);  }
 
     /* TABLE */
     .rpt-unified-table thead tr th {
-        background: linear-gradient(180deg, rgba(5,150,105,0.07) 0%, rgba(5,150,105,0.03) 100%) !important;
+        background: linear-gradient(180deg, rgba(22,163,74,0.07) 0%, rgba(22,163,74,0.03) 100%) !important;
         font-size: 0.7rem !important; padding: 13px 14px !important; white-space: nowrap;
-        border-bottom: 2px solid rgba(5,150,105,0.12) !important;
+        border-bottom: 2px solid rgba(22,163,74,0.12) !important;
     }
     .ledger-row td { padding: 11px 14px !important; font-size: 0.87rem !important; vertical-align: middle; }
     /* Zebra striping */
-    .rpt-unified-table tbody tr:nth-child(even) td { background: rgba(5,150,105,0.018) !important; }
-    .ledger-row-received { border-left: 3px solid #059669 !important; }
-    .ledger-row-received:hover td { background: rgba(5,150,105,0.05) !important; }
-    .ledger-row-issued   { border-left: 3px solid #0ea5e9 !important; }
-    .ledger-row-issued:hover td   { background: rgba(14,165,233,0.05) !important; }
+    .rpt-unified-table tbody tr:nth-child(even) td { background: rgba(22,163,74,0.018) !important; }
+    .ledger-row-received { border-left: 3px solid #16a34a !important; }
+    .ledger-row-received:hover td { background: rgba(22,163,74,0.05) !important; }
+    .ledger-row-issued   { border-left: 3px solid #16a34a !important; }
+    .ledger-row-issued:hover td   { background: rgba(22,163,74,0.05) !important; }
 
     .type-badge {
         display: inline-flex; align-items: center; gap: 5px;
         font-size: 0.73rem; font-weight: 800; letter-spacing: 0.02em;
         padding: 4px 11px; border-radius: 99px; white-space: nowrap;
     }
-    .received-badge { background: rgba(5,150,105,0.12); color: #059669; border: 1px solid rgba(5,150,105,0.28); }
-    .issued-badge   { background: rgba(14,165,233,0.12); color: #0284c7; border: 1px solid rgba(14,165,233,0.28); }
+    .received-badge { background: rgba(22,163,74,0.12); color: #16a34a; border: 1px solid rgba(22,163,74,0.28); }
+    .issued-badge   { background: rgba(22,163,74,0.12); color: #16a34a; border: 1px solid rgba(22,163,74,0.28); }
 
     .cat-badge {
         display: inline-block; font-size: 0.67rem; font-weight: 800;
-        background: rgba(5,150,105,0.09); color: #059669;
-        border: 1px solid rgba(5,150,105,0.18); padding: 2px 9px; border-radius: 7px; white-space: nowrap;
+        background: rgba(22,163,74,0.09); color: #16a34a;
+        border: 1px solid rgba(22,163,74,0.18); padding: 2px 9px; border-radius: 7px; white-space: nowrap;
     }
     .ledger-date { font-weight: 700; font-size: 0.79rem !important; white-space: nowrap; color: var(--text-muted); }
     .item-desc  { font-weight: 700 !important; color: var(--text-main) !important; }
     .mono-cell  { font-family: 'Courier New', monospace !important; font-size: 0.8rem !important; color: var(--text-muted); }
     .qty-cell   { font-weight: 900 !important; font-size: 0.9rem !important; }
-    .qty-received { color: #059669 !important; }
-    .qty-issued   { color: #0ea5e9 !important; }
+    .qty-received { color: #16a34a !important; }
+    .qty-issued   { color: #16a34a !important; }
     .bal-cell   { font-weight: 700; font-size: 0.82rem !important; color: var(--text-muted); }
     .variance-cell { font-weight: 700; font-size: 0.82rem !important; }
     .ledger-totals-row td {
-        background: linear-gradient(135deg, rgba(5,150,105,0.06) 0%, rgba(5,150,105,0.04) 100%) !important;
-        border-top: 2px solid rgba(5,150,105,0.12) !important;
+        background: linear-gradient(135deg, rgba(22,163,74,0.06) 0%, rgba(22,163,74,0.04) 100%) !important;
+        border-top: 2px solid rgba(22,163,74,0.12) !important;
         font-size: 0.85rem; color: var(--text-main);
     }
 
@@ -774,16 +778,16 @@
     .date-range-inner {
         border-radius: 20px;
         overflow: hidden;
-        border: 1px solid rgba(5,150,105,0.2);
-        box-shadow: 0 4px 24px rgba(5,150,105,0.08), inset 0 0 0 1px rgba(5,150,105,0.06);
+        border: 1px solid rgba(22,163,74,0.2);
+        box-shadow: 0 4px 24px rgba(22,163,74,0.08), inset 0 0 0 1px rgba(22,163,74,0.06);
     }
     .date-range-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 1rem 1.5rem;
-        background: linear-gradient(135deg, rgba(5,150,105,0.12) 0%, rgba(139,92,246,0.08) 100%);
-        border-bottom: 1px solid rgba(5,150,105,0.15);
+        background: linear-gradient(135deg, rgba(22,163,74,0.12) 0%, rgba(22,163,74,0.08) 100%);
+        border-bottom: 1px solid rgba(22,163,74,0.15);
     }
     .date-range-header-left {
         display: flex;
@@ -794,12 +798,12 @@
         width: 38px;
         height: 38px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #059669, #047857);
+        background: linear-gradient(135deg, #16a34a, #15803d);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        box-shadow: 0 4px 12px rgba(5,150,105,0.35);
+        box-shadow: 0 4px 12px rgba(22,163,74,0.35);
         flex-shrink: 0;
     }
     .date-range-title {
@@ -818,9 +822,9 @@
         font-size: 0.62rem;
         font-weight: 900;
         letter-spacing: 0.1em;
-        color: #059669;
-        background: rgba(5,150,105,0.1);
-        border: 1px solid rgba(5,150,105,0.25);
+        color: #16a34a;
+        background: rgba(22,163,74,0.1);
+        border: 1px solid rgba(22,163,74,0.25);
         padding: 0.3rem 0.75rem;
         border-radius: 99px;
     }
@@ -877,8 +881,8 @@
         box-sizing: border-box;
     }
     .date-input-field:focus {
-        border-color: #059669;
-        box-shadow: 0 0 0 4px rgba(5,150,105,0.12);
+        border-color: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22,163,74,0.12);
         background: var(--bg-card);
     }
     .date-reset-btn {
@@ -914,15 +918,15 @@
     .arrow-line {
         width: 24px;
         height: 2px;
-        background: linear-gradient(90deg, rgba(5,150,105,0.2), rgba(5,150,105,0.5));
+        background: linear-gradient(90deg, rgba(22,163,74,0.2), rgba(22,163,74,0.5));
         border-radius: 2px;
     }
     .arrow-dot {
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: rgba(5,150,105,0.1);
-        border: 1.5px solid rgba(5,150,105,0.25);
+        background: rgba(22,163,74,0.1);
+        border: 1.5px solid rgba(22,163,74,0.25);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -963,18 +967,18 @@
         padding: 0.75rem 1.6rem;
         border-radius: 14px;
         border: none;
-        background: linear-gradient(135deg, #059669 0%, #059669 100%);
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
         color: white;
         font-weight: 800;
         font-size: 0.9rem;
         cursor: pointer;
-        box-shadow: 0 6px 20px rgba(5,150,105,0.3);
+        box-shadow: 0 6px 20px rgba(22,163,74,0.3);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 44px;
     }
     .filter-apply-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 28px rgba(5,150,105,0.38);
+        box-shadow: 0 10px 28px rgba(22,163,74,0.38);
     }
     .filter-apply-btn:active {
         transform: translateY(0);
@@ -1032,15 +1036,15 @@
     }
 
     .period-btn.active {
-        background: linear-gradient(135deg, #059669, #059669);
+        background: linear-gradient(135deg, #16a34a, #15803d);
         color: white !important;
-        box-shadow: 0 4px 14px rgba(5,150,105,0.3);
+        box-shadow: 0 4px 14px rgba(22,163,74,0.3);
         border: none;
     }
 
     .period-btn:not(.active):hover {
         color: var(--text-main);
-        background: rgba(5, 150, 105, 0.07);
+        background: rgba(22, 163, 74, 0.07);
     }
 
     .stat-card {
@@ -1217,7 +1221,7 @@
 
         .print-date-label {
             font-size: 13pt !important;
-            color: #1e3a8a !important;
+            color: #0f4c20 !important;
             font-weight: bold;
             margin-bottom: 10px;
         }
@@ -1237,7 +1241,7 @@
             width: 100% !important;
             display: flex !important;
             flex-direction: row !important;
-            border: 1.5pt solid #1e3a8a !important;
+            border: 1.5pt solid #0f4c20 !important;
             background: #f8fafc !important;
             border-radius: 0 !important;
             gap: 0 !important;
@@ -1259,12 +1263,12 @@
         .stat-card:last-child { border-right: none !important; }
         .stat-card .stat-icon, .stat-subtitle { display: none !important; }
         .stat-label { color: #475569 !important; font-size: 8pt !important; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .stat-value { color: #1e3a8a !important; font-size: 16pt !important; font-weight: 900; }
+        .stat-value { color: #0f4c20 !important; font-size: 16pt !important; font-weight: 900; }
 
         /* ── Print charts ── */
         .print-chart-card {
             width: 100% !important;
-            border: 1.5pt solid #1e3a8a !important;
+            border: 1.5pt solid #0f4c20 !important;
             padding: 15px 20px !important;
             border-radius: 0 !important;
             margin-bottom: 0 !important;
@@ -1289,7 +1293,7 @@
         }
 
         .unified-ledger-header {
-            background: #1e3a8a !important;
+            background: #0f4c20 !important;
             color: white !important;
             padding: 8px 10px !important;
             border: none !important;
@@ -1311,7 +1315,7 @@
             width: 100% !important;
             min-width: 0 !important;
             border-collapse: collapse !important;
-            border: 1.5pt solid #1e3a8a !important;
+            border: 1.5pt solid #0f4c20 !important;
             font-size: 8.5pt !important;
             table-layout: auto;
             page-break-inside: auto;
@@ -1323,7 +1327,7 @@
 
         .unified-table thead tr th, .formal-table thead tr th {
             background: #e8eef8 !important;
-            color: #1e3a8a !important;
+            color: #0f4c20 !important;
             font-weight: 900 !important;
             font-size: 7.5pt !important;
             text-transform: uppercase;
@@ -1368,7 +1372,7 @@
             padding: 1px 5px !important;
             border-radius: 3px !important;
             background: #eff6ff !important;
-            color: #1d4ed8 !important;
+            color: #15803d !important;
             border: 0.5pt solid #bfdbfe !important;
         }
 
@@ -1377,7 +1381,7 @@
             background: #e8eef8 !important;
             border: 1pt solid #94a3b8 !important;
             font-weight: 900 !important;
-            color: #1e3a8a !important;
+            color: #0f4c20 !important;
             font-size: 9pt !important;
             padding: 8px 6px !important;
         }
@@ -1463,8 +1467,8 @@
             Updating report…`;
         Object.assign(pill.style, {
             display: 'none', alignItems: 'center', gap: '7px',
-            fontSize: '0.78rem', fontWeight: '800', color: '#059669',
-            background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.2)',
+            fontSize: '0.78rem', fontWeight: '800', color: '#16a34a',
+            background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',
             borderRadius: '99px', padding: '5px 13px', marginTop: '10px',
             width: 'fit-content', marginLeft: 'auto', marginRight: 'auto'
         });
@@ -1481,8 +1485,8 @@
         function setInputState(valid) {
             const s = startInput, e = endInput;
             if (valid) {
-                s.style.borderColor = '#059669'; s.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.12)';
-                e.style.borderColor = '#059669'; e.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.12)';
+                s.style.borderColor = '#16a34a'; s.style.boxShadow = '0 0 0 3px rgba(22,163,74,0.12)';
+                e.style.borderColor = '#16a34a'; e.style.boxShadow = '0 0 0 3px rgba(22,163,74,0.12)';
             } else if (s.value && e.value) {
                 e.style.borderColor = '#ef4444'; e.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.12)';
             } else {
@@ -1623,7 +1627,7 @@
                         chart: Object.assign({}, barDefaults.chart, { height: 160 }),
                         series: [{ name: 'Quantity', data: [parseFloat(d.totalReceivedQty), parseFloat(d.totalIssuedQty)] }],
                         xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
-                        colors: ['#059669', '#059669'],
+                        colors: ['#16a34a', '#16a34a'],
                         plotOptions: Object.assign({}, barDefaults.plotOptions, {
                             bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
                         })
@@ -1642,7 +1646,7 @@
                         recEl.innerHTML = '';
                         const recLabels = d.receivedDistribution.map(r => r.description);
                         const recData   = d.receivedDistribution.map(r => parseFloat(r.total_qty));
-                        const recColors = ['#059669','#047857','#059669','#065f46','#047857','#a78bfa','#065f46','#3730a3','#06b6d4','#0ea5e9'];
+                        const recColors = ['#16a34a','#15803d','#16a34a','#065f46','#15803d','#4ade80','#065f46','#15803d','#06b6d4','#16a34a'];
                         const c = new ApexCharts(recEl, Object.assign({}, barDefaults, {
                             chart: Object.assign({}, barDefaults.chart, { height: Math.max(220, recLabels.length * 42) }),
                             series: [{ name: 'Received', data: recData }],
@@ -1663,7 +1667,7 @@
                         issEl.innerHTML = '';
                         const issLabels = d.issuedDistribution.map(r => r.description);
                         const issData   = d.issuedDistribution.map(r => parseFloat(r.total_qty));
-                        const issColors = ['#059669','#fbbf24','#047857','#b45309','#ef4444','#f87171','#dc2626','#059669','#06b6d4','#ec4899'];
+                        const issColors = ['#16a34a','#10b981','#15803d','#b45309','#ef4444','#f87171','#dc2626','#16a34a','#06b6d4','#ec4899'];
                         const c = new ApexCharts(issEl, Object.assign({}, barDefaults, {
                             chart: Object.assign({}, barDefaults.chart, { height: Math.max(220, issLabels.length * 42) }),
                             series: [{ name: 'Issued', data: issData }],
@@ -1704,7 +1708,7 @@
                         typeHtml = `<span class="type-badge received-badge">${iconSvg('arrow-down-circle')} Received</span>`;
                     } else {
                         const statusBadge = row.status === 'Temporary'
-                            ? `<span style="font-size:0.65rem;font-weight:800;color:#b45309;background:rgba(5,150,105,0.12);padding:1px 6px;border-radius:4px;border:1px solid rgba(5,150,105,0.2);text-transform:uppercase;">Temporary</span>`
+                            ? `<span style="font-size:0.65rem;font-weight:800;color:#b45309;background:rgba(22,163,74,0.12);padding:1px 6px;border-radius:4px;border:1px solid rgba(22,163,74,0.2);text-transform:uppercase;">Temporary</span>`
                             : `<span style="font-size:0.65rem;font-weight:800;color:#dc2626;background:rgba(220,38,38,0.08);padding:1px 6px;border-radius:4px;border:1px solid rgba(220,38,38,0.2);text-transform:uppercase;">Permanent</span>`;
                         typeHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
                             <span class="type-badge issued-badge">${iconSvg('arrow-up-circle')} Issued</span>
@@ -1954,17 +1958,17 @@
     ══════════════════════════════════════════════ */
     .item-filter-panel {
         border-radius: 20px;
-        border: 1px solid rgba(5,150,105,0.18);
+        border: 1px solid rgba(22,163,74,0.18);
         overflow: hidden;
-        box-shadow: 0 4px 24px rgba(5,150,105,0.07);
+        box-shadow: 0 4px 24px rgba(22,163,74,0.07);
     }
     .item-filter-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 1rem 1.5rem;
-        background: linear-gradient(135deg, rgba(5,150,105,0.08) 0%, rgba(6,182,212,0.06) 100%);
-        border-bottom: 1px solid rgba(5,150,105,0.12);
+        background: linear-gradient(135deg, rgba(22,163,74,0.08) 0%, rgba(6,182,212,0.06) 100%);
+        border-bottom: 1px solid rgba(22,163,74,0.12);
         gap: 1rem;
         flex-wrap: wrap;
     }
@@ -1977,12 +1981,12 @@
         width: 38px;
         height: 38px;
         border-radius: 12px;
-        background: #059669;
+        background: #16a34a;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        box-shadow: 0 4px 12px rgba(5,150,105,0.3);
+        box-shadow: 0 4px 12px rgba(22,163,74,0.3);
         flex-shrink: 0;
     }
     .item-filter-title {
@@ -2001,9 +2005,9 @@
         font-size: 0.7rem;
         font-weight: 900;
         letter-spacing: 0.06em;
-        color: #059669;
-        background: rgba(5,150,105,0.1);
-        border: 1px solid rgba(5,150,105,0.25);
+        color: #16a34a;
+        background: rgba(22,163,74,0.1);
+        border: 1px solid rgba(22,163,74,0.25);
         padding: 0.3rem 0.85rem;
         border-radius: 99px;
         white-space: nowrap;
@@ -2041,7 +2045,7 @@
         border: 2px solid var(--border-color) !important;
         background: var(--bg-main) !important;
         border-radius: 14px !important;
-        padding: 6px 10px !important;
+        padding: 6px 10px 6px 40px !important; /* Left padding for search icon */
         min-height: 52px !important;
         transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease !important;
         display: flex !important;
@@ -2049,12 +2053,17 @@
         flex-wrap: wrap !important;
         gap: 5px !important;
         cursor: text !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: 16px center !important;
+        background-size: 16px !important;
     }
     .select2-container--default.select2-container--focus .select2-selection--multiple,
     .select2-container--default.select2-container--open .select2-selection--multiple {
-        border-color: #059669 !important;
-        box-shadow: 0 0 0 4px rgba(5,150,105,0.12) !important;
-        background: var(--bg-card) !important;
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 4px var(--primary-glow) !important;
+        background-color: var(--bg-card) !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2316a34a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important;
     }
 
     /* ── Selected tag chips ── */
@@ -2062,9 +2071,9 @@
         display: inline-flex !important;
         align-items: center !important;
         gap: 5px !important;
-        background: linear-gradient(135deg, rgba(5,150,105,0.14), rgba(6,182,212,0.09)) !important;
-        border: 1.5px solid rgba(5,150,105,0.32) !important;
-        color: #059669 !important;
+        background: linear-gradient(135deg, rgba(22,163,74,0.14), rgba(6,182,212,0.09)) !important;
+        border: 1.5px solid rgba(22,163,74,0.32) !important;
+        color: #16a34a !important;
         border-radius: 10px !important;
         padding: 4px 10px 4px 8px !important;
         font-weight: 800 !important;
@@ -2073,17 +2082,17 @@
         margin: 0 !important;
         transition: all 0.2s ease !important;
         line-height: 1.5 !important;
-        box-shadow: 0 2px 6px rgba(5,150,105,0.1) !important;
+        box-shadow: 0 2px 6px rgba(22,163,74,0.1) !important;
     }
     .select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
-        background: rgba(5,150,105,0.2) !important;
-        border-color: rgba(5,150,105,0.5) !important;
-        box-shadow: 0 3px 10px rgba(5,150,105,0.18) !important;
+        background: rgba(22,163,74,0.2) !important;
+        border-color: rgba(22,163,74,0.5) !important;
+        box-shadow: 0 3px 10px rgba(22,163,74,0.18) !important;
     }
 
     /* ── Remove × on chips ── */
     .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-        color: rgba(5,150,105,0.5) !important;
+        color: rgba(22,163,74,0.5) !important;
         font-weight: 900 !important;
         font-size: 0.9rem !important;
         border: none !important;
@@ -2125,11 +2134,11 @@
        DROPDOWN PANEL
     ══════════════════════════════════════════════ */
     .select2-dropdown {
-        border: 1.5px solid rgba(5,150,105,0.2) !important;
+        border: 1.5px solid rgba(22,163,74,0.2) !important;
         border-radius: 18px !important;
         box-shadow: 0 20px 60px rgba(0,0,0,0.14),
                     0 4px 16px rgba(0,0,0,0.06),
-                    0 0 0 1px rgba(5,150,105,0.05) !important;
+                    0 0 0 1px rgba(22,163,74,0.05) !important;
         overflow: hidden !important;
         background: var(--bg-card) !important;
         margin-top: 8px !important;
@@ -2161,8 +2170,8 @@
         background-size: 14px !important;
     }
     .select2-container--default .select2-search--dropdown .select2-search__field:focus {
-        border-color: #059669 !important;
-        box-shadow: 0 0 0 3px rgba(5,150,105,0.12) !important;
+        border-color: #16a34a !important;
+        box-shadow: 0 0 0 3px rgba(22,163,74,0.12) !important;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important;
     }
 
@@ -2185,7 +2194,7 @@
         font-weight: 900 !important;
         text-transform: uppercase !important;
         letter-spacing: 0.1em !important;
-        color: #059669 !important;
+        color: #16a34a !important;
         background: transparent !important;
         border-radius: 0 !important;
         cursor: default !important;
@@ -2198,7 +2207,7 @@
         display: inline-block !important;
         width: 3px !important;
         height: 14px !important;
-        background: linear-gradient(180deg, #059669, #047857) !important;
+        background: linear-gradient(180deg, #16a34a, #15803d) !important;
         border-radius: 2px !important;
         flex-shrink: 0 !important;
     }
@@ -2207,7 +2216,7 @@
         content: '' !important;
         flex: 1 !important;
         height: 1px !important;
-        background: linear-gradient(90deg, rgba(5,150,105,0.2), transparent) !important;
+        background: linear-gradient(90deg, rgba(22,163,74,0.2), transparent) !important;
         margin-left: 4px !important;
     }
 
@@ -2228,15 +2237,15 @@
 
     /* Hover state */
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background: linear-gradient(135deg, rgba(5,150,105,0.1), rgba(6,182,212,0.06)) !important;
-        color: #059669 !important;
+        background: linear-gradient(135deg, rgba(22,163,74,0.1), rgba(6,182,212,0.06)) !important;
+        color: #16a34a !important;
         padding-left: 26px !important;
     }
 
     /* Selected state */
     .select2-container--default .select2-results__option[aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(5,150,105,0.13), rgba(6,182,212,0.08)) !important;
-        color: #059669 !important;
+        background: linear-gradient(135deg, rgba(22,163,74,0.13), rgba(6,182,212,0.08)) !important;
+        color: #16a34a !important;
         font-weight: 800 !important;
     }
     /* Checkmark for selected items */
@@ -2247,13 +2256,13 @@
         top: 50% !important;
         transform: translateY(-50%) !important;
         font-size: 0.78rem !important;
-        color: #059669 !important;
+        color: #16a34a !important;
         font-weight: 900 !important;
     }
 
     /* Hover+selected */
     .select2-container--default .select2-results__option--highlighted[aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(5,150,105,0.18), rgba(6,182,212,0.1)) !important;
+        background: linear-gradient(135deg, rgba(22,163,74,0.18), rgba(6,182,212,0.1)) !important;
     }
 
     /* ── "No results" state ── */
@@ -2270,10 +2279,10 @@
     .select2-results__options::-webkit-scrollbar { width: 5px; }
     .select2-results__options::-webkit-scrollbar-track { background: transparent; }
     .select2-results__options::-webkit-scrollbar-thumb {
-        background: rgba(5,150,105,0.2); border-radius: 99px;
+        background: rgba(22,163,74,0.2); border-radius: 99px;
     }
     .select2-results__options::-webkit-scrollbar-thumb:hover {
-        background: rgba(5,150,105,0.4);
+        background: rgba(22,163,74,0.4);
     }
 </style>
 @endsection
@@ -2342,7 +2351,7 @@
             const theme = localStorage.getItem('theme') || 'light';
             const isDark = theme === 'dark';
             const textColor = isDark ? '#f8fafc' : '#0f172a';
-            const chartColors = ['#059669', '#0ea5e9', '#06b6d4', '#047857', '#3b82f6', '#10b981', '#0284c7', '#14b8a6', '#22c55e', '#38bdf8'];
+            const chartColors = ['#16a34a', '#16a34a', '#06b6d4', '#15803d', '#16a34a', '#10b981', '#16a34a', '#14b8a6', '#22c55e', '#38bdf8'];
 
             @if($totalReceivedQty > 0 || $totalIssuedQty > 0)
 
@@ -2404,7 +2413,7 @@
                             chart: Object.assign({}, barDefaults.chart, { height: 160 }),
                             series: [{ name: 'Quantity', data: [{{ (float)$totalReceivedQty }}, {{ (float)$totalIssuedQty }}] }],
                             xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
-                            colors: ['#059669', '#0ea5e9'],
+                            colors: ['#16a34a', '#16a34a'],
                             plotOptions: Object.assign({}, barDefaults.plotOptions, {
                                 bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
                             })
@@ -2417,7 +2426,7 @@
                             const recLabels = @json($receivedDistribution->pluck('description'));
                             const recData   = @json($receivedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                             const recBarH   = Math.max(220, recLabels.length * 42);
-                            const recColors = ['#059669','#0ea5e9','#06b6d4','#047857','#3b82f6','#10b981','#0284c7','#14b8a6','#22c55e','#38bdf8'];
+                            const recColors = ['#16a34a','#16a34a','#06b6d4','#15803d','#16a34a','#10b981','#16a34a','#14b8a6','#22c55e','#38bdf8'];
                             const recOptions = Object.assign({}, barDefaults, {
                                 chart: Object.assign({}, barDefaults.chart, { height: recBarH }),
                                 series: [{ name: 'Received', data: recData }],
@@ -2433,7 +2442,7 @@
                             const issLabels = @json($issuedDistribution->pluck('description'));
                             const issData   = @json($issuedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                             const issBarH   = Math.max(220, issLabels.length * 42);
-                            const issColors = ['#0ea5e9','#059669','#3b82f6','#06b6d4','#047857','#0284c7','#10b981','#38bdf8','#14b8a6','#22c55e'];
+                            const issColors = ['#16a34a','#16a34a','#16a34a','#06b6d4','#15803d','#16a34a','#10b981','#38bdf8','#14b8a6','#22c55e'];
                             const issOptions = Object.assign({}, barDefaults, {
                                 chart: Object.assign({}, barDefaults.chart, { height: issBarH }),
                                 series: [{ name: 'Issued', data: issData }],
