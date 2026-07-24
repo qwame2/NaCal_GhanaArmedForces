@@ -8,17 +8,169 @@
         max-width: 2000px !important;
     }
 
+    /* Modern Responsive Inventory Oversight Filter */
+    .inventory-filter-card {
+        margin: -1.5rem 0 2.5rem 0;
+        background: var(--bg-card, #ffffff);
+        padding: 1rem 1.25rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05), 0 4px 12px rgba(0,0,0,0.02);
+        border: 1px solid var(--border-color, #e2e8f0);
+        position: relative;
+        z-index: 20;
+    }
+
+    .inventory-filter-form {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-segment-item {
+        display: flex;
+        align-items: center;
+        background: var(--bg-main, #f8fafc);
+        border: 1.5px solid var(--border-color, #e2e8f0);
+        border-radius: 14px;
+        padding: 0.5rem 1rem;
+        height: 48px;
+        box-sizing: border-box;
+        position: relative;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .filter-segment-item:focus-within {
+        border-color: #881337;
+        background: var(--bg-card, #ffffff);
+        box-shadow: 0 0 0 3px rgba(136, 19, 55, 0.12);
+    }
+
+    .filter-segment-search {
+        flex: 1.5;
+        min-width: 220px;
+    }
+
+    .filter-segment-dropdown {
+        flex: 1;
+        min-width: 170px;
+        cursor: pointer;
+    }
+
+    .filter-segment-stores {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        height: auto;
+    }
+
+    .filter-segment-timeline {
+        flex: 1.6;
+        min-width: 340px;
+        gap: 8px;
+    }
+
+    .filter-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .store-loc-btn {
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        border: 1.5px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 44px;
+    }
+
+    .timeline-date-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        min-width: 135px;
+        background: white;
+        border: 1.5px solid var(--border-color, #e2e8f0);
+        padding: 2px 8px;
+        border-radius: 9px;
+        height: 38px;
+        box-sizing: border-box;
+    }
+    .timeline-date-box input {
+        border: none;
+        background: transparent;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-main, #1e293b);
+        outline: none;
+        width: 100%;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+    }
+    .timeline-date-box input::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: 0.6;
+        padding: 0;
+        margin: 0;
+    }
+
+    .custom-select-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        min-width: 250px;
+        width: 100%;
+        max-height: 280px;
+        overflow-y: auto;
+        background: var(--bg-card, #ffffff);
+        border: 1.5px solid var(--border-color, #e2e8f0);
+        border-radius: 16px;
+        box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18), 0 8px 16px rgba(0,0,0,0.06);
+        padding: 6px;
+        z-index: 9999;
+        animation: filterMenuFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes filterMenuFade {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Responsive Layout Overrides */
-    @media (max-width: 1200px) {
-        .filter-pill { flex-direction: column !important; height: auto !important; padding: 1.5rem !important; border-radius: 24px !important; margin: 0 1rem 2rem 1rem !important; gap: 1rem !important; }
-        .filter-segment { border-right: none !important; border-bottom: 1px solid #f1f5f9 !important; padding: 1rem !important; width: 100% !important; flex: none !important; max-width: none !important; }
-        .filter-actions { padding: 1rem 0 0 0 !important; width: 100% !important; justify-content: center !important; }
+    @media (max-width: 1280px) {
+        .filter-segment-search { flex: 1 1 100%; }
+        .filter-segment-dropdown { flex: 1 1 calc(50% - 0.5rem); }
+        .filter-segment-timeline { flex: 1 1 340px; min-width: 300px; }
+        .filter-actions-group { width: 100%; margin-left: 0; justify-content: space-between; margin-top: 0.25rem; }
     }
     @media (max-width: 768px) {
+        .inventory-filter-card { padding: 1rem; margin: 0 0 1.5rem 0; border-radius: 16px; }
+        .filter-segment-dropdown { flex: 1 1 100%; }
+        .filter-segment-stores { width: 100%; justify-content: space-between; }
+        .store-loc-btn { flex: 1; justify-content: center; }
+        .filter-actions-group { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+        .filter-actions-group > * { width: 100%; justify-content: center; }
+        .per-page-capsule { width: 100%; justify-content: center; }
         .page-header { flex-direction: column !important; align-items: flex-start !important; gap: 1.5rem !important; margin-bottom: 2rem !important; }
         .stats-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
         .timeline-wrapper { flex-direction: column !important; width: 100% !important; gap: 1rem !important; }
-        .timeline-pill { width: 100% !important; min-width: 0 !important; }
         .tab-trigger { padding: 0.8rem 1rem !important; font-size: 0.7rem !important; gap: 8px !important; flex: 1 !important; justify-content: center !important; }
         .tab-trigger i { width: 14px !important; }
     }
@@ -208,13 +360,13 @@
     @endif
 
     {{-- ═════════════════════ LUXURY OVERSIGHT PILL BAR ═════════════════════ --}}
-    <div class="filter-pill" style="margin: -1.5rem 2rem 2.5rem 2rem; background: white; padding: 8px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; position: relative; z-index: 10;">
-        <form action="{{ route('admin.inventory') }}" method="GET" onsubmit="event.preventDefault(); performLiveUpdate();" style="display: flex; align-items: center; width: 100%; gap: 4px; flex-wrap: inherit;">
+    <div class="inventory-filter-card">
+        <form action="{{ route('admin.inventory') }}" method="GET" onsubmit="event.preventDefault(); performLiveUpdate();" class="inventory-filter-form">
             <!-- Segment 1: Search -->
-            <div class="filter-segment" style="flex: 1.2; max-width: 380px; min-width: 0; position: relative; display: flex; align-items: center; padding: 0 1.5rem; border-right: 1px solid #f1f5f9;">
-                <i data-lucide="search" style="width: 18px; color: #94a3b8; margin-right: 12px;"></i>
+            <div class="filter-segment-item filter-segment-search">
+                <i data-lucide="search" style="width: 18px; color: #881337; margin-right: 10px;"></i>
                 <input type="text" name="search" id="admin-search-input" value="{{ request('search') }}" placeholder="Find items or batches..." 
-                    style="width: 100%; border: none; font-size: 0.95rem; font-weight: 600; color: #1e293b; outline: none; background: transparent;"
+                    style="width: 100%; border: none; font-size: 0.9rem; font-weight: 700; color: var(--text-main, #1e293b); outline: none; background: transparent;"
                     oninput="debounceSearch()">
             </div>
 
@@ -229,13 +381,16 @@
 
                 function performLiveUpdate() {
                     const searchInput = document.getElementById('admin-search-input');
-                    const search = searchInput.value;
-                    const cat = document.getElementById('category-input').value;
-                    const from = document.getElementsByName('date_from')[0].value;
-                    const to = document.getElementsByName('date_to')[0].value;
+                    const search = searchInput ? searchInput.value : '';
+                    const cat = document.getElementById('category-input') ? document.getElementById('category-input').value : '';
+                    const dateFromEl = document.getElementsByName('date_from')[0];
+                    const dateToEl = document.getElementsByName('date_to')[0];
+                    const from = dateFromEl ? dateFromEl.value : '';
+                    const to = dateToEl ? dateToEl.value : '';
                     
-                    const perPage = document.getElementsByName('per_page')[0].value;
-                    const stockLevel = document.getElementById('stock-level-input').value;
+                    const perPageEl = document.getElementsByName('per_page')[0];
+                    const perPage = perPageEl ? perPageEl.value : '15';
+                    const stockLevel = document.getElementById('stock-level-input') ? document.getElementById('stock-level-input').value : '';
                     const storeLoc = document.getElementById('store-location-input') ? document.getElementById('store-location-input').value : '';
                     
                     const container = document.getElementById('oversight-container');
@@ -253,7 +408,6 @@
                     url.searchParams.set('per_page', perPage);
                     url.searchParams.set('stock_level', stockLevel);
                     url.searchParams.set('store_location', storeLoc);
-
 
                     fetch(url, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -290,13 +444,10 @@
                         switchTab(currentTab);
                     })
                     .catch(error => {
-                        /* console print removed */
                         container.style.opacity = '1';
                         container.style.pointerEvents = 'auto';
                     });
                 }
-
-
 
                 // Update date inputs to trigger live update
                 document.querySelectorAll('input[type="date"]').forEach(el => {
@@ -304,38 +455,38 @@
                 });
             </script>
 
-            <!-- Segment 2: Custom Luxury Category Dropdown -->
-            <div class="filter-segment" style="flex: 1; position: relative; display: flex; align-items: center; padding: 0 1.5rem; border-right: 1px solid #f1f5f9; cursor: pointer; height: 50px;" id="cat-trigger" onclick="toggleCatMenu(event)">
-                <i data-lucide="layers" style="width: 18px; color: #94a3b8; margin-right: 12px;"></i>
-                <div style="flex: 1; font-size: 0.85rem; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <!-- Segment 2: Custom Category Dropdown -->
+            <div class="filter-segment-item filter-segment-dropdown" id="cat-trigger" onclick="toggleCatMenu(event)">
+                <i data-lucide="layers" style="width: 18px; color: #881337; margin-right: 10px;"></i>
+                <div style="flex: 1; font-size: 0.85rem; font-weight: 800; color: var(--text-main, #1e293b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <span id="selected-cat-label">{{ $ledgeMap[request('category')] ?? 'All Categories' }}</span>
                 </div>
-                <i data-lucide="chevron-down" id="cat-chevron" style="width: 14px; color: #cbd5e1; transition: 0.3s;"></i>
+                <i data-lucide="chevron-down" id="cat-chevron" style="width: 14px; color: #94a3b8; transition: 0.3s;"></i>
                 
                 <!-- Hidden Input for Form -->
                 <input type="hidden" name="category" id="category-input" value="{{ request('category') }}">
 
                 <!-- Luxury Dropdown Menu -->
-                <div id="cat-menu" style="display: none; position: absolute; top: calc(100% + 15px); left: 0; width: 280px; background: white; border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #f1f5f9; padding: 8px; z-index: 100; animation: slideDown 0.3s ease;">
-                    <div style="padding: 10px 15px; font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f8fafc; margin-bottom: 5px;">Select Category</div>
+                <div id="cat-menu" class="custom-select-menu">
+                    <div style="padding: 10px 15px; font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--border-color, #f8fafc); margin-bottom: 5px;">Select Category</div>
                     
-                    <div onclick="selectCat(event, '', 'All Categories')" class="cat-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #64748b; transition: 0.2s;">
+                    <div onclick="selectCat(event, '', 'All Categories')" class="cat-opt" style="padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #64748b; transition: 0.2s; cursor: pointer;">
                         All Categories
                     </div>
                     
                     @foreach($ledgeMap as $code => $name)
-                    <div onclick="selectCat(event, '{{ $code }}', '{{ $name }}')" class="cat-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
-                        <span style="width: 24px; height: 24px; background: #f8fafc; color: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem;">{{ $code }}</span>
+                    <div onclick="selectCat(event, '{{ $code }}', '{{ $name }}')" class="cat-opt" style="padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: var(--text-main, #1e293b); transition: 0.2s; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <span style="width: 24px; height: 24px; background: rgba(136, 19, 55, 0.08); color: #881337; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900;">{{ $code }}</span>
                         {{ $name }}
                     </div>
                     @endforeach
                 </div>
             </div>
 
-            <!-- Segment 2.5: Custom Luxury Stock Level Dropdown -->
-            <div class="filter-segment" style="flex: 1; position: relative; display: flex; align-items: center; padding: 0 1.5rem; border-right: 1px solid #f1f5f9; cursor: pointer; height: 50px;" id="stock-trigger" onclick="toggleStockMenu(event)">
-                <i data-lucide="trending-up" style="width: 18px; color: #94a3b8; margin-right: 12px;"></i>
-                <div style="flex: 1; font-size: 0.85rem; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <!-- Segment 2.5: Custom Stock Level Dropdown -->
+            <div class="filter-segment-item filter-segment-dropdown" id="stock-trigger" onclick="toggleStockMenu(event)">
+                <i data-lucide="trending-up" style="width: 18px; color: #881337; margin-right: 10px;"></i>
+                <div style="flex: 1; font-size: 0.85rem; font-weight: 800; color: var(--text-main, #1e293b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <span id="selected-stock-label">
                         @if(request('stock_level') == 'in_stock')
                             In Stock
@@ -346,26 +497,26 @@
                         @endif
                     </span>
                 </div>
-                <i data-lucide="chevron-down" id="stock-chevron" style="width: 14px; color: #cbd5e1; transition: 0.3s;"></i>
+                <i data-lucide="chevron-down" id="stock-chevron" style="width: 14px; color: #94a3b8; transition: 0.3s;"></i>
                 
                 <!-- Hidden Input for Form -->
                 <input type="hidden" name="stock_level" id="stock-level-input" value="{{ request('stock_level') }}">
 
                 <!-- Luxury Dropdown Menu -->
-                <div id="stock-menu" style="display: none; position: absolute; top: calc(100% + 15px); left: 0; width: 280px; background: white; border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #f1f5f9; padding: 8px; z-index: 100; animation: slideDown 0.3s ease;">
-                    <div style="padding: 10px 15px; font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f8fafc; margin-bottom: 5px;">Select Stock Level</div>
+                <div id="stock-menu" class="custom-select-menu">
+                    <div style="padding: 10px 15px; font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--border-color, #f8fafc); margin-bottom: 5px;">Select Stock Level</div>
                     
-                    <div onclick="selectStock(event, '', 'All Stock Levels')" class="stock-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #64748b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
+                    <div onclick="selectStock(event, '', 'All Stock Levels')" class="stock-opt" style="padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #64748b; transition: 0.2s; display: flex; align-items: center; gap: 10px; cursor: pointer;">
                         <span style="width: 8px; height: 8px; background: #94a3b8; border-radius: 50%;"></span>
                         All Stock Levels
                     </div>
 
-                    <div onclick="selectStock(event, 'in_stock', 'In Stock')" class="stock-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
+                    <div onclick="selectStock(event, 'in_stock', 'In Stock')" class="stock-opt" style="padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: var(--text-main, #1e293b); transition: 0.2s; display: flex; align-items: center; gap: 10px; cursor: pointer;">
                         <span style="width: 8px; height: 8px; background: #881337; border-radius: 50%;"></span>
                         In Stock
                     </div>
 
-                    <div onclick="selectStock(event, 'low', 'Low Stock')" class="stock-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
+                    <div onclick="selectStock(event, 'low', 'Low Stock')" class="stock-opt" style="padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: var(--text-main, #1e293b); transition: 0.2s; display: flex; align-items: center; gap: 10px; cursor: pointer;">
                         <span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>
                         Low Stock
                     </div>
@@ -373,13 +524,13 @@
             </div>
 
             <!-- Segment 2.6: Store Location Filter Buttons -->
-            <div class="filter-segment" style="display: flex; align-items: center; gap: 6px; padding: 0 1rem; border-right: 1px solid #f1f5f9;">
+            <div class="filter-segment-item filter-segment-stores">
                 <input type="hidden" name="store_location" id="store-location-input" value="{{ request('store_location') }}">
-                <button type="button" onclick="setStoreLocFilter('')" id="btn-store-all" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid #e2e8f0; background: {{ !request('store_location') ? '#0f172a' : 'white' }}; color: {{ !request('store_location') ? 'white' : '#64748b' }}; cursor: pointer; transition: 0.2s;">All Stores</button>
-                <button type="button" onclick="setStoreLocFilter('Store A')" id="btn-store-a" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid rgba(136, 19, 55, 0.2); background: {{ request('store_location') === 'Store A' ? '#881337' : 'rgba(136, 19, 55, 0.05)' }}; color: {{ request('store_location') === 'Store A' ? 'white' : '#881337' }}; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;">
+                <button type="button" onclick="setStoreLocFilter('')" id="btn-store-all" class="store-loc-btn {{ !request('store_location') ? 'active-all' : '' }}">All Stores</button>
+                <button type="button" onclick="setStoreLocFilter('Store A')" id="btn-store-a" class="store-loc-btn {{ request('store_location') === 'Store A' ? 'active-a' : '' }}">
                     <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i> Store A
                 </button>
-                <button type="button" onclick="setStoreLocFilter('Store B')" id="btn-store-b" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid rgba(59, 130, 246, 0.2); background: {{ request('store_location') === 'Store B' ? '#3b82f6' : 'rgba(59, 130, 246, 0.05)' }}; color: {{ request('store_location') === 'Store B' ? 'white' : '#3b82f6' }}; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;">
+                <button type="button" onclick="setStoreLocFilter('Store B')" id="btn-store-b" class="store-loc-btn {{ request('store_location') === 'Store B' ? 'active-b' : '' }}">
                     <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i> Store B
                 </button>
             </div>
@@ -387,21 +538,22 @@
             <script>
                 function setStoreLocFilter(val) {
                     document.getElementById('store-location-input').value = val;
+                    // Update button styling dynamically
+                    const btnAll = document.getElementById('btn-store-all');
+                    const btnA = document.getElementById('btn-store-a');
+                    const btnB = document.getElementById('btn-store-b');
+                    
+                    if (btnAll) btnAll.className = 'store-loc-btn ' + (!val ? 'active-all' : '');
+                    if (btnA) btnA.className = 'store-loc-btn ' + (val === 'Store A' ? 'active-a' : '');
+                    if (btnB) btnB.className = 'store-loc-btn ' + (val === 'Store B' ? 'active-b' : '');
+
                     if (typeof performLiveUpdate === 'function') {
                         performLiveUpdate();
                     }
                 }
-            </script>
 
-            <style>
-                .cat-opt:hover, .stock-opt:hover { background: #f8fafc; color: var(--primary) !important; padding-left: 20px !important; }
-                @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-            </style>
-
-            <script>
                 function toggleCatMenu(e) {
                     e.stopPropagation();
-                    // Close Stock Menu first
                     const stockMenu = document.getElementById('stock-menu');
                     if (stockMenu) stockMenu.style.display = 'none';
                     const stockChevron = document.getElementById('stock-chevron');
@@ -421,16 +573,11 @@
                     document.getElementById('selected-cat-label').innerText = label;
                     document.getElementById('cat-menu').style.display = 'none';
                     document.getElementById('cat-chevron').style.transform = 'rotate(0deg)';
-                    
-                    // Trigger Live Update
-                    if (typeof performLiveUpdate === 'function') {
-                        performLiveUpdate();
-                    }
+                    if (typeof performLiveUpdate === 'function') performLiveUpdate();
                 }
 
                 function toggleStockMenu(e) {
                     e.stopPropagation();
-                    // Close Category Menu first
                     const catMenu = document.getElementById('cat-menu');
                     if (catMenu) catMenu.style.display = 'none';
                     const catChevron = document.getElementById('cat-chevron');
@@ -450,11 +597,7 @@
                     document.getElementById('selected-stock-label').innerText = label;
                     document.getElementById('stock-menu').style.display = 'none';
                     document.getElementById('stock-chevron').style.transform = 'rotate(0deg)';
-                    
-                    // Trigger Live Update
-                    if (typeof performLiveUpdate === 'function') {
-                        performLiveUpdate();
-                    }
+                    if (typeof performLiveUpdate === 'function') performLiveUpdate();
                 }
 
                 window.onclick = function() {
@@ -470,65 +613,43 @@
                 };
             </script>
 
-            <!-- Segment 3: Luxury Timeline Selector -->
-            <div class="filter-segment timeline-wrapper" style="flex: 1.2; max-width: 320px; min-width: 250px; display: flex; align-items: center; padding: 0 1.5rem; gap: 15px;">
-                <i data-lucide="calendar-range" style="width: 18px; color: #94a3b8;"></i>
+            <!-- Segment 3: Timeline Date Range -->
+            <div class="filter-segment-item filter-segment-timeline">
+                <i data-lucide="calendar-range" style="width: 18px; color: #881337; flex-shrink: 0;"></i>
                 <div style="display: flex; align-items: center; gap: 6px; flex: 1;">
-                    <!-- From Pill -->
-                    <div class="timeline-pill" style="background: #f8fafc; border: 1px solid #f1f5f9; padding: 4px 12px; border-radius: 10px; display: flex; flex-direction: column; min-width: 110px; transition: 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='white'" onmouseout="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc'">
-                        <span style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: -2px;">Date From</span>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}" oninput="performLiveUpdate()"
-                            style="border: none; font-size: 0.8rem; font-weight: 800; color: #1e293b; background: transparent; outline: none; width: 100%; cursor: pointer;">
+                    <div class="timeline-date-box">
+                        <span style="font-size: 0.58rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; margin-bottom: 1px;">Date From</span>
+                        <input type="date" name="date_from" value="{{ request('date_from') }}" oninput="performLiveUpdate()">
                     </div>
 
-                    <div style="color: #cbd5e1; font-weight: 900; padding: 0 4px;">&rarr;</div>
+                    <div style="color: #94a3b8; font-weight: 900; font-size: 0.8rem;">&rarr;</div>
 
-                    <!-- To Pill -->
-                    <div class="timeline-pill" style="background: #f8fafc; border: 1px solid #f1f5f9; padding: 4px 12px; border-radius: 10px; display: flex; flex-direction: column; min-width: 110px; transition: 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='white'" onmouseout="this.style.borderColor='#f1f5f9'; this.style.background='#f8fafc'">
-                        <span style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: -2px;">Date To</span>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}" oninput="performLiveUpdate()"
-                            style="border: none; font-size: 0.8rem; font-weight: 800; color: #1e293b; background: transparent; outline: none; width: 100%; cursor: pointer;">
+                    <div class="timeline-date-box">
+                        <span style="font-size: 0.58rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; margin-bottom: 1px;">Date To</span>
+                        <input type="date" name="date_to" value="{{ request('date_to') }}" oninput="performLiveUpdate()">
                     </div>
                 </div>
             </div>
 
-            <style>
-                /* Remove default browser date icon to keep it clean */
-                input[type="date"]::-webkit-calendar-picker-indicator {
-                    opacity: 0.4;
-                    cursor: pointer;
-                    filter: invert(0.5);
-                }
-                input[type="date"]::-webkit-inner-spin-button, 
-                input[type="date"]::-webkit-clear-button {
-                    display: none;
-                }
-            </style>
-
             <!-- Segment 4: Actions -->
-            <div class="filter-actions" style="padding-left: 1rem; display: flex; gap: 8px;">
-                <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(136, 19, 55, 0.2);">
-                    <i data-lucide="filter" style="width: 16px;"></i> Filter
-                </button>
-                <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s; margin-right: 8px;" title="Reset Category">
+            <div class="filter-actions-group">
+                <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: var(--bg-main, #f8fafc); color: #94a3b8; border: 1.5px solid var(--border-color, #e2e8f0); border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s;" title="Reset Filters">
                     <i data-lucide="rotate-ccw" style="width: 18px;"></i>
                 </a>
 
                 <!-- Per Page Dropdown -->
-                <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #f1f5f9; padding-left: 1.5rem;">
-                    <div class="per-page-capsule" style="display: flex; align-items: center; gap: 6px; background: white; padding: 6px 14px; border-radius: 14px; border: 1.5px solid #eef2ff; box-shadow: 0 4px 10px rgba(136, 19, 55, 0.04); transition: all 0.3s ease;">
-                        <div style="width: 24px; height: 24px; background: #eef2ff; color: #881337; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                            <i data-lucide="layers" style="width: 14px;"></i>
-                        </div>
-                        <div style="display: flex; flex-direction: column;">
-                            <span style="font-size: 0.55rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1;">Show</span>
-                            <select name="per_page" onchange="performLiveUpdate()" 
-                                style="background: transparent; border: none; font-size: 0.85rem; font-weight: 900; color: #1e293b; outline: none; cursor: pointer; padding: 0 18px 0 0; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%234f46e5%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 10px;">
-                                @foreach([15, 30, 50, 100] as $cp)
-                                    <option value="{{ $cp }}" {{ request('per_page', 15) == $cp ? 'selected' : '' }}>{{ $cp }} Records</option>
-                                @endforeach
-                            </select>
-                        </div>
+                <div class="per-page-capsule" style="display: flex; align-items: center; gap: 6px; background: var(--bg-main, #f8fafc); padding: 4px 12px; height: 44px; border-radius: 12px; border: 1.5px solid var(--border-color, #e2e8f0); box-sizing: border-box;">
+                    <div style="width: 22px; height: 22px; background: rgba(136, 19, 55, 0.08); color: #881337; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="layers" style="width: 13px;"></i>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 0.55rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1;">Show</span>
+                        <select name="per_page" onchange="performLiveUpdate()" 
+                            style="background: transparent; border: none; font-size: 0.82rem; font-weight: 900; color: var(--text-main, #1e293b); outline: none; cursor: pointer; padding: 0 16px 0 0; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23881337%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 10px;">
+                            @foreach([15, 30, 50, 100] as $cp)
+                                <option value="{{ $cp }}" {{ request('per_page', 15) == $cp ? 'selected' : '' }}>{{ $cp }} Records</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
             </div>

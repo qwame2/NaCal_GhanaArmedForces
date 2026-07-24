@@ -42,7 +42,7 @@ class ReceivedItemsController extends Controller
     public function previewApi($id)
     {
         \App\Models\InventoryBatch::selfHealSchema();
-        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+        $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
