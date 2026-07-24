@@ -12,9 +12,7 @@
         <div style="position: absolute; top: -50px; right: -50px; width: 180px; height: 180px; background: rgba(5, 150, 105, 0.05); border-radius: 50%;"></div>
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(5, 150, 105, 0.1); color: var(--primary); font-size: 0.75rem; font-weight: 800; padding: 0.35rem 0.85rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> HEAD OF STORES
-                </span>
+                
                 <span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 600;">
                     <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
                     {{ date('d M Y') }}
@@ -28,9 +26,7 @@
             <button onclick="window.location.reload()" class="btn-secondary" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.75rem 1.25rem; border-radius: 12px; color: var(--text-main); font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.2s ease;">
                 <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh
             </button>
-            <a href="{{ route('admin.requisitions') }}" class="btn-primary" style="padding: 0.75rem 1.25rem; border-radius: 12px; border: none; background: var(--primary); color: white; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.85rem; text-decoration: none; box-shadow: 0 8px 16px -4px rgba(5, 150, 105, 0.3);">
-                <i data-lucide="clipboard-list" style="width: 16px; height: 16px;"></i> Review Requisitions
-            </a>
+            
         </div>
     </div>
 
@@ -52,7 +48,8 @@
                 </span>
                 @endif
             </div>
-            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.35rem 0;">Pending Requisitions</p>
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.2rem 0;">Pending Requisitions</p>
+            <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem;">Awaiting Head of Stores Approvals</div>
             <h3 style="font-size: 2.25rem; font-weight: 900; color: var(--text-main); margin: 0 0 0.5rem 0; letter-spacing: -0.03em;">{{ number_format($pendingRequisitionsCount) }}</h3>
             <a href="{{ route('admin.requisitions') }}" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                 Review Requisitions &rarr;
@@ -175,16 +172,6 @@
                 </div>
             </a>
 
-            <a href="{{ route('stockcheck.index') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; display: flex; align-items: center; justify-content: center; shrink: 0;">
-                    <i data-lucide="search-check" style="width: 20px; height: 20px;"></i>
-                </div>
-                <div>
-                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Stock Check Audit</h4>
-                    <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Conduct physical audit</p>
-                </div>
-            </a>
-
             <a href="{{ route('reports.index') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                 <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(236, 72, 153, 0.1); color: #ec4899; display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="bar-chart-3" style="width: 20px; height: 20px;"></i>
@@ -271,7 +258,7 @@
                         <tbody>
                             @foreach($recentItemEntries as $entry)
                             <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 0.85rem 0.5rem; font-weight: 700; color: var(--text-main);">{{ optional($entry->batch)->batch_number ?? 'Batch #' . $entry->batch_id }}</td>
+                                <td style="padding: 0.85rem 0.5rem; font-weight: 700; color: var(--text-main);">{{ optional($entry->batch)->supplier_name ?? 'Batch #' . str_pad($entry->item_id, 5, '0', STR_PAD_LEFT) }}</td>
                                 <td style="padding: 0.85rem 0.5rem; color: var(--text-muted);">{{ optional($entry->user)->name ?? 'Store Officer' }}</td>
                                 <td style="padding: 0.85rem 0.5rem; color: var(--text-muted);">{{ $entry->created_at->format('d/m/Y') }}</td>
                                 <td style="padding: 0.85rem 0.5rem; text-align: right;">

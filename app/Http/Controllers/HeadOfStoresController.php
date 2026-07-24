@@ -24,37 +24,8 @@ class HeadOfStoresController extends Controller
             || ($user->isDepartmentHead() && in_array($user->department, ['Stores', 'Store']))
             || $user->isMainAdminOrSub();
 
-        // 1. Pending Requisitions awaiting Head of Stores review/approval (matches sidebar badge count)
-        $requisitionQuery = StoreRequisition::where('status', 'pending')
-            ->where('main_admin_status', 'pending')
-            ->where(function($q) use ($isStoresHOD) {
-                $q->whereRaw('1 = 0');
-                if ($isStoresHOD) {
-                    $q->orWhere(function($q2) {
-                        $q2->where('origin_admin_status', 'approved')
-                           ->where(function($q3) {
-                               $q3->where('requires_dg_approval', false)
-                                  ->orWhere('dg_status', 'approved');
-                           });
-                    });
-                    $q->orWhere(function($q2) {
-                        $q2->where('origin_admin_status', 'pending')
-                           ->whereIn('department', ['Stores', 'Store']);
-                    });
-                }
-                $q->orWhere(function($q2) {
-                    $q2->where('origin_admin_status', 'pending')
-                       ->whereNotIn('department', function($subQuery) {
-                           $subQuery->select('department')
-                                    ->from('users')
-                                    ->where('role', 'Department Head')
-                                    ->where('is_active', true)
-                                    ->whereNotNull('department');
-                       });
-                });
-            });
-
-        $pendingRequisitionsCount = (clone $requisitionQuery)->count();
+        // 1. Pending Requisitions awaiting Head of Stores review/approval (matches sidebar badge & admin table)
+        $pendingRequisitionsCount = StoreRequisition::awaitingHeadOfStoresReview()->count();
 
         // 2. Pending Item Entry Approvals
         $pendingItemEntryCount = EditRequest::where('item_type', 'batch_creation')
@@ -90,7 +61,7 @@ class HeadOfStoresController extends Controller
             ->count();
 
         // 6. Recent Pending Requisitions for quick preview
-        $recentRequisitions = (clone $requisitionQuery)->with(['requester'])
+        $recentRequisitions = StoreRequisition::awaitingHeadOfStoresReview()->with(['requester'])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();

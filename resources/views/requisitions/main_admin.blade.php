@@ -1005,7 +1005,7 @@
             <div style="width:48px;height:48px;background:rgba(136,19,55,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#881337;"></i></div>
             <div>
                 <div class="stat-number-val" style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['pending'] }}</div>
-                <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Awaiting My Review</div>
+                <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">{{ $isStoresHead ? 'Awaiting Head of Stores Approvals' : 'Awaiting My Review' }}</div>
             </div>
         </div>
         <div class="req-stat-card">

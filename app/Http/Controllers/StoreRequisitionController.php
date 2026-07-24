@@ -1553,56 +1553,7 @@ class StoreRequisitionController extends Controller
 
         if ($statusFilter === 'pending') {
             if ($isStoresHead) {
-                $query->where('status', 'pending')
-                      ->where(function($q) use ($isStoresHOD, $isBackupActive, $depts) {
-                          $q->whereRaw('1 = 0');
-                          if ($isStoresHOD) {
-                              // Requisitions pending Stores HOD approval (after DG approval if required)
-                              $q->orWhere(function($q2) {
-                                  $q2->where('origin_admin_status', 'approved')
-                                     ->where('main_admin_status', 'pending')
-                                     ->where(function($q3) {
-                                         $q3->where('requires_dg_approval', false)
-                                            ->orWhere('dg_status', 'approved');
-                                     });
-                              });
-                          }
-                          // Requisitions where Stores HOD approved (or bypassed) and any required DG approval is approved, awaiting final stores checkout
-                          // (Visible to all Stores staff since they perform final checkout/issuance)
-                          $q->orWhere(function($q2) {
-                              $q2->where('origin_admin_status', 'approved')
-                                 ->where('main_admin_status', 'approved')
-                                 ->where(function($q3) {
-                                     $q3->where('requires_dg_approval', false)
-                                        ->orWhere('dg_status', 'approved');
-                                 });
-                          });
-                          if ($isStoresHOD && !$isBackupActive) {
-                              $q->orWhere(function($q2) {
-                                  $q2->where('origin_admin_status', 'pending')
-                                     ->whereIn('department', ['Stores', 'Store']);
-                              });
-                          }
-                          if ($isBackupActive) {
-                              $q->orWhere(function($q2) use ($depts) {
-                                  $q2->whereIn('department', $depts)
-                                     ->where(function($q3) {
-                                         $q3->where('origin_admin_status', 'pending')
-                                            ->orWhere('alternative_status', 'proposed');
-                                     });
-                              });
-                          }
-                          $q->orWhere(function($q2) {
-                              $q2->where('origin_admin_status', 'pending')
-                                 ->whereNotIn('department', function($subQuery) {
-                                     $subQuery->select('department')
-                                              ->from('users')
-                                              ->where('role', 'Department Head')
-                                              ->where('is_active', true)
-                                              ->whereNotNull('department');
-                                 });
-                          });
-                      });
+                $query->awaitingHeadOfStoresReview();
             } else {
                 $query->where('status', 'pending');
             }
@@ -1833,32 +1784,14 @@ class StoreRequisitionController extends Controller
 
         // Calculate scoped stats
         if ($isStoresHead) {
-            if ($isBackupActive) {
-                $placeholders = implode(',', array_fill(0, count($depts), '?'));
-                $statsData = StoreRequisition::selectRaw("
-                    SUM(CASE WHEN status = 'pending' AND (
-                        (origin_admin_status = 'approved' AND main_admin_status = 'pending' AND (requires_dg_approval = 0 OR dg_status = 'approved'))
-                        OR (department IN ($placeholders) AND (origin_admin_status = 'pending' OR alternative_status = 'proposed'))
-                    ) THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN status IN ('approved', 'partially_approved') OR (department IN ($placeholders) AND status IN ('approved', 'partially_approved')) THEN 1 ELSE 0 END) as approved,
-                    SUM(CASE WHEN status = 'declined' OR (department IN ($placeholders) AND status = 'declined') THEN 1 ELSE 0 END) as declined
-                ", array_merge($depts, $depts, $depts))->first();
-            } else {
-                $statsData = StoreRequisition::selectRaw("
-                    SUM(CASE WHEN store_requisitions.status = 'pending' AND (
-                        (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'pending' AND " . ($isStoresHOD ? "1 = 1" : "1 = 0") . " AND (store_requisitions.requires_dg_approval = 0 OR store_requisitions.dg_status = 'approved'))
-                        " . ($isStoresHOD ? "OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department IN ('Stores', 'Store'))" : "") . "
-                        OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department NOT IN (SELECT department FROM users WHERE role = 'Department Head' AND is_active = 1 AND department IS NOT NULL))
-                    ) THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN store_requisitions.status IN ('approved', 'partially_approved') THEN 1 ELSE 0 END) as approved,
-                    SUM(CASE WHEN store_requisitions.status = 'declined' THEN 1 ELSE 0 END) as declined
-                ")->first();
-            }
+            $approvedCount = StoreRequisition::whereIn('status', ['approved', 'partially_approved'])->count();
+            $declinedCount = StoreRequisition::where('status', 'declined')->count();
+            $pendingCount  = StoreRequisition::awaitingHeadOfStoresReview()->count();
 
             $stats = [
-                'pending'  => (int) ($statsData->pending ?? 0),
-                'approved' => (int) ($statsData->approved ?? 0),
-                'declined' => (int) ($statsData->declined ?? 0),
+                'pending'  => $pendingCount,
+                'approved' => $approvedCount,
+                'declined' => $declinedCount,
             ];
         } else {
             $statsData = StoreRequisition::where(function($q) use ($depts) {

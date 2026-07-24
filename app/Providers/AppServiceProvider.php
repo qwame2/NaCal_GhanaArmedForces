@@ -432,47 +432,7 @@ class AppServiceProvider extends ServiceProvider
 
                     if ($isStoresHead) {
                         // Badge shows pending requisitions awaiting Stores Head action
-                        // (Disappears if a request is awaiting other heads like Origin HOD or DG)
-                        $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
-                            ->where('main_admin_status', 'pending')
-                            ->where(function($q) use ($isStoresHOD, $isBackupActive, $depts) {
-                                $q->whereRaw('1 = 0');
-                                if ($isStoresHOD) {
-                                    $q->orWhere(function($q2) {
-                                        $q2->where('origin_admin_status', 'approved')
-                                           ->where(function($q3) {
-                                               $q3->where('requires_dg_approval', false)
-                                                  ->orWhere('dg_status', 'approved');
-                                           });
-                                    });
-                                }
-                                if ($isStoresHOD && !$isBackupActive) {
-                                    $q->orWhere(function($q2) {
-                                        $q2->where('origin_admin_status', 'pending')
-                                           ->whereIn('department', ['Stores', 'Store']);
-                                    });
-                                }
-                                if ($isBackupActive) {
-                                    $q->orWhere(function($q2) use ($depts) {
-                                        $q2->whereIn('department', $depts)
-                                           ->where(function($q3) {
-                                               $q3->where('origin_admin_status', 'pending')
-                                                  ->orWhere('alternative_status', 'proposed');
-                                           });
-                                    });
-                                }
-                                $q->orWhere(function($q2) {
-                                    $q2->where('origin_admin_status', 'pending')
-                                       ->whereNotIn('department', function($subQuery) {
-                                           $subQuery->select('department')
-                                                    ->from('users')
-                                                    ->where('role', 'Department Head')
-                                                    ->where('is_active', true)
-                                                    ->whereNotNull('department');
-                                       });
-                                });
-                            })
-                            ->count();
+                        $mainStoreRequisitionsCount = \App\Models\StoreRequisition::awaitingHeadOfStoresReview()->count();
                     } else {
                         $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
                             ->where(function($q) use ($depts) {
