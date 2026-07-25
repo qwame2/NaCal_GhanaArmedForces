@@ -21,17 +21,8 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
     <style>
         :root {
-            --primary: #059669;
-            --primary-glow: rgba(5, 150, 105, 0.15);
-            --primary-hover: #047857;
-            --secondary: #0284c7;
-            --accent: #0284c7;
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #475569;
+            --primary-hover: var(--primary-dark);
             --text-heading: #000000;
-            --border-color: #e2e8f0;
             --shadow-luxe: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
             --radius-luxe: 16px;
         }
@@ -862,7 +853,7 @@
                     </a>
                 </li>
                 @endif
-                @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores', 'Dept. Head (Stores)']))
+                @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head']) && auth()->user()->role !== 'Head of Stores' && auth()->user()->role !== 'Dept. Head (Stores)')
                 <li>
                     <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" title="{{ in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']) ? 'Review & Approve Requests' : 'Review Requests' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>

@@ -27,7 +27,7 @@
             border-radius: 40px;
             padding: 2.5rem 3.5rem;
             backdrop-filter: blur(40px);
-            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1), 0 0 0 1px rgba(5, 150, 105,0.04);
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1), 0 0 0 1px var(--primary-glow);
             position: relative;
             overflow: hidden;
             transition: max-width 0.55s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease, box-shadow 0.4s ease;
@@ -36,7 +36,7 @@
         .auth-vault.mode-register {
             max-width: 1000px;
             padding: 2.5rem 4rem 3rem;
-            box-shadow: 0 50px 120px -20px rgba(5, 150, 105,0.12), 0 0 0 1px rgba(5, 150, 105,0.06);
+            box-shadow: 0 50px 120px -20px var(--primary-glow), 0 0 0 1px var(--primary-glow);
         }
 
         .auth-header {
@@ -155,10 +155,10 @@
         .form-section-divider .divider-line {
             flex: 1;
             height: 1px;
-            background: linear-gradient(to right, rgba(5, 150, 105,0.15), transparent);
+            background: linear-gradient(to right, var(--primary-glow), transparent);
         }
         .form-section-divider .divider-line.right {
-            background: linear-gradient(to left, rgba(5, 150, 105,0.15), transparent);
+            background: linear-gradient(to left, var(--primary-glow), transparent);
         }
 
         /* â”€â”€ Register field animations â”€â”€ */
@@ -210,10 +210,10 @@
             height: 58px !important;
         }
 
-        /* â”€â”€ Register submit button: gradient â”€â”€ */
+        /* ── Register submit button: theme variables ── */
         .register-submit-btn {
-            background: linear-gradient(135deg, #059669 0%, #065f46 100%) !important;
-            box-shadow: 0 12px 30px rgba(5, 150, 105,0.35) !important;
+            background: var(--primary) !important;
+            box-shadow: 0 12px 30px var(--primary-glow) !important;
             height: 60px !important;
             border-radius: 22px !important;
             font-size: 0.95rem !important;
@@ -221,23 +221,24 @@
             text-transform: uppercase !important;
         }
         .register-submit-btn:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            background: var(--primary) !important;
+            filter: brightness(1.1) !important;
             transform: translateY(-4px) !important;
-            box-shadow: 0 20px 45px rgba(5, 150, 105,0.45) !important;
+            box-shadow: 0 20px 45px var(--primary-glow) !important;
         }
 
-        /* â”€â”€ Password hint chip â”€â”€ */
+        /* ── Password hint chip ── */
         .pwd-hint-chip {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(5, 150, 105,0.06);
-            border: 1px solid rgba(5, 150, 105,0.12);
+            background: var(--primary-glow);
+            border: 1px solid var(--primary-glow);
             border-radius: 999px;
             padding: 4px 10px;
             font-size: 0.65rem;
             font-weight: 800;
-            color: #059669;
+            color: var(--primary);
             margin-top: 8px;
             letter-spacing: 0.04em;
         }
@@ -507,7 +508,7 @@
                                 <a href="{{ route('password.request') }}" id="forgotLink" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Password?</a>
                             </div>
 
-                            <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);">
+                            <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px var(--primary-glow);">
                                 <span>Login</span>
                             </button>
 
@@ -687,7 +688,7 @@
 
                             <div class="form-grid" style="margin-top: 0.5rem;">
                                 {{-- Requisitioner Toggle Switch --}}
-                                <div class="input-modern-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(5, 150, 105, 0.03); padding: 0.9rem 1.25rem; border: 1px dashed rgba(5, 150, 105, 0.2); border-radius: 20px;">
+                                <div class="input-modern-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: var(--primary-glow); padding: 0.9rem 1.25rem; border: 1px dashed var(--primary-glow); border-radius: 20px;">
                                     <div style="display: flex; flex-direction: column; gap: 4px;">
                                         <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">Register as Requisitioner</span>
                                         <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Toggle if you are requesting items on behalf of your department</span>
@@ -857,15 +858,15 @@
         height: 56px;
     }
     .staff-id-split-wrapper:focus-within {
-        border-color: var(--primary, #059669);
-        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
     }
     .staff-id-prefix-select {
         appearance: none;
         -webkit-appearance: none;
         border: none;
-        background: linear-gradient(135deg, rgba(5, 150, 105,0.1), rgba(5, 150, 105,0.06));
-        color: var(--primary, #059669);
+        background: var(--primary-glow);
+        color: var(--primary);
         font-weight: 900;
         font-size: 0.95rem;
         padding: 0 18px;
@@ -878,7 +879,7 @@
         transition: background 0.2s;
     }
     .staff-id-prefix-select:hover {
-        background: linear-gradient(135deg, rgba(5, 150, 105,0.18), rgba(5, 150, 105,0.1));
+        background: var(--primary-glow);
     }
     .staff-id-divider {
         width: 1.5px;
@@ -1036,12 +1037,12 @@
     .tab-btn.active {
         background: var(--primary) !important;
         color: white !important;
-        box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 10px 20px var(--primary-glow);
     }
 
     .tab-btn:hover:not(.active) {
         color: var(--primary) !important;
-        background: rgba(5, 150, 105, 0.08) !important;
+        background: var(--primary-glow) !important;
         transform: scale(1.02);
     }
 

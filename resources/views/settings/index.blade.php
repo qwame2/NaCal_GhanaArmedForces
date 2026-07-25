@@ -1,4 +1,4 @@
-﻿@extends((auth()->user()->is_admin && !auth()->user()->isMainAdminOrSub()) ? 'layouts.admin' : 'layouts.dashboard')
+@extends((auth()->user()->is_admin && !auth()->user()->isMainAdminOrSub()) ? 'layouts.admin' : 'layouts.dashboard')
 
 @section('title', 'System Settings')
 
@@ -14,21 +14,21 @@
                 @if(auth()->user()->avatar)
                     <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;" id="user-avatar-img">
                 @else
-                    <div id="user-avatar-placeholder" style="width: 110px; height: 110px; background: #059669; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(5, 150, 105,0.3); border: 4px solid white;">
+                    <div id="user-avatar-placeholder" style="width: 110px; height: 110px; background: var(--primary); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px var(--primary-glow); border: 4px solid white;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
                     </div>
                 @endif
                 <button onclick="document.getElementById('avatar-upload').click()" style="position: absolute; bottom: -8px; right: -8px; width: 36px; height: 36px; background: white; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 10px rgba(0,0,0,0.1); transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Upload new photo">
-                    <i data-lucide="camera" style="width: 18px; color: #059669;"></i>
+                    <i data-lucide="camera" style="width: 18px; color: var(--primary);"></i>
                 </button>
                 <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="uploadAvatarFile(this)">
             </div>
             
             <div>
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                    <span style="background: rgba(5, 150, 105, 0.1); color: #059669; font-size: 0.65rem; font-weight: 950; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em;">Authenticated Personnel</span>
+                    <span style="background: var(--primary-glow); color: var(--primary); font-size: 0.65rem; font-weight: 950; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em;">Authenticated Personnel</span>
                     <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="shield-check" style="width: 14px; color: #059669;"></i> Security Verified
+                        <i data-lucide="shield-check" style="width: 14px; color: var(--primary);"></i> Security Verified
                     </span>
                 </div>
                 <h1 style="margin: 0; font-size: 2.5rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em;">{{ auth()->user()->name }}</h1>
@@ -139,9 +139,9 @@
 
 
 
-                <div style="background: rgba(5, 150, 105, 0.05); padding: 2rem; border-radius: 20px; border: 1px solid rgba(5, 150, 105, 0.15);">
+                <div style="background: var(--primary-glow); padding: 2rem; border-radius: 20px; border: 1px solid var(--primary-glow);">
                     <div style="display: flex; gap: 1rem; align-items: center;">
-                        <i data-lucide="info" style="color: #059669; width: 24px;"></i>
+                        <i data-lucide="info" style="color: var(--primary); width: 24px;"></i>
                         <p style="font-size: 0.9rem; color: var(--text-main); font-weight: 700; margin: 0;">Your profile information is verified and visible for internal auditing and logistical tracking.</p>
                     </div>
                 </div>
@@ -181,7 +181,7 @@
                     <div class="setting-item" style="padding: 2.5rem;">
                         <div style="flex: 1;">
                             <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-                                <i data-lucide="zoom-in" style="width: 20px; color: #059669;"></i>
+                                <i data-lucide="zoom-in" style="width: 20px; color: var(--primary);"></i>
                                 System-wide UI Scaling
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-muted);">Adjust the overall size of the interface elements. This affects menus, text, and charts.</div>
@@ -192,7 +192,7 @@
                                 <i data-lucide="minus"></i>
                             </button>
                             <div style="padding: 0 1.5rem; text-align: center;">
-                                <div id="settings-zoom-val" style="font-size: 1.25rem; font-weight: 950; color: #059669;">100%</div>
+                                <div id="settings-zoom-val" style="font-size: 1.25rem; font-weight: 950; color: var(--primary);">100%</div>
                                 <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Standard</div>
                             </div>
                             <button onclick="settingsAdjustZoom(0.1)" class="security-action-btn" style="padding: 0.75rem; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); width: 44px; height: 44px; justify-content: center;" title="Increase Size">
@@ -204,7 +204,7 @@
                     <div class="setting-item">
                         <div style="flex: 1;">
                             <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-                                <i data-lucide="sparkles" style="width: 20px; color: #059669;"></i>
+                                <i data-lucide="sparkles" style="width: 20px; color: var(--primary);"></i>
                                 Glassmorphism Visuals
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-muted);">Enable semi-transparent surfaces and blur effects across the system.</div>
@@ -311,7 +311,7 @@
         top: 20%;
         height: 60%;
         width: 4px;
-        background: #059669;
+        background: var(--primary);
         border-radius: 0 4px 4px 0;
         transform: scaleX(0);
         transform-origin: left;
@@ -319,20 +319,20 @@
     }
     .settings-nav-btn i { width: 20px; height: 20px; transition: all 0.3s; color: var(--text-muted); }
     .settings-nav-btn:hover { 
-        background: rgba(5, 150, 105, 0.08); 
-        color: #059669; 
+        background: var(--primary-glow); 
+        color: var(--primary); 
         transform: translateX(4px); 
     }
     .settings-nav-btn:hover i {
-        color: #059669;
+        color: var(--primary);
     }
     .settings-nav-btn:hover::before {
         transform: scaleX(1);
     }
     .settings-nav-btn.active {
-        background: #059669; 
+        background: var(--primary); 
         color: #ffffff;
-        box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 10px 25px -5px var(--primary-glow);
     }
     .settings-nav-btn.active i { color: #ffffff; }
     .settings-nav-btn.active::before {
@@ -395,7 +395,7 @@
         padding-left: 2.8rem;
     }
     .settings-field-wrapper:focus-within .settings-field-icon {
-        color: #059669;
+        color: var(--primary);
     }
 
     .modal-content {
@@ -410,7 +410,7 @@
         border: 1px solid var(--border-color);
         transition: 0.3s;
     }
-    .setting-item:hover { border-color: #0ea5e9; background: rgba(5, 150, 105, 0.03); }
+    .setting-item:hover { border-color: #0ea5e9; background: var(--primary-glow); }
 
     .toggle-switch {
         width: 58px; height: 32px; background: #27272a; border-radius: 99px;
@@ -420,7 +420,7 @@
         position: absolute; top: 50%; left: 5px; transform: translateY(-50%); width: 22px; height: 22px;
         background: #ffffff; border-radius: 50%; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 3px 6px rgba(0,0,0,0.25);
     }
-    .toggle-switch.active { background: #059669; }
+    .toggle-switch.active { background: var(--primary); }
     .toggle-switch.active .toggle-nob { left: 31px; }
 
     .modern-action-btn.secondary {
@@ -435,18 +435,18 @@
 
     .modern-action-btn.secondary:hover {
         background: #18181b;
-        color: #059669;
+        color: var(--primary);
         border-color: #0ea5e9;
     }
 
     .save-btn {
         padding: 1.25rem 3rem; border-radius: 20px; border: none;
-        background: #059669;
+        background: var(--primary);
         color: #ffffff; font-weight: 950; font-size: 1.05rem; cursor: pointer;
         display: flex; align-items: center; gap: 14px;
-        transition: all 0.4s; box-shadow: 0 12px 30px rgba(5, 150, 105, 0.3);
+        transition: all 0.4s; box-shadow: 0 12px 30px var(--primary-glow);
     }
-    .save-btn:hover { background: #065f46; transform: translateY(-3px); box-shadow: 0 18px 40px rgba(5, 150, 105, 0.45); }
+    .save-btn:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 18px 40px var(--primary-glow); }
 
     .modal-overlay {
         position: fixed; top: 0; left: 0;
@@ -480,8 +480,8 @@
         z-index: 2;
     }
     .password-toggle:hover {
-        color: #059669;
-        background: rgba(5, 150, 105, 0.08);
+        color: var(--primary);
+        background: var(--primary-glow);
     }
     .password-toggle i {
         width: 18px;
@@ -495,7 +495,7 @@
         padding: 0.85rem 1.75rem;
         background: #000000;
         color: #ffffff;
-        border: 1.5px solid #059669;
+        border: 1.5px solid var(--primary);
         border-radius: 14px;
         font-weight: 850;
         font-size: 0.85rem;
@@ -505,15 +505,15 @@
     }
     .security-action-btn i {
         width: 18px;
-        color: #059669;
+        color: var(--primary);
         transition: 0.3s;
     }
     .security-action-btn:hover {
-        background: #059669;
+        background: var(--primary);
         color: #ffffff;
         border-color: #0ea5e9;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 8px 20px var(--primary-glow);
     }
     .security-action-btn:hover i {
         color: #ffffff;
@@ -680,9 +680,9 @@
 
             strengthBar.style.width = strength + '%';
             if (strength <= 25) strengthBar.style.background = '#ef4444';
-            else if (strength <= 50) strengthBar.style.background = '#059669';
-            else if (strength <= 75) strengthBar.style.background = '#059669';
-            else strengthBar.style.background = '#059669';
+            else if (strength <= 50) strengthBar.style.background = 'var(--primary)';
+            else if (strength <= 75) strengthBar.style.background = 'var(--primary)';
+            else strengthBar.style.background = 'var(--primary)';
         } else {
             strengthCont.style.display = 'none';
         }
@@ -691,7 +691,7 @@
             matchTag.style.display = 'block';
             if (pass === confirm) {
                 matchTag.innerText = '✓ Passwords Match';
-                matchTag.style.color = '#059669';
+                matchTag.style.color = 'var(--primary)';
             } else {
                 matchTag.innerText = '✗ Passwords do not match';
                 matchTag.style.color = '#ef4444';

@@ -13,8 +13,8 @@
     
     <style>
         :root {
-            --primary: #059669;
-            --primary-hover: #065f46;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
             --bg-dark: #0f172a;
             --bg-page: #f8fafc;
             --border-color: #e2e8f0;
@@ -52,8 +52,8 @@
         .icon-badge {
             width: 44px;
             height: 44px;
-            background: rgba(5, 150, 105, 0.15);
-            border: 1px solid rgba(5, 150, 105, 0.3);
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -98,13 +98,13 @@
         .btn-approve {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
         }
 
         .btn-approve:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
         }
 
         .btn-decline {

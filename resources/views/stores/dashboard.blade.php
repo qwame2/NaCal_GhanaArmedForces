@@ -9,7 +9,7 @@
 <div class="animate-slide-up">
     {{-- Page Header --}}
     <div class="page-header dashboard-header-mobile" style="position: relative; overflow: hidden; background: var(--bg-card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border-color); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; box-shadow: var(--card-shadow);">
-        <div style="position: absolute; top: -50px; right: -50px; width: 180px; height: 180px; background: rgba(22, 163, 74, 0.05); border-radius: 50%;"></div>
+        <div style="position: absolute; top: -50px; right: -50px; width: 180px; height: 180px; background: var(--primary-glow); border-radius: 50%;"></div>
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                 <span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 600;">
@@ -33,7 +33,7 @@
         {{-- Card 1: Pending Requisitions --}}
         <div class="stat-card" style="background: var(--bg-card); border-radius: 18px; padding: 1.5rem; border: 1px solid var(--border-color); position: relative; overflow: hidden; transition: var(--transition); box-shadow: var(--card-shadow);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                <div style="width: 46px; height: 46px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                <div style="width: 46px; height: 46px; border-radius: 14px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="file-text" style="width: 22px; height: 22px;"></i>
                 </div>
                 @if($pendingRequisitionsCount > 0)
@@ -41,7 +41,7 @@
                     Action Needed
                 </span>
                 @else
-                <span style="background: var(--accent); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
+                <span style="background: var(--secondary); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
                     Up to Date
                 </span>
                 @endif
@@ -57,15 +57,15 @@
         {{-- Card 2: Item Entry Approvals --}}
         <div class="stat-card" style="background: var(--bg-card); border-radius: 18px; padding: 1.5rem; border: 1px solid var(--border-color); position: relative; overflow: hidden; transition: var(--transition); box-shadow: var(--card-shadow);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                <div style="width: 46px; height: 46px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                <div style="width: 46px; height: 46px; border-radius: 14px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="check-square" style="width: 22px; height: 22px;"></i>
                 </div>
                 @if($pendingItemEntryCount > 0)
                 <span style="background: #f59e0b; color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
-                    Pending
+                     Pending
                 </span>
                 @else
-                <span style="background: var(--accent); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
+                <span style="background: var(--secondary); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
                     Cleared
                 </span>
                 @endif
@@ -80,7 +80,7 @@
         {{-- Card 3: Service SRA Approvals --}}
         <div class="stat-card" style="background: var(--bg-card); border-radius: 18px; padding: 1.5rem; border: 1px solid var(--border-color); position: relative; overflow: hidden; transition: var(--transition); box-shadow: var(--card-shadow);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                <div style="width: 46px; height: 46px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: var(--accent); display: flex; align-items: center; justify-content: center;">
+                <div style="width: 46px; height: 46px; border-radius: 14px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="clipboard-check" style="width: 22px; height: 22px;"></i>
                 </div>
                 @if($pendingServiceSraCount > 0)
@@ -88,14 +88,14 @@
                     In Workflow
                 </span>
                 @else
-                <span style="background: var(--accent); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
+                <span style="background: var(--secondary); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
                     All Done
                 </span>
                 @endif
             </div>
             <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.35rem 0;">Service SRA Queue</p>
             <h3 id="pendingServiceSraCountVal" style="font-size: 2.25rem; font-weight: 900; color: var(--text-main); margin: 0 0 0.5rem 0; letter-spacing: -0.03em;">{{ number_format($pendingServiceSraCount) }}</h3>
-            <a href="{{ route('stores.service-sra.index') }}" style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <a href="{{ route('stores.service-sra.index') }}" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                 Manage Service SRAs &rarr;
             </a>
         </div>
@@ -111,7 +111,7 @@
                     Low Level
                 </span>
                 @else
-                <span style="background: var(--accent); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
+                <span style="background: var(--secondary); color: white; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;">
                     Optimal
                 </span>
                 @endif
@@ -131,7 +131,7 @@
         </h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
             <a href="{{ route('admin.requisitions') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: var(--transition); box-shadow: var(--card-shadow);">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="file-check-2" style="width: 20px; height: 20px;"></i>
                 </div>
                 <div>
@@ -141,7 +141,7 @@
             </a>
 
             <a href="{{ route('stores.item-entry-approval') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: var(--transition); box-shadow: var(--card-shadow);">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="package-plus" style="width: 20px; height: 20px;"></i>
                 </div>
                 <div>
@@ -151,7 +151,7 @@
             </a>
 
             <a href="{{ route('stores.service-sra.index') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: var(--transition); box-shadow: var(--card-shadow);">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: var(--accent); display: flex; align-items: center; justify-content: center; shrink: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="wrench" style="width: 20px; height: 20px;"></i>
                 </div>
                 <div>
@@ -161,7 +161,7 @@
             </a>
 
             <a href="{{ route('admin.inventory') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: var(--transition); box-shadow: var(--card-shadow);">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="boxes" style="width: 20px; height: 20px;"></i>
                 </div>
                 <div>
@@ -171,7 +171,7 @@
             </a>
 
             <a href="{{ route('reports.index') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: var(--transition); box-shadow: var(--card-shadow);">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="bar-chart-3" style="width: 20px; height: 20px;"></i>
                 </div>
                 <div>
@@ -195,7 +195,7 @@
 
             @if($recentRequisitions->isEmpty())
                 <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
-                    <i data-lucide="check-circle-2" style="width: 32px; height: 32px; color: var(--accent); margin-bottom: 0.5rem;"></i>
+                    <i data-lucide="check-circle-2" style="width: 32px; height: 32px; color: var(--secondary); margin-bottom: 0.5rem;"></i>
                     <p style="margin: 0; font-weight: 600; font-size: 0.9rem;">No pending requisitions awaiting review.</p>
                 </div>
             @else
@@ -216,7 +216,7 @@
                                 <td style="padding: 0.85rem 0.5rem; font-weight: 600; color: var(--text-main);">{{ $req->requester_name ?? optional($req->requester)->name ?? 'Staff' }}</td>
                                 <td style="padding: 0.85rem 0.5rem; color: var(--text-muted);">{{ $req->department }}</td>
                                 <td style="padding: 0.85rem 0.5rem; text-align: right;">
-                                    <a href="{{ route('admin.requisitions', ['open_id' => $req->id]) }}" style="background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
+                                    <a href="{{ route('admin.requisitions', ['open_id' => $req->id]) }}" style="background: var(--primary-glow); color: var(--primary); padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
                                         Review
                                     </a>
                                 </td>
@@ -239,7 +239,7 @@
 
             @if($recentItemEntries->isEmpty())
                 <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
-                    <i data-lucide="shield-check" style="width: 32px; height: 32px; color: var(--accent); margin-bottom: 0.5rem;"></i>
+                    <i data-lucide="shield-check" style="width: 32px; height: 32px; color: var(--secondary); margin-bottom: 0.5rem;"></i>
                     <p style="margin: 0; font-weight: 600; font-size: 0.9rem;">No pending item entry approvals.</p>
                 </div>
             @else
@@ -260,7 +260,7 @@
                                 <td style="padding: 0.85rem 0.5rem; color: var(--text-muted);">{{ optional($entry->user)->name ?? 'Store Officer' }}</td>
                                 <td style="padding: 0.85rem 0.5rem; color: var(--text-muted);">{{ $entry->created_at->format('d/m/Y') }}</td>
                                 <td style="padding: 0.85rem 0.5rem; text-align: right;">
-                                    <a href="{{ route('sra.preview', $entry->id) }}" style="background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
+                                    <a href="{{ route('sra.preview', $entry->id) }}" style="background: var(--primary-glow); color: var(--primary); padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
                                         Authorize
                                     </a>
                                 </td>

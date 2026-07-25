@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
 <style>
@@ -1142,7 +1142,13 @@
                                     {{ '@' . $usr->username }}
                                 </td>
                                 <td style="font-weight: 700;">
-                                    {{ $usr->role }}
+                                    @if($usr->role === 'Main Admin')
+                                        Head of Admin
+                                    @elseif($usr->role === 'Sub Main Admin')
+                                        Departmental Head Delegator(Authorizer)
+                                    @else
+                                        {{ $usr->role }}
+                                    @endif
                                 </td>
                                 <td style="font-weight: 700; color: var(--text-muted);">
                                     {{ $usr->department ?: 'Unassigned' }}

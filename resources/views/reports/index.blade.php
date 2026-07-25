@@ -12,11 +12,7 @@
         <div class="rpt-orb rpt-orb-2"></div>
         <div class="rpt-orb rpt-orb-3"></div>
         <div style="position: relative; z-index: 1;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                <span class="rpt-engine-badge" style="background: var(--primary-glow); color: var(--primary); font-size: 0.68rem; font-weight: 900; padding: 0.3rem 0.9rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid var(--primary-glow);">REPORTING ENGINE</span>
-                <span class="rpt-divider-dot" style="width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); opacity: 0.4; flex-shrink: 0;"></span>
-                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Verification & Validation Tool</span>
-            </div>
+            
             <h2 class="rpt-hero-title" style="font-size: 2.6rem; font-weight: 950; color: var(--primary); margin: 0; letter-spacing: -0.045em; line-height: 1.1;">Reports</h2>
             <p class="rpt-hero-sub" style="color: var(--text-muted); font-size: 0.95rem; font-weight: 600; margin-top: 8px;">Collect data from different time periods for official review.</p>
         </div>

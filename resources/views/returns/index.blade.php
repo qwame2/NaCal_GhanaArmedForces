@@ -73,7 +73,7 @@
         <div>
             <h3 style="margin: 0; font-size: 2rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.02em;">Outstanding Allocations</h3>
             <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #059669; box-shadow: 0 0 10px #059669;"></span>
+                
                 Tracking {{ $stats['total_active_holdings'] }} active holdings
             </p>
         </div>

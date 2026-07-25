@@ -1,4 +1,4 @@
-﻿@if($sras->isEmpty())
+@if($sras->isEmpty())
     @if(request()->anyFilled(['search', 'status', 'delivery_type']))
         <div class="glass-card" style="border-radius: 24px; padding: 4rem 2rem; text-align: center;">
             <i data-lucide="search" style="width: 64px; height: 64px; color: var(--text-muted); margin: 0 auto 1rem; display: block; opacity: 0.4;"></i>
@@ -48,7 +48,7 @@
                             @endif
                         </td>
                         <td style="padding: 1rem 1.5rem;">
-                            <span class="sra-status-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(5,150,105,0.1)' : 'rgba(5,150,105,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#059669' : '#059669' }};">
+                            <span class="sra-status-badge" style="background: var(--primary-glow); color: var(--primary);">
                                 {{ ucfirst($sra->delivery_type) }}
                             </span>
                         </td>
@@ -63,8 +63,8 @@
                         <td style="padding: 1rem 1.5rem; text-align: center;">
                             @if($sra->status === 'approved')
                                 <a href="{{ route('service-sra.receipt', $sra->id) }}" target="_blank"
-                                   style="display: inline-flex; align-items: center; gap: 6px; padding: 0.55rem 1.15rem; background: rgba(5,150,105,0.1); color: #059669; border: 1px solid rgba(5,150,105,0.25); border-radius: 10px; font-size: 0.78rem; font-weight: 800; text-decoration: none; transition: all 0.2s;"
-                                   onmouseover="this.style.background='rgba(5,150,105,0.2)'" onmouseout="this.style.background='rgba(5,150,105,0.1)'">
+                                   style="display: inline-flex; align-items: center; gap: 6px; padding: 0.55rem 1.15rem; background: var(--primary-glow); color: var(--primary); border: 1px solid var(--primary-glow); border-radius: 10px; font-size: 0.78rem; font-weight: 800; text-decoration: none; transition: all 0.2s;"
+                                   onmouseover="this.style.background='var(--primary)';this.style.color='white';this.style.borderColor='var(--primary)'" onmouseout="this.style.background='var(--primary-glow)';this.style.color='var(--primary)';this.style.borderColor='var(--primary-glow)'">
                                     <i data-lucide="download" style="width: 14px;"></i> Download Receipt
                                 </a>
                             @else
@@ -73,7 +73,7 @@
                                         <i data-lucide="x-circle" style="width: 13px; color: #ef4444;"></i>
                                         Declined{{ $sra->admin_status === 'declined' ? ' by Admin' : ' by Stores' }}
                                     @else
-                                        <i data-lucide="clock" style="width: 13px; color: var(--primary);"></i>
+                                        <i data-lucide="clock" style="width: 13px; color: var(--primary); integrity: 1;"></i>
                                         Pending Approval
                                     @endif
                                 </span>

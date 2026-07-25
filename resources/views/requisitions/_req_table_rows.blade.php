@@ -1,4 +1,4 @@
-﻿@forelse($requisitions as $req)
+@forelse($requisitions as $req)
     @if($req instanceof \App\Models\InventoryBatch)
         @php
             $sraStatus = $req->approval_status;
@@ -363,9 +363,15 @@
                 }
             @endphp
             @if($req->status === 'approved' || $req->status === 'partially_approved')
-                <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#059669'; this.style.color='white'; this.style.borderColor='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669'; this.style.borderColor='rgba(5, 150, 105, 0.2)';">
-                    <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
-                </a>
+                @if(is_null($req->collected_at))
+                    <button type="button" style="background: rgba(100, 116, 139, 0.08); color: #64748b; border: 1.5px solid rgba(100, 116, 139, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: not-allowed; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" title="Receipt will be generated after collection." disabled>
+                        <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
+                    </button>
+                @else
+                    <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: var(--primary-glow); color: var(--primary); border: 1.5px solid var(--primary-glow); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)'; this.style.borderColor='var(--primary-glow)';">
+                        <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
+                    </a>
+                @endif
             @elseif($req->status === 'declined')
                 <button type="button" onclick="showDeclinedNotice()" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#ef4444'; this.style.color='white'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#ef4444'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
                     <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined

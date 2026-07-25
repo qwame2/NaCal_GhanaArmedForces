@@ -1,7 +1,8 @@
-﻿:root {
+:root {
     --primary: #6366f1;
     --primary-light: #818cf8;
     --primary-dark: #4f46e5;
+    --primary-glow: rgba(99, 102, 241, 0.12);
     --secondary: #10b981;
     --accent: #f59e0b;
     --danger: #ef4444;
@@ -31,6 +32,7 @@
     --text-muted: #94a3b8;
     --border-color: #334155;
     --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --primary-glow: rgba(99, 102, 241, 0.2);
 }
 
 * {

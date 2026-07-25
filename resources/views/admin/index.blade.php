@@ -82,19 +82,6 @@
             </div>
         </div>
 
-        <!-- Modern Premium Tab Selector -->
-        <div class="registry-tabs" style="display: flex; gap: 1.5rem; border-bottom: 2px solid #f1f5f9; padding: 0 3rem 1.25rem; margin-top: 1rem;">
-            <button type="button" class="registry-tab-btn active" id="tabBtnActive" onclick="switchRegistryTab('active')" style="background: transparent; border: none; padding: 0.75rem 1.5rem; font-weight: 800; color: #059669; border-bottom: 3px solid #059669; cursor: pointer; font-size: 0.92rem; font-family: inherit; transition: all 0.3s ease; position: relative; outline: none;">
-                Active Staff ({{ $totalUsers }})
-            </button>
-            <button type="button" class="registry-tab-btn" id="tabBtnPending" onclick="switchRegistryTab('pending')" style="background: transparent; border: none; padding: 0.75rem 1.5rem; font-weight: 800; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; font-size: 0.92rem; font-family: inherit; transition: all 0.3s ease; position: relative; display: flex; align-items: center; gap: 8px; outline: none;">
-                Pending Approvals 
-                @if($pendingUsers->count() > 0)
-                    <span style="background: #ef4444; color: white; font-size: 0.72rem; font-weight: 900; padding: 2px 8px; border-radius: 99px; min-width: 18px; text-align: center;">{{ $pendingUsers->count() }}</span>
-                @endif
-            </button>
-        </div>
-
         <div id="activeStaffPane">
             <div class="table-container">
             <table class="precision-table">
@@ -261,109 +248,7 @@
         </div>
     </div>
 
-    <!-- Pending Approvals Queue -->
-    <div id="pendingApprovalsPane" style="display: none;">
-        <div class="table-container">
-            @if($pendingUsers->count() === 0)
-                <div style="padding: 5rem 3rem; text-align: center; color: #64748b;">
-                    <div style="background: #f8fafc; width: 80px; height: 80px; border-radius: 24px; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; margin-bottom: 1.5rem; border: 1.5px dashed #e2e8f0;">
-                        <i data-lucide="shield-check" style="width: 36px; height: 36px;"></i>
-                    </div>
-                    <h4 style="margin: 0; color: #0f172a; font-weight: 850; font-size: 1.15rem; letter-spacing: -0.02em;">All Registrations Actioned</h4>
-                    <p style="margin: 8px 0 0; font-size: 0.88rem; font-weight: 600;">No pending user registration requests in queue.</p>
-                </div>
-            @else
-                <table class="precision-table">
-                    <thead>
-                        <tr>
-                            <th class="col-identity">Staff Member</th>
-                            <th class="col-clearance">Role Requested</th>
-                            <th class="col-sector">Department</th>
-                            <th class="col-sync">Request Time</th>
-                            <th class="col-ops" style="text-align: center; width: 15%;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($pendingUsers as $pUser)
-                        <tr class="registry-row">
-                            <td>
-                                <div class="identity-cell">
-                                    <div class="avatar-capsule">
-                                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>">
-                                        <span class="status-dot-mini offline"></span>
-                                    </div>
-                                    <div class="id-meta">
-                                        <span class="full-name">{{ $pUser->name }}</span>
-                                        <span class="callsign">@ {{ $pUser->username }}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                @if($pUser->role === 'Main Admin')
-                                    <div class="clearance-pill dept-head">
-                                        <div class="dot"></div>
-                                        Head of Admin(Authorizer) {{ $pUser->rank ? '(' . $pUser->rank . ')' : '' }}
-                                    </div>
-                                @elseif($pUser->role === 'Sub Main Admin')
-                                    <div class="clearance-pill dept-head">
-                                        <div class="dot"></div>
-                                        Delegators(Authorizer) {{ $pUser->rank ? '(' . $pUser->rank . ')' : '' }}
-                                    </div>
-                                @elseif($pUser->role === 'Department Head')
-                                    <div class="clearance-pill dept-head">
-                                        <div class="dot"></div>
-                                        Department Head {{ $pUser->rank ? '(' . $pUser->rank . ')' : '' }}
-                                    </div>
-                                @elseif($pUser->role === 'Officer')
-                                    <div class="clearance-pill store-officer">
-                                        <div class="dot"></div>
-                                        Store Officer
-                                    </div>
-                                @elseif($pUser->role === 'Auditor')
-                                    <div class="clearance-pill admin">
-                                        <div class="dot"></div>
-                                        Auditor
-                                    </div>
-                                @else
-                                    <div class="clearance-pill standard">
-                                        <div class="dot"></div>
-                                        {{ $pUser->role }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td><span class="sector-badge">{{ $pUser->department ?? 'UNASSIGNED' }}</span></td>
-                            <td>
-                                <span class="sync-time" style="color: #64748b; font-weight: 800;">
-                                    {{ $pUser->created_at ? $pUser->created_at->format('d/m/y H:i') : 'N/A' }}
-                                </span>
-                            </td>
-                            <td style="text-align: center;">
-                                <div style="display: flex; justify-content: center; align-items: center; gap: 8px;">
-                                    <!-- Approve Button -->
-                                    <form action="{{ route('admin.users.approve_registration', $pUser->id) }}" method="POST" style="display: inline;">
-                                        @csrf
-                                        <input type="hidden" name="role" value="{{ $pUser->role }}">
-                                        <button type="submit" class="btn-purge" title="Approve Registration" style="border: 1px solid #d1fae5; color: #059669; background: #ecfdf5; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#059669'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#059669'">
-                                            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
-                                        </button>
-                                    </form>
 
-                                    <!-- Reject Button -->
-                                    <form action="{{ route('admin.users.reject_registration', $pUser->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to reject and delete this registration request?')">
-                                        @csrf
-                                        <button type="submit" class="btn-purge" title="Reject Request" style="border: 1px solid #fee2e2; color: #ef4444; background: #fef2f2; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='white'" onmouseout="this.style.background='#fef2f2'; this.style.color='#ef4444'">
-                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @endif
-        </div>
-    </div>
 </div>
 
 <style>
@@ -1368,40 +1253,7 @@
         });
     }
 
-    function switchRegistryTab(tab) {
-        const activePane = document.getElementById('activeStaffPane');
-        const pendingPane = document.getElementById('pendingApprovalsPane');
-        const activeBtn = document.getElementById('tabBtnActive');
-        const pendingBtn = document.getElementById('tabBtnPending');
 
-        if (tab === 'active') {
-            activePane.style.display = 'block';
-            pendingPane.style.display = 'none';
-
-            activeBtn.classList.add('active');
-            activeBtn.style.color = '#059669';
-            activeBtn.style.borderBottom = '3px solid #059669';
-
-            pendingBtn.classList.remove('active');
-            pendingBtn.style.color = '#64748b';
-            pendingBtn.style.borderBottom = '3px solid transparent';
-        } else {
-            activePane.style.display = 'none';
-            pendingPane.style.display = 'block';
-
-            pendingBtn.classList.add('active');
-            pendingBtn.style.color = '#059669';
-            pendingBtn.style.borderBottom = '3px solid #059669';
-
-            activeBtn.classList.remove('active');
-            activeBtn.style.color = '#64748b';
-            activeBtn.style.borderBottom = '3px solid transparent';
-        }
-        
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    }
 </script>
 @endsection
 
