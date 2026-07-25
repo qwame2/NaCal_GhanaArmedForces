@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 @section('content')
 @php
     $isStoresHead = (auth()->user()->isMainAdminOrSub() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
@@ -21,14 +21,14 @@
 @endphp
 <style>
     :root {
-        --store-orange: #059669;
-        --store-orange-hover: #065f46;
-        --store-orange-light: rgba(5, 150, 105, 0.08);
-        --store-indigo: #059669;
-        --store-indigo-hover: #059669;
-        --store-indigo-light: rgba(5, 150, 105, 0.08);
-        --success-color: #059669;
-        --warning-color: #059669;
+        --store-orange: var(--primary);
+        --store-orange-hover: var(--primary-dark);
+        --store-orange-light: var(--primary-glow);
+        --store-indigo: var(--primary);
+        --store-indigo-hover: var(--primary-dark);
+        --store-indigo-light: var(--primary-glow);
+        --success-color: var(--primary);
+        --warning-color: var(--primary);
         --danger-color: #ef4444;
         --info-color: #06b6d4;
         --text-muted: #64748b;
@@ -59,7 +59,7 @@
     .track-stat-card.active-filter {
         border-color: var(--primary);
         background: var(--primary-glow);
-        box-shadow: 0 10px 20px -10px rgba(5, 150, 105, 0.15);
+        box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.15);
     }
 
     .track-grid {
@@ -91,13 +91,13 @@
         background: var(--success-color);
         border-color: var(--success-color);
         color: white;
-        box-shadow: 0 0 8px rgba(5, 150, 105,0.25);
+        box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
     }
     .stepper-node.active .stepper-dot {
         background: var(--store-orange);
         border-color: var(--store-orange);
         color: white;
-        box-shadow: 0 0 10px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
         animation: pulse-orange-dot 2s infinite;
     }
     .stepper-node.declined .stepper-dot {
@@ -140,7 +140,7 @@
         background: var(--danger-color) !important;
     }
     .stepper-connector.active {
-        background: #059669 !important;
+        background: var(--primary) !important;
     }
     .stepper-connector.bypassed {
         background: var(--border-color) !important;
@@ -149,9 +149,9 @@
     }
 
     @keyframes pulse-orange-dot {
-        0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
     }
 
     /* Modal Overlay & Details Drawer styles */
@@ -218,7 +218,7 @@
     }
 
     .modal-box.urgent-priority { border-top: 6px solid #dc2626; }
-    .modal-box.normal-priority { border-top: 6px solid #059669; }
+    .modal-box.normal-priority { border-top: 6px solid var(--primary); }
     .modal-box.low-priority { border-top: 6px solid #64748b; }
 
     .profile-card {
@@ -242,7 +242,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(5, 150, 105, 0.15);
+        border: 1.5px solid var(--primary-glow);
     }
 
     .stat-pill {
@@ -308,7 +308,7 @@
     {{-- Header Section --}}
     <div style="margin-bottom:2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
         <div>
-            <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->role) }} · TRACKING CONTROL</div>
+            <div style="font-size:.7rem;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->role) }} · TRACKING CONTROL</div>
             <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Track Staff Requests</h1>
             <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">{{ $isStoresHead ? 'Real-time tracking of staff requisitions and approval pipelines across all departments.' : 'Real-time tracking of store requisitions submitted by staff in your department.' }}</p>
         </div>
@@ -322,7 +322,7 @@
     <div id="tracking-stats-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem;">
         
         <div class="track-stat-card" data-stage="awaiting_hod">
-            <div style="width:40px;height:40px;background:rgba(5, 150, 105,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="user-check" style="width:20px;color:#059669;"></i></div>
+            <div style="width:40px;height:40px;background:var(--primary-glow);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="user-check" style="width:20px;color:var(--primary);"></i></div>
             <div>
                 <div id="stat-awaiting-hod" style="font-size:1.5rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['awaiting_hod'] }}</div>
                 <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Awaiting HOD</div>
@@ -330,7 +330,7 @@
         </div>
 
         <div class="track-stat-card" data-stage="awaiting_stores">
-            <div style="width:40px;height:40px;background:rgba(5, 150, 105,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="shield-alert" style="width:20px;color:#059669;"></i></div>
+            <div style="width:40px;height:40px;background:var(--primary-glow);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="shield-alert" style="width:20px;color:var(--primary);"></i></div>
             <div>
                 <div id="stat-awaiting-stores" style="font-size:1.5rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['awaiting_stores'] }}</div>
                 <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Awaiting Stores</div>
@@ -346,7 +346,7 @@
         </div>
 
         <div class="track-stat-card" data-stage="collected">
-            <div style="width:40px;height:40px;background:rgba(5, 150, 105,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#059669;"></i></div>
+            <div style="width:40px;height:40px;background:var(--primary-glow);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:var(--primary);"></i></div>
             <div>
                 <div id="stat-collected" style="font-size:1.5rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['collected'] }}</div>
                 <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Collected</div>
@@ -366,7 +366,7 @@
     {{-- Filters Toolbar --}}
     <div class="filter-card" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:20px;padding:1.25rem 1.5rem;margin-bottom:2rem;box-shadow:var(--shadow-premium);">
         <div class="filter-header" style="display:flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:900;color:var(--text-main);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:1rem;border-bottom:1px solid var(--border-color);padding-bottom:10px;">
-            <i data-lucide="sliders-horizontal" style="width:14px;height:14px;color:#059669;"></i>
+            <i data-lucide="sliders-horizontal" style="width:14px;height:14px;color:var(--primary);"></i>
             <span>Filter Criteria</span>
         </div>
         <form method="GET" class="filter-row" id="filter-form" style="display:flex;gap:1rem;flex-wrap:wrap;">
@@ -434,7 +434,7 @@
         {{-- Loading overlay --}}
         <div id="grid-loading" style="display:none;position:absolute;inset:0;background:rgba(var(--bg-card-rgb,255,255,255),.75);backdrop-filter:blur(2px);z-index:10;border-radius:20px;align-items:center;justify-content:center;">
             <div style="display:flex;align-items:center;gap:10px;padding:1rem 1.75rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.06);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" style="animation:spin 0.7s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="animation:spin 0.7s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 <span style="font-size:0.82rem;font-weight:800;color:var(--text-muted);">Syncing pipeline...</span>
             </div>
         </div>
@@ -625,8 +625,8 @@
     <div class="modal-box">
         <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:rgba(5, 150, 105,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                    <i data-lucide="compass" style="width:20px;color:#059669;"></i>
+                <div style="width:44px;height:44px;background:var(--primary-glow);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="compass" style="width:20px;color:var(--primary);"></i>
                 </div>
                 <div>
                     <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">Requisition Tracking Status</h2>
@@ -704,9 +704,9 @@
                 }
             } catch(e) {}
             returnDateBannerHtml = `
-            <div style="background:rgba(5, 150, 105, 0.06); border:1px solid rgba(5, 150, 105, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(5, 150, 105, 0.03);">
-                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
-                <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
+            <div style="background:var(--primary-glow); border:1px solid rgba(99, 102, 241, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:var(--primary); font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(99, 102, 241, 0.03);">
+                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:var(--primary); flex-shrink:0;"></i>
+                <span>Expected Return Date: <strong style="color:var(--primary); font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
             </div>`;
             purposeText = purposeText.replace(/\[Expected Return Date:\s*[^\]]+\]/i, '').trim();
         }
@@ -724,7 +724,7 @@
                 </div>
             </div>
             <div class="profile-card">
-                <div class="profile-avatar" style="background:rgba(5, 150, 105, 0.08); color:#059669; border-color:rgba(5, 150, 105,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
+                <div class="profile-avatar" style="background:var(--primary-glow); color:var(--primary); border-color:var(--primary-glow);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
                 <div style="flex:1; min-width:0;">
                     <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;letter-spacing:0.04em;">Originating Department</div>
                     <div style="font-size:1.05rem;font-weight:900;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${data.department}">${data.department}</div>
@@ -732,7 +732,7 @@
                         <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Submitted ${data.created_at}
                     </div>
                     ${data.origin_approved_by ? `
-                    <div style="font-size:.7rem;color:#059669;font-weight:750;margin-top:4px;display:inline-flex;align-items:center;gap:3px;background:rgba(5, 150, 105,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(5, 150, 105,0.15);width:fit-content;">
+                    <div style="font-size:.7rem;color:var(--primary);font-weight:750;margin-top:4px;display:inline-flex;align-items:center;gap:3px;background:var(--primary-glow);padding:2px 8px;border-radius:6px;border:1px solid rgba(99, 102, 241,0.15);width:fit-content;">
                         <i data-lucide="shield-check" style="width:11px;height:11px;"></i>Approved by HOD: ${data.origin_approved_by}
                     </div>
                     ` : ''}
@@ -768,8 +768,8 @@
 
             if (totalApproved !== null) {
                 const pct = requested > 0 ? Math.min(Math.round((totalApproved / requested) * 100), 100) : 0;
-                let fulfillBadgeBg = 'rgba(5, 150, 105, 0.1)';
-                let fulfillBadgeColor = '#059669';
+                let fulfillBadgeBg = 'var(--primary-glow)';
+                let fulfillBadgeColor = 'var(--primary)';
                 let fulfillLabel = `${pct}% Fulfill`;
 
                 if (totalApproved === 0) {
@@ -777,8 +777,8 @@
                     fulfillBadgeColor = '#ef4444';
                     fulfillLabel = 'Declined';
                 } else if (totalApproved < requested) {
-                    fulfillBadgeBg = 'rgba(5, 150, 105, 0.1)';
-                    fulfillBadgeColor = '#059669';
+                    fulfillBadgeBg = 'var(--primary-glow)';
+                    fulfillBadgeColor = 'var(--primary)';
                     fulfillLabel = `${pct}% Reduced`;
                 }
 
@@ -789,7 +789,7 @@
                             ${item.alternative_description ? `
                                 <div style="font-size:.95rem;font-weight:800;color:var(--text-main); display:flex; align-items:center; gap:6px;">
                                     <span>${item.description}</span>
-                                    <span style="font-size:0.75rem; font-weight:800; color:#059669;">(Approved: ${approved.toLocaleString()} ${item.unit})</span>
+                                    <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">(Approved: ${approved.toLocaleString()} ${item.unit})</span>
                                 </div>
                                 <div style="font-size:.92rem;font-weight:800;color:var(--store-orange); display:flex; align-items:center; gap:6px; margin-top:4px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:2px;"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3 14 10"/><path d="M3 21 10 14"/></svg>
@@ -814,13 +814,13 @@
 
                         <div style="flex:1;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Approved</div>
-                            <div style="font-size:1.1rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#059669'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
+                            <div style="font-size:1.1rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : 'var(--primary)'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
                         </div>
 
                         <div style="flex:2;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:4px;">Fulfillment Progress</div>
                             <div style="background:rgba(0,0,0,0.05); height:6px; border-radius:10px; overflow:hidden; width:100%;">
-                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : '#059669'}; border-radius:10px;"></div>
+                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : 'var(--primary)'}; border-radius:10px;"></div>
                             </div>
                         </div>
                     </div>
@@ -858,14 +858,14 @@
         let decisionHtml = '';
         if (data.origin_admin_status !== 'pending') {
             let label = data.origin_admin_status === 'approved' ? 'HOD APPROVED' : 'HOD DECLINED';
-            let color = data.origin_admin_status === 'approved' ? '#059669' : '#ef4444';
+            let color = data.origin_admin_status === 'approved' ? 'var(--primary)' : '#ef4444';
             decisionHtml += `
             <div style="background: ${color}04; border: 1.5px dashed ${color}25; border-radius: 16px; padding: 1.15rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
                 <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed ${color}15; padding-bottom: 6px;">
                     <span style="font-size:0.72rem; font-weight:850; color:${color}; text-transform:uppercase; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px;">
                         <i data-lucide="user-check" style="width:14px;height:14px;"></i> Department HOD Review Log
                     </span>
-                    <span class="pill" style="background:${color}10; color:${color}; font-weight:850; font-size:0.65rem;">${label}</span>
+                    <span class="pill" style="background:var(--primary-glow); color:${color}; font-weight:850; font-size:0.65rem;">${label}</span>
                 </div>
                 ${data.decline_reason && data.origin_admin_status === 'declined' ? `
                 <div style="font-size:0.86rem; color:var(--text-main); font-weight:700;">Decline Reason: <span style="font-weight:600; color:#7f1d1d;">${data.decline_reason}</span></div>
@@ -878,11 +878,11 @@
 
         if (data.main_admin_status !== 'pending') {
             let label = data.main_admin_status === 'approved' ? 'STORES APPROVED' : 'STORES DECLINED';
-            let color = data.main_admin_status === 'approved' ? '#059669' : '#ef4444';
+            let color = data.main_admin_status === 'approved' ? 'var(--primary)' : '#ef4444';
             
             if (data.alternative_status === 'agreed') {
                 label = 'SUGGESTED QUANTITY AGREED';
-                color = '#059669';
+                color = 'var(--primary)';
             } else if (data.alternative_status === 'declined') {
                 label = 'SUGGESTED QUANTITY DECLINED';
                 color = '#ef4444';
@@ -894,7 +894,7 @@
                     <span style="font-size:0.72rem; font-weight:850; color:${color}; text-transform:uppercase; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px;">
                         <i data-lucide="shield-check" style="width:14px;height:14px;"></i> Store Head Review Log
                     </span>
-                    <span class="pill" style="background:${color}10; color:${color}; font-weight:850; font-size:0.65rem;">${label}</span>
+                    <span class="pill" style="background:var(--primary-glow); color:${color}; font-weight:850; font-size:0.65rem;">${label}</span>
                 </div>
                 ${data.decline_reason && data.main_admin_status === 'declined' ? `
                 <div style="font-size:0.86rem; color:var(--text-main); font-weight:700;">Decline Reason: <span style="font-weight:600; color:#7f1d1d;">${data.decline_reason}</span></div>
@@ -909,17 +909,17 @@
         let collectorInfoHtml = '';
         if (data.collected_at) {
             collectorInfoHtml = `
-            <div style="background:rgba(5, 150, 105,0.03); border:1.5px dashed rgba(5, 150, 105,0.25); border-radius:16px; padding:1.25rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.75rem;">
-                <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(5, 150, 105,0.15); padding-bottom:8px;">
+            <div style="background:var(--primary-glow); border:1.5px dashed rgba(99, 102, 241,0.25); border-radius:16px; padding:1.25rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.75rem;">
+                <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(99, 102, 241,0.15); padding-bottom:8px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="width:34px; height:34px; background:rgba(5, 150, 105,0.08); color:#059669; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <div style="width:34px; height:34px; background:var(--primary-glow); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
                             <i data-lucide="package-check" style="width:16px;"></i>
                         </div>
                         <div>
                             <h4 style="margin:0; font-size:0.82rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Physical Collection Voucher</h4>
                         </div>
                     </div>
-                    <span class="pill" style="background:rgba(5, 150, 105,0.1); color:#059669; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
+                    <span class="pill" style="background:var(--primary-glow); color:var(--primary); font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.85rem;">
@@ -958,7 +958,7 @@
 
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; margin-top:1rem;">
             <h3 style="margin:0; font-size:0.9rem; font-weight:900; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-                <i data-lucide="list-checks" style="width:15px; color:#059669;"></i> Requisition Specification
+                <i data-lucide="list-checks" style="width:15px; color:var(--primary);"></i> Requisition Specification
             </h3>
         </div>
 
@@ -975,7 +975,7 @@
         if (data.collected_at) {
             footerHtml = `
             <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
-                style="background:rgba(5, 150, 105, 0.08); border: 1.5px solid rgba(5, 150, 105, 0.2); color: #059669; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#059669'; this.style.color='white';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';">
+                style="background:var(--primary-glow); border: 1.5px solid var(--primary-glow); color: var(--primary); padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)';">
                 <i data-lucide="printer" style="width: 16px;"></i> Print Voucher Receipt
             </a>` + footerHtml;
         }
