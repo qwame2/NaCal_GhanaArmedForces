@@ -36,17 +36,20 @@
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
 
-            /* Modern E-commerce Color Palette */
-            --store-orange: var(--primary);
-            --store-orange-hover: var(--primary-dark);
-            --store-orange-light: var(--primary-glow);
+            /* Modern E-commerce Color Palette matching storefront screenshot */
+            --store-orange: #ff6b00;
+            --store-orange-hover: #ea580c;
+            --store-orange-light: #fff7ed;
+            --store-orange-glow: rgba(255, 107, 0, 0.15);
 
-            --store-indigo: var(--primary);
-            --store-indigo-hover: var(--primary-dark);
-            --store-indigo-light: var(--primary-glow);
+            --hero-bg: linear-gradient(135deg, #2b1236 0%, #1e0d29 100%);
 
-            --success-color: var(--primary);
-            --warning-color: var(--primary);
+            --store-indigo: #6366f1;
+            --store-indigo-hover: #4f46e5;
+            --store-indigo-light: #e0e7ff;
+
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
             --danger-color: #ef4444;
 
             /* Theme overrides */
@@ -56,8 +59,8 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
-            --shadow-hover: 0 30px 60px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.05);
-            --header-blur: rgba(255, 255, 255, 0.8);
+            --shadow-hover: 0 30px 60px -15px rgba(255, 107, 0, 0.12), 0 0 0 1px rgba(255, 107, 0, 0.08);
+            --header-blur: rgba(255, 255, 255, 0.85);
         }
 
 
@@ -106,13 +109,13 @@
         .brand-logo-container {
             width: 42px;
             height: 42px;
-            background: var(--primary);
+            background: var(--store-orange);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px var(--primary-glow);
+            box-shadow: 0 4px 12px var(--store-orange-glow);
         }
 
         .brand-name {
@@ -155,7 +158,7 @@
         .store-search-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 4px var(--primary-glow);
+            box-shadow: 0 0 0 4px var(--store-orange-glow);
         }
 
         .store-search-icon {
@@ -200,8 +203,8 @@
 
         .cart-toggle-btn {
             background: var(--store-orange-light);
-            border: 1px solid var(--primary-glow);
-            color: var(--store-orange);
+            border: 1px solid rgba(255, 107, 0, 0.2);
+            color: var(--store-orange-hover);
             padding: 0 1.25rem;
             border-radius: 99px;
             height: 44px;
@@ -217,12 +220,12 @@
         .cart-toggle-btn:hover {
             background: var(--store-orange);
             color: white;
-            box-shadow: 0 4px 12px var(--primary-glow);
+            box-shadow: 0 4px 12px var(--store-orange-glow);
             transform: translateY(-1px);
         }
 
         .cart-badge {
-            background: var(--danger-color);
+            background: var(--store-orange);
             color: white;
             font-size: 0.7rem;
             font-weight: 900;
@@ -254,7 +257,7 @@
             justify-content: center;
             font-weight: 800;
             font-size: 0.8rem;
-            box-shadow: 0 2px 6px var(--primary-glow);
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
         }
 
         .user-info-name {
@@ -289,7 +292,7 @@
         }
 
         .hero-banner {
-            background: var(--primary);
+            background: var(--hero-bg);
             border-radius: 24px;
             padding: 2.5rem 3rem;
             color: white;
@@ -305,7 +308,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 80% 20%, var(--primary-glow) 0%, transparent 50%);
+            background: radial-gradient(circle at 80% 20%, rgba(255, 107, 0, 0.15) 0%, transparent 50%);
             pointer-events: none;
         }
 
@@ -316,8 +319,8 @@
         }
 
         .hero-badge {
-            background: var(--primary-glow);
-            border: 1px solid var(--primary-glow);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: var(--store-orange);
             display: inline-flex;
             align-items: center;
@@ -371,7 +374,7 @@
         .hero-btn:hover {
             background: var(--store-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px var(--primary-glow);
+            box-shadow: 0 8px 20px var(--store-orange-glow);
         }
 
         .hero-btn-secondary {
@@ -431,6 +434,10 @@
             color: var(--text-main);
         }
 
+        .sidebar-title i, .sidebar-title svg {
+            color: var(--store-orange);
+        }
+
         .category-list {
             list-style: none;
             padding: 0;
@@ -462,8 +469,8 @@
 
         .category-item.active {
             background: var(--store-orange-light);
-            border-color: var(--primary-glow);
-            color: var(--store-orange);
+            border-color: rgba(255, 107, 0, 0.2);
+            color: var(--store-orange-hover);
             font-weight: 700;
         }
 
@@ -544,7 +551,7 @@
 
         .product-image-container {
             height: 140px;
-            background: var(--primary-glow);
+            background: #fdfbf7;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -554,7 +561,7 @@
         }
 
         .product-card:hover .product-image-container {
-            background: var(--primary-glow);
+            background: #fff7ed;
         }
 
         .product-icon-box {
@@ -636,12 +643,12 @@
         }
 
         .stock-in {
-            background: var(--primary-glow);
+            background: #ecfdf5;
             color: var(--success-color);
         }
 
         .stock-low {
-            background: var(--primary-glow);
+            background: #fffbeb;
             color: var(--warning-color);
         }
 
@@ -713,12 +720,12 @@
 
         .add-cart-btn:hover {
             background: var(--store-orange-hover);
-            box-shadow: 0 4px 10px var(--primary-glow);
+            box-shadow: 0 4px 10px var(--store-orange-glow);
         }
 
         .add-cart-btn.added {
             background: var(--success-color);
-            box-shadow: 0 4px 10px var(--primary-glow);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
         }
 
         /* --- RIGHT SIDEBAR: CART & CHECKOUT --- */
@@ -926,13 +933,13 @@
         .form-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 3px var(--primary-glow);
+            box-shadow: 0 0 0 3px var(--store-orange-glow);
         }
 
         .checkout-btn {
             width: 100%;
             padding: 0.9rem;
-            background: var(--primary);
+            background: var(--store-orange);
             color: white;
             border: none;
             border-radius: 12px;
@@ -943,14 +950,15 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 6px 16px var(--primary-glow);
+            box-shadow: 0 6px 16px var(--store-orange-glow);
             transition: all 0.25s ease;
             margin-top: 1.5rem;
         }
 
         .checkout-btn:hover {
+            background: var(--store-orange-hover);
             transform: translateY(-1px);
-            box-shadow: 0 8px 20px var(--primary-glow);
+            box-shadow: 0 8px 20px var(--store-orange-glow);
         }
 
         .checkout-btn:disabled {
@@ -1501,7 +1509,7 @@
         }
 
         .sticky-cart-btn {
-            background: var(--primary);
+            background: var(--store-orange);
             border: none;
             color: white;
             padding: 0.75rem 1.5rem;
@@ -1512,13 +1520,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 14px var(--primary-glow);
+            box-shadow: 0 4px 14px var(--store-orange-glow);
             transition: all 0.25s ease;
         }
 
         .sticky-cart-btn:hover {
+            background: var(--store-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px var(--primary-glow);
+            box-shadow: 0 8px 20px var(--store-orange-glow);
         }
 
         @keyframes pulse-icon {
@@ -1544,8 +1553,8 @@
                     <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
-                    <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:var(--primary);">(NSIMs)</span></div>
+                    <div class="brand-name">CENTRAL STORE</div>
+                    <div class="brand-subtitle">NACOC(NSIMS)</div>
                 </div>
             </a>
 
@@ -1601,8 +1610,7 @@
                 <div class="hero-actions-container">
                     <button class="hero-btn" id="cart-nav-btn" style="position: relative; display: inline-flex; align-items: center; gap: 8px;">
                         <i data-lucide="shopping-cart" style="width: 16px;"></i>
-                        <span>My Request</span>
-                        <span class="cart-badge" id="cart-header-count" style="border: none; position: static;">0</span>
+                        <span>START REQUESTING</span>
                     </button>
                     <a href="{{ route('requisitions.history') }}" class="hero-btn hero-btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
                         <i data-lucide="clock" style="width: 16px;"></i> Track Items
@@ -1611,7 +1619,7 @@
             </div>
             <!-- Interactive Floating Art (fallback illustration via Lucide graphics) -->
             <div class="hero-art">
-                <i data-lucide="package-open" style="width: 260px; height: 260px; color: var(--primary-glow); stroke-width: 1;"></i>
+                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(255, 107, 0, 0.25); stroke-width: 1;"></i>
             </div>
         </div>
     </section>
