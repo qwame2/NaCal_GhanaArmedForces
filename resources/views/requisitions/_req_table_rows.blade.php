@@ -35,8 +35,8 @@
             }
             
             $usageLabel = 'Inventory SRA';
-            $usageBg = 'rgba(5, 150, 105, 0.08)';
-            $usageColor = '#059669';
+            $usageBg = 'var(--primary-glow)';
+            $usageColor = 'var(--primary)';
             
             $reviewUrl = route('receiveditems.sra', ['id' => $req->id]);
         @endphp

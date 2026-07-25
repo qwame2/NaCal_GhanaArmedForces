@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,10 +11,10 @@
         :root {
             --primary: #1e3a8a;
             --primary-light: #475569;
-            --accent: #059669;
-            --accent-light: rgba(5, 150, 105, 0.06);
-            --success: #059669;
-            --success-light: rgba(5, 150, 105, 0.06);
+            --accent: var(--primary);
+            --accent-light: var(--primary-glow);
+            --success: var(--primary);
+            --success-light: var(--primary-glow);
             --warning: #047857;
             --warning-light: rgba(217, 119, 6, 0.06);
             --danger: #dc2626;
@@ -150,7 +150,7 @@
             display: inline-block;
             background: var(--accent-light);
             color: var(--accent);
-            border: 1.5px solid rgba(5, 150, 105, 0.2);
+            border: 1.5px solid var(--primary-glow);
             font-family: 'Outfit', sans-serif;
             font-weight: 900;
             font-size: 0.85rem;

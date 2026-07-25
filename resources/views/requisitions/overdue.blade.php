@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
 <style>
@@ -36,7 +36,7 @@
     .premium-stat-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-        border-color: rgba(5, 150, 105, 0.2);
+        border-color: var(--primary-glow);
     }
 
     .tab-btn {
@@ -45,8 +45,8 @@
         font-size: 0.9rem;
         font-weight: 800;
         color: var(--text-muted, #94a3b8);
-        background: rgba(5, 150, 105, 0.03);
-        border: 1px solid rgba(5, 150, 105, 0.1);
+        background: var(--primary-glow);
+        border: 1px solid var(--primary-glow);
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -57,15 +57,15 @@
 
     .tab-btn.active {
         color: #ffffff !important;
-        background: #059669 !important;
+        background: var(--primary) !important;
         border-color: rgba(255, 255, 255, 0.2) !important;
-        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 24px var(--primary-glow);
     }
 
     .tab-btn:not(.active):hover {
-        background: rgba(5, 150, 105, 0.08) !important;
-        color: var(--primary, #059669) !important;
-        border-color: rgba(5, 150, 105, 0.25) !important;
+        background: var(--primary-glow) !important;
+        color: var(--primary) !important;
+        border-color: var(--primary-glow) !important;
     }
 
     .premium-table {
@@ -122,10 +122,10 @@
     }
 
     .glow-badge-orange {
-        background: rgba(5, 150, 105, 0.1);
-        border: 1px solid rgba(5, 150, 105, 0.2);
+        background: var(--primary-glow);
+        border: 1px solid var(--primary-glow);
         color: #fbbf24;
-        box-shadow: 0 0 10px rgba(5, 150, 105, 0.1);
+        box-shadow: 0 0 10px var(--primary-glow);
     }
 
     .dept-badge {
@@ -183,18 +183,18 @@
 
         <!-- Active/Due Soon Card -->
         <div class="premium-stat-card">
-            <div style="width: 50px; height: 50px; background: rgba(5, 150, 105, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #059669; border: 1px solid rgba(5, 150, 105, 0.15);">
+            <div style="width: 50px; height: 50px; background: var(--primary-glow); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid var(--primary-glow);">
                 <i data-lucide="calendar" style="width: 24px; height: 24px;"></i>
             </div>
             <div>
                 <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Due Soon / Active</div>
-                <div style="font-size: 1.75rem; font-weight: 900; color: #059669; margin-top: 2px;">{{ $dueSoonItems->count() }}</div>
+                <div style="font-size: 1.75rem; font-weight: 900; color: var(--primary); margin-top: 2px;">{{ $dueSoonItems->count() }}</div>
             </div>
         </div>
 
         <!-- Combined Total Card -->
         <div class="premium-stat-card">
-            <div style="width: 50px; height: 50px; background: rgba(5, 150, 105, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid rgba(5, 150, 105, 0.15);">
+            <div style="width: 50px; height: 50px; background: var(--primary-glow); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid var(--primary-glow);">
                 <i data-lucide="layers" style="width: 24px; height: 24px;"></i>
             </div>
             <div>
@@ -247,7 +247,7 @@
                             </td>
                             <td style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</td>
                             <td>
-                                <span class="dept-badge" style="background: rgba(5, 150, 105, 0.08); color: var(--primary); border: 1px solid rgba(5, 150, 105, 0.15);">
+                                <span class="dept-badge" style="background: var(--primary-glow); color: var(--primary); border: 1px solid var(--primary-glow);">
                                     {{ $item->category }}
                                 </span>
                             </td>
@@ -260,7 +260,7 @@
                             @endif
                             <td style="font-weight: 600; color: var(--text-muted);">{{ $item->requester_name }}</td>
                             <td style="text-align: center; font-weight: 700;">{{ $item->qty_issued }}</td>
-                            <td style="text-align: center; font-weight: 700; color: #059669;">{{ $item->qty_returned }}</td>
+                            <td style="text-align: center; font-weight: 700; color: var(--primary);">{{ $item->qty_returned }}</td>
                             <td style="text-align: center; font-weight: 900; color: #ef4444; font-size: 1rem;">{{ $item->qty_outstanding }}</td>
                             <td style="color: var(--text-muted); font-weight: 600;">{{ $item->issuance_date }}</td>
                             <td style="color: #ef4444; font-weight: 800;">{{ $item->expected_return }}</td>
@@ -274,7 +274,7 @@
                         <tr>
                             <td colspan="{{ $isStoresHead ? 11 : 10 }}" style="padding: 6rem 2rem; text-align: center; vertical-align: middle;">
                                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; margin: 0 auto; max-width: 450px;">
-                                    <div style="background: rgba(5, 150, 105, 0.05); width: 80px; height: 80px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: #059669; border: 2px dashed rgba(5, 150, 105, 0.2);">
+                                    <div style="background: var(--primary-glow); width: 80px; height: 80px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed var(--primary-glow);">
                                         <i data-lucide="shield-check" style="width: 38px; height: 38px;"></i>
                                     </div>
                                     <h4 style="font-size: 1.4rem; font-weight: 900; color: var(--text-main); margin: 0.5rem 0 0 0;">Ledger fully compliant</h4>
@@ -305,9 +305,9 @@
                         <th>Issued To</th>
                         <th style="text-align: center;">Issued Qty</th>
                         <th style="text-align: center;">Returned Qty</th>
-                        <th style="text-align: center; color: #059669;">Outstanding</th>
+                        <th style="text-align: center; color: var(--primary);">Outstanding</th>
                         <th>Issuance Date</th>
-                        <th style="color: #059669;">Expected Return</th>
+                        <th style="color: var(--primary);">Expected Return</th>
                         <th>Status / Timeline</th>
                     </tr>
                 </thead>
@@ -321,30 +321,30 @@
                             </td>
                             <td style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</td>
                             <td>
-                                <span class="dept-badge" style="background: rgba(5, 150, 105, 0.08); color: var(--primary); border: 1px solid rgba(5, 150, 105, 0.15);">
+                                <span class="dept-badge" style="background: var(--primary-glow); color: var(--primary); border: 1px solid var(--primary-glow);">
                                     {{ $item->category }}
                                 </span>
                             </td>
                             @if($isStoresHead)
                                 <td>
-                                    <span class="dept-badge" style="background: rgba(5, 150, 105, 0.08); color: #fbbf24; border: 1px solid rgba(5, 150, 105, 0.15);">
+                                    <span class="dept-badge" style="background: var(--primary-glow); color: #fbbf24; border: 1px solid var(--primary-glow);">
                                         {{ $item->department }}
                                     </span>
                                 </td>
                             @endif
                             <td style="font-weight: 600; color: var(--text-muted);">{{ $item->requester_name }}</td>
                             <td style="text-align: center; font-weight: 700;">{{ $item->qty_issued }}</td>
-                            <td style="text-align: center; font-weight: 700; color: #059669;">{{ $item->qty_returned }}</td>
-                            <td style="text-align: center; font-weight: 900; color: #059669; font-size: 1rem;">{{ $item->qty_outstanding }}</td>
+                            <td style="text-align: center; font-weight: 700; color: var(--primary);">{{ $item->qty_returned }}</td>
+                            <td style="text-align: center; font-weight: 900; color: var(--primary); font-size: 1rem;">{{ $item->qty_outstanding }}</td>
                             <td style="color: var(--text-muted); font-weight: 600;">{{ $item->issuance_date }}</td>
-                            <td style="color: #059669; font-weight: 800;">{{ $item->expected_return }}</td>
+                            <td style="color: var(--primary); font-weight: 800;">{{ $item->expected_return }}</td>
                             <td>
                                 @if($item->days_diff === 0)
                                     <span class="dept-badge glow-badge-orange overdue-blink" style="padding: 0.35rem 0.75rem;">
                                         Due Today
                                     </span>
                                 @else
-                                    <span class="dept-badge glow-badge-orange" style="padding: 0.35rem 0.75rem; background: rgba(5, 150, 105, 0.08); border-color: rgba(5, 150, 105, 0.2); color: #34d399; box-shadow: none;">
+                                    <span class="dept-badge glow-badge-orange" style="padding: 0.35rem 0.75rem; background: var(--primary-glow); border-color: var(--primary-glow); color: #34d399; box-shadow: none;">
                                         {{ $item->days_diff }} Days Left
                                     </span>
                                 @endif

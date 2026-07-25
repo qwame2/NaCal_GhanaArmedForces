@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
     @php
@@ -36,17 +36,17 @@
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
 
-            /* Modern E-commerce Jumia-Inspired Color Palette */
-            --store-orange: #059669;
-            --store-orange-hover: #065f46;
-            --store-orange-light: rgba(5, 150, 105, 0.08);
+            /* Modern E-commerce Color Palette */
+            --store-orange: var(--primary);
+            --store-orange-hover: var(--primary-dark);
+            --store-orange-light: var(--primary-glow);
 
-            --store-indigo: #059669;
-            --store-indigo-hover: #059669;
-            --store-indigo-light: rgba(5, 150, 105, 0.08);
+            --store-indigo: var(--primary);
+            --store-indigo-hover: var(--primary-dark);
+            --store-indigo-light: var(--primary-glow);
 
-            --success-color: #059669;
-            --warning-color: #059669;
+            --success-color: var(--primary);
+            --warning-color: var(--primary);
             --danger-color: #ef4444;
 
             /* Theme overrides */
@@ -106,13 +106,13 @@
         .brand-logo-container {
             width: 42px;
             height: 42px;
-            background: #059669;
+            background: var(--primary);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
 
         .brand-name {
@@ -155,7 +155,7 @@
         .store-search-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+            box-shadow: 0 0 0 4px var(--primary-glow);
         }
 
         .store-search-icon {
@@ -200,7 +200,7 @@
 
         .cart-toggle-btn {
             background: var(--store-orange-light);
-            border: 1px solid rgba(5, 150, 105, 0.2);
+            border: 1px solid var(--primary-glow);
             color: var(--store-orange);
             padding: 0 1.25rem;
             border-radius: 99px;
@@ -217,7 +217,7 @@
         .cart-toggle-btn:hover {
             background: var(--store-orange);
             color: white;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+            box-shadow: 0 4px 12px var(--primary-glow);
             transform: translateY(-1px);
         }
 
@@ -254,7 +254,7 @@
             justify-content: center;
             font-weight: 800;
             font-size: 0.8rem;
-            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2);
+            box-shadow: 0 2px 6px var(--primary-glow);
         }
 
         .user-info-name {
@@ -289,7 +289,7 @@
         }
 
         .hero-banner {
-            background: #059669;
+            background: var(--primary);
             border-radius: 24px;
             padding: 2.5rem 3rem;
             color: white;
@@ -305,7 +305,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 80% 20%, rgba(5, 150, 105, 0.15) 0%, transparent 50%);
+            background: radial-gradient(circle at 80% 20%, var(--primary-glow) 0%, transparent 50%);
             pointer-events: none;
         }
 
@@ -316,8 +316,8 @@
         }
 
         .hero-badge {
-            background: rgba(5, 150, 105, 0.2);
-            border: 1px solid rgba(5, 150, 105, 0.3);
+            background: var(--primary-glow);
+            border: 1px solid var(--primary-glow);
             color: var(--store-orange);
             display: inline-flex;
             align-items: center;
@@ -371,7 +371,7 @@
         .hero-btn:hover {
             background: var(--store-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 8px 20px var(--primary-glow);
         }
 
         .hero-btn-secondary {
@@ -462,7 +462,7 @@
 
         .category-item.active {
             background: var(--store-orange-light);
-            border-color: rgba(5, 150, 105, 0.15);
+            border-color: var(--primary-glow);
             color: var(--store-orange);
             font-weight: 700;
         }
@@ -544,7 +544,7 @@
 
         .product-image-container {
             height: 140px;
-            background: rgba(5, 150, 105, 0.05);
+            background: var(--primary-glow);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -554,7 +554,7 @@
         }
 
         .product-card:hover .product-image-container {
-            background: rgba(5, 150, 105, 0.08);
+            background: var(--primary-glow);
         }
 
         .product-icon-box {
@@ -636,12 +636,12 @@
         }
 
         .stock-in {
-            background: rgba(5, 150, 105, 0.1);
+            background: var(--primary-glow);
             color: var(--success-color);
         }
 
         .stock-low {
-            background: rgba(5, 150, 105, 0.1);
+            background: var(--primary-glow);
             color: var(--warning-color);
         }
 
@@ -713,12 +713,12 @@
 
         .add-cart-btn:hover {
             background: var(--store-orange-hover);
-            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
+            box-shadow: 0 4px 10px var(--primary-glow);
         }
 
         .add-cart-btn.added {
             background: var(--success-color);
-            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+            box-shadow: 0 4px 10px var(--primary-glow);
         }
 
         /* --- RIGHT SIDEBAR: CART & CHECKOUT --- */
@@ -926,13 +926,13 @@
         .form-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08);
+            box-shadow: 0 0 0 3px var(--primary-glow);
         }
 
         .checkout-btn {
             width: 100%;
             padding: 0.9rem;
-            background: #059669;
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 12px;
@@ -943,14 +943,14 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.2);
+            box-shadow: 0 6px 16px var(--primary-glow);
             transition: all 0.25s ease;
             margin-top: 1.5rem;
         }
 
         .checkout-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35);
+            box-shadow: 0 8px 20px var(--primary-glow);
         }
 
         .checkout-btn:disabled {
@@ -1134,14 +1134,14 @@
             background: var(--success-color);
             border-color: var(--success-color);
             color: white;
-            box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);
+            box-shadow: 0 0 10px var(--primary-glow);
         }
 
         .tracker-step.active .tracker-dot {
             background: var(--bg-card);
             border-color: var(--store-orange);
             color: var(--store-orange);
-            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 10px var(--primary-glow);
         }
 
         .tracker-step.declined .tracker-dot {
@@ -1188,11 +1188,11 @@
         .history-notes-box {
             margin-top: 1rem;
             font-size: 0.78rem;
-            background: rgba(5, 150, 105, 0.05);
-            border: 1px dashed rgba(5, 150, 105, 0.3);
+            background: var(--primary-glow);
+            border: 1px dashed var(--primary-glow);
             border-radius: 12px;
             padding: 10px 14px;
-            color: #b45309;
+            color: var(--primary);
             display: flex;
             align-items: flex-start;
             gap: 8px;
@@ -1206,11 +1206,11 @@
             }
             30% {
                 border-color: var(--store-orange);
-                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(5, 150, 105, 0.25);
+                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px var(--primary-glow);
             }
             70% {
                 border-color: var(--store-orange);
-                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(5, 150, 105, 0.25);
+                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px var(--primary-glow);
             }
             100% {
                 border-color: var(--border-color);
@@ -1343,13 +1343,13 @@
         .action-btn-followup:hover {
             background: var(--warning-color) !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+            box-shadow: 0 4px 12px var(--primary-glow);
             transform: translateY(-1px);
         }
         .action-btn-collect:hover {
             background: var(--success-color) !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+            box-shadow: 0 4px 12px var(--primary-glow);
             transform: translateY(-1px);
         }
         .action-btn-followup:active, .action-btn-collect:active {
@@ -1371,7 +1371,7 @@
             font-weight: 800 !important;
             font-size: 0.85rem !important;
             letter-spacing: 0.02em !important;
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2) !important;
+            box-shadow: 0 10px 20px var(--primary-glow) !important;
         }
         .premium-swal-cancel-btn {
             height: 48px !important;
@@ -1501,7 +1501,7 @@
         }
 
         .sticky-cart-btn {
-            background: #059669;
+            background: var(--primary);
             border: none;
             color: white;
             padding: 0.75rem 1.5rem;
@@ -1512,13 +1512,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 4px 14px var(--primary-glow);
             transition: all 0.25s ease;
         }
 
         .sticky-cart-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.45);
+            box-shadow: 0 8px 20px var(--primary-glow);
         }
 
         @keyframes pulse-icon {
@@ -1545,7 +1545,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#059669;">(NSIMs)</span></div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:var(--primary);">(NSIMs)</span></div>
                 </div>
             </a>
 
@@ -1611,7 +1611,7 @@
             </div>
             <!-- Interactive Floating Art (fallback illustration via Lucide graphics) -->
             <div class="hero-art">
-                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(5, 150, 105, 0.15); stroke-width: 1;"></i>
+                <i data-lucide="package-open" style="width: 260px; height: 260px; color: var(--primary-glow); stroke-width: 1;"></i>
             </div>
         </div>
     </section>
@@ -2014,7 +2014,7 @@
             Swal.fire({
                 title: `
                     <div style="display: flex; align-items: center; gap: 15px; text-align: left; width: 100%;">
-                        <div style="width: 48px; height: 48px; background: rgba(5, 150, 105, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #059669;">
+                        <div style="width: 48px; height: 48px; background: var(--primary-glow); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
                             <i data-lucide="user-check"></i>
                         </div>
                         <div>
@@ -2032,7 +2032,7 @@
                                 ${user.avatar ? `
                                     <img src="${user.avatar}" id="swal-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                                 ` : `
-                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: #0ea5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(5, 150, 105,0.25);">
+                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px var(--primary-glow);">
                                         ${user.name.substring(0, 1).toUpperCase()}
                                     </div>
                                 `}
@@ -2110,7 +2110,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Save Profile Settings',
                 cancelButtonText: 'Close',
-                confirmButtonColor: '#059669',
+                confirmButtonColor: 'var(--primary)',
                 cancelButtonColor: '#f1f5f9',
                 customClass: {
                     popup: 'glass-monolith-popup',
@@ -2185,7 +2185,7 @@
                         title: 'Profile Updated',
                         text: 'Your details have been successfully synchronized.',
                         icon: 'success',
-                        confirmButtonColor: '#059669'
+                        confirmButtonColor: 'var(--primary)'
                     }).then(() => {
                         location.reload();
                     });
@@ -2213,7 +2213,7 @@
                 const originalHTML = container.innerHTML;
                 container.innerHTML = `
                     <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #059669;"></i>
+                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: var(--primary);"></i>
                     </div>
                 `;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
