@@ -393,20 +393,11 @@
             right: 5%;
             top: 50%;
             transform: translateY(-50%);
-            width: 220px;
-            height: 220px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 320px;
+            height: auto;
+            opacity: 0.85;
             z-index: 1;
             pointer-events: none;
-        }
-
-        .hero-art img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 12px 25px rgba(0, 0, 0, 0.45));
             animation: float 6s ease-in-out infinite;
         }
 
@@ -1562,8 +1553,8 @@
                     <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
-                    <div class="brand-name">CENTRAL STORE</div>
-                    <div class="brand-subtitle">NACOC(NSIMS)</div>
+                    <div class="brand-name">NACOC</div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:var(--store-orange);">(NSIMS)</span></div>
                 </div>
             </a>
 
@@ -1626,9 +1617,9 @@
                     </a>
                 </div>
             </div>
-            <!-- NACOC Logo Floating Art -->
+            <!-- Interactive Floating Art (fallback illustration via Lucide graphics) -->
             <div class="hero-art">
-                <img src="{{ asset('img/NACOC.png') }}" alt="NACOC Logo">
+                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(255, 107, 0, 0.25); stroke-width: 1;"></i>
             </div>
         </div>
     </section>
