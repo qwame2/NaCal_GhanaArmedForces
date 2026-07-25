@@ -393,11 +393,20 @@
             right: 5%;
             top: 50%;
             transform: translateY(-50%);
-            width: 320px;
-            height: auto;
-            opacity: 0.85;
+            width: 220px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 1;
             pointer-events: none;
+        }
+
+        .hero-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 25px rgba(0, 0, 0, 0.45));
             animation: float 6s ease-in-out infinite;
         }
 
@@ -1617,9 +1626,9 @@
                     </a>
                 </div>
             </div>
-            <!-- Interactive Floating Art (fallback illustration via Lucide graphics) -->
+            <!-- NACOC Logo Floating Art -->
             <div class="hero-art">
-                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(255, 107, 0, 0.25); stroke-width: 1;"></i>
+                <img src="{{ asset('img/NACOC.png') }}" alt="NACOC Logo">
             </div>
         </div>
     </section>
