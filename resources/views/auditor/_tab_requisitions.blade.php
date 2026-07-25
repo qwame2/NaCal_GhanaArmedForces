@@ -1,4 +1,4 @@
-﻿@forelse($requisitions as $req)
+@forelse($requisitions as $req)
     <tr class="log-row">
         <td style="font-weight: 900; font-family: monospace; color: var(--audit-primary);">
             {{ $req->unique_id ?: ('REQ-'.str_pad($req->id,5,'0',STR_PAD_LEFT)) }}
@@ -23,7 +23,7 @@
             @endif
         </td>
         <td style="text-align: center; vertical-align: middle;">
-            @if(in_array($req->status, ['approved', 'partially_approved']))
+            @if(in_array($req->status, ['approved', 'partially_approved']) && !is_null($req->collected_at))
                 <a href="{{ route('requisitions.receipt.print', $req->id) }}"
                    target="_blank"
                    class="btn-view-receipt"
@@ -34,6 +34,11 @@
                     <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
                     <span>Receipt</span>
                 </a>
+            @elseif(in_array($req->status, ['approved', 'partially_approved']))
+                <button type="button" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(100, 116, 139, 0.08); color: #64748b; font-size: 0.72rem; font-weight: 800; border: 1px solid rgba(100, 116, 139, 0.2); cursor: not-allowed;" title="Receipt will be generated after collection." disabled>
+                    <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
+                    <span>Receipt</span>
+                </button>
             @elseif($req->status === 'declined')
                 <span style="font-size: 0.72rem; color: #ef4444; font-weight: 800;">Declined</span>
             @else

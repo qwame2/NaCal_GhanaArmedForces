@@ -654,16 +654,13 @@ class StoreRequisitionController extends Controller
             }
             $req->setRelation('items', $itemsCol);
         } else {
-            if (!$req->collected_at) {
-                abort(404, 'No collection has been confirmed for this requisition.');
-            }
-
             $receipt = $req->receipt;
 
             // Self-healing legacy fallback: if no receipt record exists, synthesize one transiently
             if (!$receipt) {
+                $collectedDate = $req->collected_at ?? $req->updated_at ?? now();
                 $receiptCount = \App\Models\Receipt::count() + 1;
-                $receiptNumber = 'RCP-' . date('Y', strtotime($req->collected_at)) . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
+                $receiptNumber = 'RCP-' . date('Y', strtotime($collectedDate)) . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
 
                 $itemsSnapshot = $req->items->map(function($item) {
                     return [
@@ -681,11 +678,11 @@ class StoreRequisitionController extends Controller
                 $receipt = new \App\Models\Receipt([
                     'requisition_id' => $req->id,
                     'receipt_number' => $receiptNumber,
-                    'collector_name' => $req->collector_name ?? 'N/A',
+                    'collector_name' => $req->collector_name ?? ($req->requester_name ?? 'N/A'),
                     'collector_contact' => $req->collector_contact ?? 'N/A',
                     'collector_location' => $req->collector_location ?? 'N/A',
                     'collector_staff_id' => $req->collector_staff_id ?? 'N/A',
-                    'collected_at' => $req->collected_at,
+                    'collected_at' => $collectedDate,
                     'issued_by' => $req->collected_by ?? 1,
                     'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
                     'approved_by_stores_head' => $req->processor?->name ?? 'Head of Stores',
