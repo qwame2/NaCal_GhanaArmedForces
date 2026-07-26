@@ -60,8 +60,8 @@ class AuthController extends Controller
 
             if (in_array($user->role, ['Main Admin', 'Department Head'])) {
                 return redirect()->route('main-admin.requisitions');
-            } elseif ($user->role === 'Auditor') {
-                return redirect()->route('auditor.dashboard');
+            } elseif (in_array($user->role, ['Auditor', 'External Auditor'])) {
+                return redirect()->route($user->role === 'External Auditor' ? 'external-auditor.dashboard' : 'auditor.dashboard');
             } elseif ($user->role === 'Director General') {
                 return redirect()->route('dg.dashboard');
             } elseif ($user->is_admin) {
@@ -503,8 +503,8 @@ class AuthController extends Controller
             // Route user based on their specific role
             if ($user->isMainAdminOrSub() || $user->isDepartmentHead()) {
                 return redirect()->route('main-admin.requisitions');
-            } elseif ($user->role === 'Auditor') {
-                return redirect()->route('auditor.dashboard');
+            } elseif (in_array($user->role, ['Auditor', 'External Auditor'])) {
+                return redirect()->route($user->role === 'External Auditor' ? 'external-auditor.dashboard' : 'auditor.dashboard');
             } elseif ($user->role === 'Director General') {
                 return redirect()->route('dg.dashboard');
             } elseif ($user->role === 'Requisitioner') {

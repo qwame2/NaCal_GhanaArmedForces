@@ -254,7 +254,7 @@ class AppServiceProvider extends ServiceProvider
 
                 // Ensure all existing Auditor accounts have is_temp_account set to true and can_approve_requisition set to true
                 try {
-                    \App\Models\User::where('role', 'Auditor')->update([
+                    \App\Models\User::whereIn('role', ['Auditor', 'External Auditor'])->update([
                         'is_temp_account' => true,
                         'can_approve_requisition' => true
                     ]);

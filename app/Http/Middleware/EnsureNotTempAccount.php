@@ -20,6 +20,11 @@ class EnsureNotTempAccount
      * These must match route names or URI prefixes.
      */
     protected array $allowedRoutes = [
+        'auditor.dashboard',
+        'external-auditor.dashboard',
+        'auditor.print',
+        'auditor.supplier_info',
+        'auditor.staff-approvals',
         'requisitions.index',
         'requisitions.store',
         'requisitions.checkout',
@@ -43,7 +48,7 @@ class EnsureNotTempAccount
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check() && Auth::user()->is_temp_account) {
-            if (Auth::user()->role === 'Auditor') {
+            if (in_array(Auth::user()->role, ['Auditor', 'External Auditor'])) {
                 return $next($request);
             }
             if (!Auth::user()->is_active) {
