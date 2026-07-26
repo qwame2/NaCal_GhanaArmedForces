@@ -160,11 +160,48 @@
         <div class="nav-section-title">Main Menu</div>
 
         <ul class="nav-menu">
-            @if(in_array(auth()->user()->role, ['Auditor', 'External Auditor']))
+            @if(auth()->user()->role === 'External Auditor')
                 <li class="nav-item">
-                    <a href="{{ auth()->user()->role === 'External Auditor' ? route('external-auditor.dashboard') : route('auditor.dashboard') }}" class="nav-link {{ (request()->routeIs('auditor.dashboard') || request()->routeIs('external-auditor.dashboard')) ? 'active' : '' }}" data-tooltip="{{ auth()->user()->role === 'External Auditor' ? 'External Audit Portal' : 'Auditing Center' }}" style="position: relative;">
+                    <a href="{{ route('external-auditor.dashboard') }}" class="nav-link {{ request()->routeIs('external-auditor.dashboard') ? 'active' : '' }}" data-tooltip="External Audit Portal">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
-                        <span>{{ auth()->user()->role === 'External Auditor' ? 'External Audit Portal' : 'Auditing Center' }}</span>
+                        <span>External Audit Portal</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('stockcheck.index') }}" class="nav-link {{ request()->routeIs('stockcheck.index') ? 'active' : '' }}" data-tooltip="Stock Check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                        <span>Stock Check</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
+                        <span>Analytical Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Approved Requests">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>Approved Requests</span>
+                        @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
+                        <span id="sidebar-badge-main-reqs"
+                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
+                              title="{{ $mainReqsCount }} requisition(s) awaiting review">
+                            {{ $mainReqsCount }}
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Reports">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M8 18v-1"/><path d="M16 18v-3"/></svg>
+                        <span>Reports</span>
+                    </a>
+                </li>
+            @elseif(auth()->user()->role === 'Auditor')
+                <li class="nav-item">
+                    <a href="{{ route('auditor.dashboard') }}" class="nav-link {{ request()->routeIs('auditor.dashboard') ? 'active' : '' }}" data-tooltip="Auditing Center" style="position: relative;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span>Auditing Center</span>
                         <span id="sidebar-badge-auditor-pending"
                               style="display: none; background: #ef4444; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto; animation: auditor-badge-blink 1s infinite; flex-shrink: 0;"
                               title="Pending approvals in Auditing Center">0</span>

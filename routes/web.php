@@ -717,7 +717,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Auditor & External Auditor Routes
     Route::get('/auditor', [\App\Http\Controllers\AuditorController::class, 'index'])->name('auditor.dashboard');
-    Route::get('/external-auditor', [\App\Http\Controllers\AuditorController::class, 'externalIndex'])->name('external-auditor.dashboard');
+    Route::get('/external-auditor', [\App\Http\Controllers\ExternalAuditorController::class, 'index'])->name('external-auditor.dashboard');
     Route::get('/auditor/print', [\App\Http\Controllers\AuditorController::class, 'printReport'])->name('auditor.print');
     Route::get('/auditor/supplier-info', [\App\Http\Controllers\AuditorController::class, 'getSupplierInfo'])->name('auditor.supplier_info');
     Route::get('/auditor/staff-approvals', [\App\Http\Controllers\AuditorController::class, 'staffApprovals'])->name('auditor.staff-approvals');
