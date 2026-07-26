@@ -39,7 +39,20 @@ class ExternalAuditorController extends Controller
             $logsQuery->where('event_type', $request->log_event);
         }
         if ($request->filled('user_id')) {
-            $logsQuery->where('user_id', $request->user_id);
+            $u = User::find($request->user_id);
+            $userName = $u ? $u->name : null;
+            $userUsername = $u ? $u->username : null;
+
+            $logsQuery->where(function($q) use ($request, $userName, $userUsername) {
+                $q->where('user_id', $request->user_id);
+                if ($userName) {
+                    $q->orWhere('description', 'LIKE', "%{$userName}%")
+                      ->orWhere('action', 'LIKE', "%{$userName}%");
+                }
+                if ($userUsername) {
+                    $q->orWhere('description', 'LIKE', "%{$userUsername}%");
+                }
+            });
         }
         if ($request->filled('date_from')) {
             $logsQuery->whereDate('created_at', '>=', $request->date_from);
@@ -221,7 +234,7 @@ class ExternalAuditorController extends Controller
         $requisitions = $requisitionsQuery->paginate(15, ['*'], 'requisitions_page')->withQueryString();
 
         $ledgeMap = Setting::getCategories();
-        $auditUsers = User::where('role', '!=', 'External Auditor')->orderBy('name')->get();
+        $auditUsers = User::orderBy('name')->get();
 
         if ($request->input('format') === 'json' || $request->ajax() || $request->wantsJson()) {
             return response()->json([
