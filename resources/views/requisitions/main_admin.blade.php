@@ -1000,6 +1000,7 @@
     </div>
 
     {{-- Stats Cards --}}
+    @if(auth()->user()->role !== 'External Auditor')
     <div id="oversight-stats-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;margin-bottom:2rem;">
         <div class="req-stat-card">
             <div style="width:48px;height:48px;background:rgba(5, 150, 105,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#059669;"></i></div>
@@ -1023,6 +1024,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     @if(auth()->user()->role === 'Main Admin' && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']))
     @php
@@ -1204,8 +1206,9 @@
     {{-- Staff Access & Registration Approvals (All Department Heads) --}}
     @php
         $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
-        $hideProvisioning = ($isStoresHead && !$isBackupActive) || auth()->user()->role === 'Auditor';
+        $hideProvisioning = ($isStoresHead && !$isBackupActive) || in_array(auth()->user()->role, ['Auditor', 'External Auditor']);
     @endphp
+    @if(auth()->user()->role !== 'External Auditor')
     <div id="provisioningSection" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);padding:1.75rem;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04); display: {{ $hideProvisioning ? 'none' : 'block' }};">
         @if(!empty($hasOverdueReturn))
         <div style="background: rgba(254, 242, 242, 0.65); border-left: 5px solid #ef4444; border-top: 1px solid rgba(239, 68, 68, 0.1); border-right: 1px solid rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
@@ -1262,6 +1265,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     {{-- Filters Toolbar --}}
     <div class="filter-card">
@@ -1272,7 +1276,7 @@
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('main-admin.requisitions') }}">
             {{-- Status --}}
             @php
-                $defaultStatus = (auth()->user()->role === 'Auditor') ? 'approved' : 'pending';
+                $defaultStatus = (in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) ? 'approved' : 'pending';
             @endphp
             <div class="filter-field-wrapper" style="min-width:200px;flex:1.5;">
                 <i data-lucide="activity" class="filter-icon" style="width:14px;height:14px;"></i>

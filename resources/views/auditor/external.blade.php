@@ -287,14 +287,11 @@
 
     {{-- External Auditor Banner --}}
     <div class="external-badge-banner">
-        <div class="external-chip">
-            <i data-lucide="shield-check" style="width: 14px;"></i>
-            EXTERNAL AUDIT &amp; COMPLIANCE CLEARANCE ACTIVE
-        </div>
+        
         <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
             <div>
                 <h1 style="font-size: 2rem; font-weight: 950; letter-spacing: -0.04em; margin: 0; color: white;">
-                    External Audit &amp; Compliance Portal
+                    External Audit
                 </h1>
                 <p style="font-size: 0.95rem; color: #94a3b8; margin: 8px 0 0; max-width: 650px; line-height: 1.5;">
                     Independent inspection ledger for external auditing officers and oversight authorities. Access verified system audit trails, inventory batches, asset loans, and requisition records.
