@@ -483,13 +483,13 @@
             <i data-lucide="shield-alert" style="width: 16px;"></i> System Audit Trail ({{ $systemLogs->total() }})
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('received_items', this)">
-            <i data-lucide="package-check" style="width: 16px;"></i> Received Items Ledger ({{ $receivedItems->total() }})
+            <i data-lucide="package-check" style="width: 16px;"></i> Received Items ({{ $receivedItems->total() }})
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('issued_items', this)">
-            <i data-lucide="package-minus" style="width: 16px;"></i> Issued Items Ledger ({{ $issuedItems->total() }})
+            <i data-lucide="package-minus" style="width: 16px;"></i> Issued Items ({{ $issuedItems->total() }})
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('returned_items', this)">
-            <i data-lucide="rotate-ccw" style="width: 16px;"></i> Returned Assets ({{ $returnedItems->total() }})
+            <i data-lucide="rotate-ccw" style="width: 16px;"></i> Returned Items ({{ $returnedItems->total() }})
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('requisitions', this)">
             <i data-lucide="clipboard-list" style="width: 16px;"></i> Requisitions Log ({{ $requisitions->total() }})
