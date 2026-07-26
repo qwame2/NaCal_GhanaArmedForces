@@ -89,7 +89,7 @@ class AdminController extends Controller
         }
 
         $request->validate([
-            'role' => 'required|string|in:Officer,Main Admin,Sub Main Admin,Department Head,Auditor,Requisitioner,Director General',
+            'role' => 'required|string|in:Officer,Main Admin,Sub Main Admin,Department Head,Auditor,External Auditor,Requisitioner,Director General',
         ]);
 
         $user = User::findOrFail($id);
@@ -127,8 +127,10 @@ class AdminController extends Controller
             $user->can_verify_stock = true;
             $user->can_make_requisition = false;
             $user->can_approve_requisition = false;
-        } elseif ($role === 'Auditor') {
-            $user->department = 'Internal Audit';
+        } elseif (in_array($role, ['Auditor', 'External Auditor'])) {
+            if (empty($user->department)) {
+                $user->department = $role === 'External Auditor' ? 'External Auditor' : 'Audit Department';
+            }
             $user->is_admin = false;
             $user->is_temp_account = true;
             $user->can_make_requisition = false;
