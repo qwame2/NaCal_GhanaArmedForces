@@ -1501,9 +1501,9 @@ class StoreRequisitionController extends Controller
     public function mainAdminIndex(Request $request)
     {
         self::checkOverdueTemporaryItems();
-        if (!auth()->user()->isMainAdminOrSub() && !auth()->user()->isDepartmentHead() && auth()->user()->role !== 'Head of Stores') abort(403);
+        if (!auth()->user()->isMainAdminOrSub() && !auth()->user()->isDepartmentHead() && !in_array(auth()->user()->role, ['Head of Stores', 'Auditor', 'External Auditor'])) abort(403);
 
-        $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+        $isStoresHead = (auth()->user()->isMainAdminOrSub() || in_array(auth()->user()->role, ['Head of Stores', 'Auditor', 'External Auditor']) || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
         if (!$isStoresHead) {
             $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
             if ($isBackup) {
@@ -1547,7 +1547,7 @@ class StoreRequisitionController extends Controller
             || auth()->user()->isMainAdminOrSub()
             || $isBackupActive;
 
-        $defaultStatus = (auth()->user()->role === 'Auditor') ? 'approved' : 'pending';
+        $defaultStatus = (in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) ? 'approved' : 'pending';
         $statusFilter = $request->input('status', $defaultStatus);
 
         if ($statusFilter === 'pending') {
@@ -1570,7 +1570,7 @@ class StoreRequisitionController extends Controller
                     $query->whereIn('status', ['approved', 'partially_approved']);
                 }
             } else {
-                if (auth()->user()->role === 'Auditor') {
+                if (in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
                     $query->whereIn('status', ['approved', 'partially_approved']);
                 } else {
                     $query->where(function($q) {

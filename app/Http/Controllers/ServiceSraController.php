@@ -173,7 +173,7 @@ class ServiceSraController extends Controller
         $user = auth()->user();
         $isAuthorizedUser = $user->is_admin 
             || $user->isMainAdminOrSub() 
-            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Auditor', 'Department Head', 'Dept. Head (Stores)', 'Director General'])
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Auditor', 'External Auditor', 'Department Head', 'Dept. Head (Stores)', 'Director General'])
             || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE', 'INTERNAL AUDIT', 'AUDIT DEPARTMENT'])
             || $user->isDelegatedApprover()
             || $sra->submitted_by === $user->id;
@@ -199,9 +199,7 @@ class ServiceSraController extends Controller
         $user = auth()->user();
         $allowed = $user->is_admin
             || $user->isMainAdminOrSub()
-            || $user->role === 'Head of Stores'
-            || $user->role === 'Auditor'
-            || $user->role === 'Director General'
+            || in_array($user->role, ['Head of Stores', 'Auditor', 'External Auditor', 'Director General'])
             || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE'])
             || $user->isDelegatedApprover()
             || $sra->submitted_by === $user->id;
