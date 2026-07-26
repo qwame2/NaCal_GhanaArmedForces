@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
 <style>
@@ -567,15 +567,15 @@
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('received-items-tab', this)">
             <i data-lucide="download" style="width: 16px;"></i>
-            Received Items Log
+            Received Items
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('issued-items-tab', this)">
             <i data-lucide="upload" style="width: 16px;"></i>
-            Issued Items Log
+            Issued Items
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('returned-items-tab', this)">
             <i data-lucide="undo-2" style="width: 16px;"></i>
-            Returned Items Log
+            Returned Items
         </button>
         <button class="audit-tab-btn" onclick="switchAuditTab('requisitions-tab', this)">
             <i data-lucide="file-text" style="width: 16px;"></i>
