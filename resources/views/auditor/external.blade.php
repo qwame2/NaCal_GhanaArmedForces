@@ -888,12 +888,22 @@
         if (!form) return;
         const formData = new FormData(form);
         const params = new URLSearchParams(formData);
+
+        if (typeof $ !== 'undefined' && $('#audit-user-select').length) {
+            const selectVal = $('#audit-user-select').val();
+            if (selectVal) {
+                params.set('user_id', selectVal);
+            } else {
+                params.delete('user_id');
+            }
+        }
+
         params.set('format', 'json');
 
         const clearBtn = document.getElementById('clear-filters-btn');
         let hasFilters = false;
-        for (let [k, v] of formData.entries()) {
-            if (k !== 'active_tab' && v.trim() !== '') {
+        for (let [k, v] of params.entries()) {
+            if (k !== 'active_tab' && k !== 'format' && v.trim() !== '') {
                 hasFilters = true;
                 break;
             }

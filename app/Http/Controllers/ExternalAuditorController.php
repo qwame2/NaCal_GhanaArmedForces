@@ -94,7 +94,13 @@ class ExternalAuditorController extends Controller
             });
         }
         if ($request->filled('user_id')) {
-            $receivedQuery->where('inventory_batches.recorded_by', $request->user_id);
+            $receivedQuery->where(function($q) use ($request) {
+                $q->where('inventory_batches.recorded_by', $request->user_id)
+                  ->orWhere('inventory_batches.approved_by', $request->user_id)
+                  ->orWhere('inventory_batches.stores_approved_by', $request->user_id)
+                  ->orWhere('inventory_batches.admin_approved_by', $request->user_id)
+                  ->orWhere('inventory_batches.auditor_approved_by', $request->user_id);
+            });
         }
 
         $receivedItems = $receivedQuery->paginate(15, ['*'], 'received_page')->withQueryString();
@@ -139,7 +145,10 @@ class ExternalAuditorController extends Controller
             $issuedQuery->where(function($q) use ($request) {
                 $q->where('store_requisitions.user_id', $request->user_id)
                   ->orWhere('store_requisitions.processed_by', $request->user_id)
-                  ->orWhere('store_requisitions.collected_by', $request->user_id);
+                  ->orWhere('store_requisitions.collected_by', $request->user_id)
+                  ->orWhere('store_requisitions.origin_approved_by', $request->user_id)
+                  ->orWhere('store_requisitions.stores_approved_by', $request->user_id)
+                  ->orWhere('store_requisitions.dg_approved_by', $request->user_id);
             });
         }
 
@@ -171,7 +180,10 @@ class ExternalAuditorController extends Controller
             });
         }
         if ($request->filled('user_id')) {
-            $returnedQuery->where('returned_items.returned_by', $request->user_id);
+            $returnedQuery->where(function($q) use ($request) {
+                $q->where('returned_items.returned_by', $request->user_id)
+                  ->orWhere('returned_items.received_by', $request->user_id);
+            });
         }
 
         $returnedItems = $returnedQuery->paginate(15, ['*'], 'returned_page')->withQueryString();
@@ -198,7 +210,11 @@ class ExternalAuditorController extends Controller
         if ($request->filled('user_id')) {
             $requisitionsQuery->where(function($q) use ($request) {
                 $q->where('user_id', $request->user_id)
-                  ->orWhere('processed_by', $request->user_id);
+                  ->orWhere('processed_by', $request->user_id)
+                  ->orWhere('collected_by', $request->user_id)
+                  ->orWhere('origin_approved_by', $request->user_id)
+                  ->orWhere('stores_approved_by', $request->user_id)
+                  ->orWhere('dg_approved_by', $request->user_id);
             });
         }
 
