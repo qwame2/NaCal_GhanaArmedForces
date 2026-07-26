@@ -87,14 +87,14 @@ class ExternalAuditorController extends Controller
             $search = $request->search_query;
             $receivedQuery->where(function($q) use ($search) {
                 $q->where('inventory_items.description', 'LIKE', "%{$search}%")
-                  ->orWhere('inventory_batches.batch_id', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.id', 'LIKE', "%{$search}%")
                   ->orWhere('inventory_batches.supplier_name', 'LIKE', "%{$search}%")
                   ->orWhere('inventory_batches.donor_name', 'LIKE', "%{$search}%")
                   ->orWhere('inventory_batches.delivery_person', 'LIKE', "%{$search}%");
             });
         }
         if ($request->filled('user_id')) {
-            $receivedQuery->where('inventory_batches.user_id', $request->user_id);
+            $receivedQuery->where('inventory_batches.recorded_by', $request->user_id);
         }
 
         $receivedItems = $receivedQuery->paginate(15, ['*'], 'received_page')->withQueryString();
