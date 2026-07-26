@@ -1,6 +1,8 @@
 @extends('layouts.dashboard')
 
-@section('content')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <style>
     :root {
         --audit-primary: #059669;
@@ -354,6 +356,53 @@
         box-shadow: none;
         opacity: 0.6;
     }
+
+    /* Select2 Theme Customization for External Audit */
+    .select2-container--default .select2-selection--single {
+        background-color: var(--bg-main) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--text-main) !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        padding-left: 12px !important;
+        padding-right: 28px !important;
+        line-height: 40px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+        right: 8px !important;
+    }
+    .select2-dropdown {
+        background-color: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+        z-index: 9999 !important;
+    }
+    .select2-results__option {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        padding: 8px 12px !important;
+        color: var(--text-main) !important;
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--audit-primary) !important;
+        color: white !important;
+    }
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        background: var(--bg-main) !important;
+        color: var(--text-main) !important;
+        outline: none !important;
+    }
 </style>
 
 <div style="padding: 2rem;">
@@ -437,7 +486,7 @@
             </div>
 
             <div class="filter-group select-group" style="flex: 1.5; min-width: 240px;">
-                <select name="user_id" id="audit-user-select" class="filter-control-audit" style="width: 100%;">
+                <select name="user_id" id="audit-user-select" class="filter-control-audit select2" style="width: 100%;">
                     <option value="">-- Audit User --</option>
                     @foreach($auditUsers as $u)
                         @php
@@ -763,6 +812,21 @@
             activePopover.remove();
             document.querySelectorAll('.btn-toggle-supplier-details svg, .btn-toggle-supplier-details i').forEach(el => {
                 el.style.transform = 'rotate(0deg)';
+            });
+        }
+    });
+</script>
+
+<!-- jQuery & Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('#audit-user-select').select2({
+                placeholder: "-- Audit User --",
+                allowClear: true,
+                width: '100%'
             });
         }
     });
