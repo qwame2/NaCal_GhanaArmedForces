@@ -1629,7 +1629,7 @@ class StoreRequisitionController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $showSRAs = auth()->user()->role === 'Auditor' || auth()->user()->role === 'Main Admin' || auth()->user()->isMainAdminOrSub() || auth()->user()->isDelegatedApprover();
+        $showSRAs = in_array(auth()->user()->role, ['Auditor', 'External Auditor', 'Main Admin']) || auth()->user()->isMainAdminOrSub() || auth()->user()->isDelegatedApprover();
 
         $sraPending = 0;
         $sraApproved = 0;
