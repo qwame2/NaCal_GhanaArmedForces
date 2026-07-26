@@ -566,7 +566,7 @@
     .table-container {
         width: 100%;
         overflow-x: auto;
-        background: var(--bg-card);
+        background: #ffffff !important;
         border: 1px solid var(--border-color);
         border-radius: 20px;
         box-shadow: var(--shadow-premium);
@@ -578,6 +578,7 @@
         border-collapse: collapse;
         text-align: left;
         min-width: 1100px;
+        background: #ffffff !important;
     }
 
     .oversight-table th {
@@ -587,7 +588,7 @@
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        background: rgba(15, 23, 42, 0.01);
+        background: #ffffff !important;
         border-bottom: 1px solid var(--border-color);
     }
 
@@ -597,6 +598,7 @@
         border-bottom: 1px solid var(--border-color);
         font-size: 0.88rem;
         color: var(--text-main);
+        background: #ffffff !important;
     }
 
     .oversight-table tr:last-child td {
