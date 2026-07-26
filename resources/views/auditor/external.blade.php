@@ -403,6 +403,21 @@
         color: var(--text-main) !important;
         outline: none !important;
     }
+
+    /* Skeleton Loader Shimmer */
+    @keyframes skeletonShimmer {
+        0% { background-position: -200px 0; }
+        100% { background-position: 200px 0; }
+    }
+    .skeleton-box {
+        display: inline-block;
+        height: 14px;
+        width: 85%;
+        border-radius: 6px;
+        background: linear-gradient(90deg, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.12) 37%, rgba(0,0,0,0.05) 63%);
+        background-size: 400px 100%;
+        animation: skeletonShimmer 1.4s ease-in-out infinite;
+    }
 </style>
 
 <div style="padding: 2rem;">
@@ -513,16 +528,10 @@
                 <input type="date" name="date_to" class="filter-control-audit" value="{{ request('date_to') }}">
             </div>
 
-            <div style="display: flex; gap: 8px;">
-                <button type="submit" class="glass-card" style="padding: 0 1.25rem; height: 42px; background: var(--audit-primary); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                    <i data-lucide="filter" style="width: 16px;"></i>
-                    Apply Filter
-                </button>
-                @if(request()->hasAny(['search_query', 'date_from', 'date_to', 'log_severity', 'log_event', 'user_id']))
-                    <a href="{{ route('external-auditor.dashboard') }}" class="filter-btn-clear">
-                        <i data-lucide="x" style="width: 14px;"></i> Clear
-                    </a>
-                @endif
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <a href="{{ route('external-auditor.dashboard') }}" id="clear-filters-btn" class="filter-btn-clear" style="display: {{ request()->hasAny(['search_query', 'date_from', 'date_to', 'log_severity', 'log_event', 'user_id']) ? 'inline-flex' : 'none' }};">
+                    <i data-lucide="x" style="width: 14px;"></i> Clear
+                </a>
             </div>
         </div>
     </form>
@@ -842,12 +851,150 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    function getSkeletonRowsHtml(columnCount, rowCount = 5) {
+        let rows = '';
+        for (let r = 0; r < rowCount; r++) {
+            let cols = '';
+            for (let c = 0; c < columnCount; c++) {
+                const width = Math.floor(Math.random() * 35) + 55;
+                cols += `<td style="padding: 1.25rem 1rem;"><div class="skeleton-box" style="width: ${width}%;"></div></td>`;
+            }
+            rows += `<tr class="log-row">${cols}</tr>`;
+        }
+        return rows;
+    }
+
+    let fetchTimeout = null;
+
+    function performLiveAuditFetch() {
+        clearTimeout(fetchTimeout);
+
+        const tabCols = {
+            'audit_trail': 6,
+            'received_items': 6,
+            'issued_items': 7,
+            'returned_items': 6,
+            'requisitions': 6
+        };
+
+        for (const [tabKey, cols] of Object.entries(tabCols)) {
+            const tbody = document.getElementById('tbody-' + tabKey);
+            if (tbody) {
+                tbody.innerHTML = getSkeletonRowsHtml(cols, 5);
+            }
+        }
+
+        const form = document.querySelector('.filter-card-audit');
+        if (!form) return;
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData);
+        params.set('format', 'json');
+
+        const clearBtn = document.getElementById('clear-filters-btn');
+        let hasFilters = false;
+        for (let [k, v] of formData.entries()) {
+            if (k !== 'active_tab' && v.trim() !== '') {
+                hasFilters = true;
+                break;
+            }
+        }
+        if (clearBtn) clearBtn.style.display = hasFilters ? 'inline-flex' : 'none';
+
+        fetch("{{ route('external-auditor.dashboard') }}?" + params.toString(), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data || !data.tabs) return;
+
+            if (data.total_logs !== undefined) {
+                const el = document.getElementById('stat-total-logs');
+                if (el) el.textContent = data.total_logs;
+            }
+            if (data.total_variance !== undefined) {
+                const el = document.getElementById('stat-total-variance');
+                if (el) el.textContent = data.total_variance;
+            }
+            if (data.active_loans !== undefined) {
+                const el = document.getElementById('stat-active-loans');
+                if (el) el.textContent = data.active_loans;
+            }
+
+            const titleMap = {
+                'audit_trail': 'System Audit Trail',
+                'received_items': 'Received Items',
+                'issued_items': 'Issued Items',
+                'returned_items': 'Returned Items',
+                'requisitions': 'Requisitions Log'
+            };
+
+            const iconMap = {
+                'audit_trail': '<i data-lucide="shield-alert" style="width: 16px;"></i>',
+                'received_items': '<i data-lucide="package-check" style="width: 16px;"></i>',
+                'issued_items': '<i data-lucide="package-minus" style="width: 16px;"></i>',
+                'returned_items': '<i data-lucide="rotate-ccw" style="width: 16px;"></i>',
+                'requisitions': '<i data-lucide="clipboard-list" style="width: 16px;"></i>'
+            };
+
+            for (const [tabKey, tabData] of Object.entries(data.tabs)) {
+                const tbody = document.getElementById('tbody-' + tabKey);
+                if (tbody && tabData.tbody !== undefined) {
+                    tbody.innerHTML = tabData.tbody;
+                }
+                const pager = document.getElementById('pager-' + tabKey);
+                if (pager && tabData.pager !== undefined) {
+                    pager.innerHTML = tabData.pager;
+                }
+
+                const tabBtn = document.querySelector(`.audit-tab-btn[onclick*="'${tabKey}'"]`);
+                if (tabBtn && tabData.total !== undefined) {
+                    const label = titleMap[tabKey] || tabKey;
+                    const icon = iconMap[tabKey] || '';
+                    tabBtn.innerHTML = `${icon} ${label} (${tabData.total.toLocaleString()})`;
+                }
+            }
+
+            if (window.lucide) lucide.createIcons();
+
+            params.delete('format');
+            const cleanQuery = params.toString();
+            const newUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '');
+            history.replaceState(null, '', newUrl);
+        })
+        .catch(err => {
+            console.error('Error in live audit fetch:', err);
+        });
+    }
+
+    function debouncedLiveFetch() {
+        clearTimeout(fetchTimeout);
+        fetchTimeout = setTimeout(performLiveAuditFetch, 300);
+    }
+
     $(document).ready(function() {
         if (typeof $.fn.select2 !== 'undefined') {
             $('#audit-user-select').select2({
                 placeholder: "-- Audit User --",
                 allowClear: true,
                 width: '100%'
+            });
+            $('#audit-user-select').on('change', function() {
+                debouncedLiveFetch();
+            });
+        }
+
+        const filterForm = document.querySelector('.filter-card-audit');
+        if (filterForm) {
+            filterForm.querySelectorAll('input[name="search_query"], input[name="date_from"], input[name="date_to"]').forEach(input => {
+                input.addEventListener('input', debouncedLiveFetch);
+                input.addEventListener('change', debouncedLiveFetch);
+            });
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                performLiveAuditFetch();
             });
         }
     });

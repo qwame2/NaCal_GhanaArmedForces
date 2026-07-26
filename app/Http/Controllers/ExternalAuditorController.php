@@ -207,7 +207,7 @@ class ExternalAuditorController extends Controller
         $ledgeMap = Setting::getCategories();
         $auditUsers = User::where('role', '!=', 'External Auditor')->orderBy('name')->get();
 
-        if ($request->input('format') === 'json' && $request->ajax()) {
+        if ($request->input('format') === 'json' || $request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'total_logs'        => number_format(SystemLog::count()),
                 'total_variance'    => number_format($totalVariance),
