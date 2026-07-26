@@ -1,13 +1,35 @@
 @if($items->hasPages())
 <div class="audit-pagination-container">
     <div class="audit-pagination-info">
-        Showing <span>{{ $items->firstItem() ?? 0 }}</span> to <span>{{ $items->lastItem() ?? 0 }}</span> of <span>{{ $items->total() }}</span> records
+        Showing <span>{{ number_format($items->firstItem() ?? 0) }}</span> to <span>{{ number_format($items->lastItem() ?? 0) }}</span> of <span>{{ number_format($items->total()) }}</span> records
     </div>
     <div class="audit-pagination-buttons">
         @if ($items->onFirstPage())
             <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
         @else
             <a href="{{ $items->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
+        @endif
+
+        @php
+            $currentPage = $items->currentPage();
+            $lastPage = $items->lastPage();
+            $start = max(1, $currentPage - 2);
+            $end = min($lastPage, $currentPage + 2);
+        @endphp
+        @if($start > 1)
+            <a href="{{ $items->appends(request()->query())->url(1) }}" class="audit-page-btn {{ $currentPage == 1 ? 'active-page' : '' }}">1</a>
+            @if($start > 2)
+                <span class="audit-page-btn disabled" style="border: none; background: transparent; padding: 0 4px;">...</span>
+            @endif
+        @endif
+        @for ($p = $start; $p <= $end; $p++)
+            <a href="{{ $items->appends(request()->query())->url($p) }}" class="audit-page-btn {{ $p == $currentPage ? 'active-page' : '' }}">{{ $p }}</a>
+        @endfor
+        @if($end < $lastPage)
+            @if($end < $lastPage - 1)
+                <span class="audit-page-btn disabled" style="border: none; background: transparent; padding: 0 4px;">...</span>
+            @endif
+            <a href="{{ $items->appends(request()->query())->url($lastPage) }}" class="audit-page-btn {{ $currentPage == $lastPage ? 'active-page' : '' }}">{{ $lastPage }}</a>
         @endif
 
         @if ($items->hasMorePages())

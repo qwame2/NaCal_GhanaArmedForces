@@ -281,6 +281,79 @@
         text-transform: uppercase;
         margin-bottom: 1rem;
     }
+
+    /* Precision Pagination Module */
+    .audit-pagination-container {
+        padding: 1.25rem 1.75rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        box-shadow: var(--shadow-premium);
+        margin-top: 1.25rem;
+    }
+
+    .audit-pagination-info {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-weight: 700;
+    }
+
+    .audit-pagination-info span {
+        color: var(--text-main);
+        font-weight: 800;
+    }
+
+    .audit-pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .audit-page-btn {
+        padding: 0.55rem 1.1rem;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: 12px;
+        color: var(--text-main);
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        cursor: pointer;
+    }
+
+    .audit-page-btn:hover:not(.disabled) {
+        background: var(--audit-primary);
+        color: white;
+        border-color: var(--audit-primary);
+        transform: translateY(-1.5px);
+        box-shadow: 0 8px 16px rgba(5, 150, 105, 0.2);
+    }
+
+    .audit-page-btn.active-page {
+        background: var(--audit-primary);
+        color: white;
+        border-color: var(--audit-primary);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    }
+
+    .audit-page-btn.disabled {
+        background: var(--bg-main);
+        color: var(--text-muted);
+        border-color: var(--border-color);
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.6;
+    }
 </style>
 
 <div style="padding: 2rem;">
