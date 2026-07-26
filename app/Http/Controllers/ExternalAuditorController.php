@@ -156,7 +156,7 @@ class ExternalAuditorController extends Controller
         }
         if ($request->filled('user_id')) {
             $issuedQuery->where(function($q) use ($request) {
-                $q->where('store_requisitions.user_id', $request->user_id)
+                $q->where('store_requisitions.requested_by', $request->user_id)
                   ->orWhere('store_requisitions.processed_by', $request->user_id)
                   ->orWhere('store_requisitions.collected_by', $request->user_id)
                   ->orWhere('store_requisitions.origin_approved_by', $request->user_id)
@@ -170,6 +170,7 @@ class ExternalAuditorController extends Controller
         // 5. Fetch Returned Items Logs
         $returnedQuery = ReturnedItem::join('issued_items', 'returned_items.issued_item_id', '=', 'issued_items.id')
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
             ->select(
                 'returned_items.*',
                 'issued_items.description',
@@ -194,8 +195,9 @@ class ExternalAuditorController extends Controller
         }
         if ($request->filled('user_id')) {
             $returnedQuery->where(function($q) use ($request) {
-                $q->where('returned_items.returned_by', $request->user_id)
-                  ->orWhere('returned_items.received_by', $request->user_id);
+                $q->where('store_requisitions.requested_by', $request->user_id)
+                  ->orWhere('store_requisitions.processed_by', $request->user_id)
+                  ->orWhere('store_requisitions.collected_by', $request->user_id);
             });
         }
 
@@ -222,7 +224,7 @@ class ExternalAuditorController extends Controller
         }
         if ($request->filled('user_id')) {
             $requisitionsQuery->where(function($q) use ($request) {
-                $q->where('user_id', $request->user_id)
+                $q->where('requested_by', $request->user_id)
                   ->orWhere('processed_by', $request->user_id)
                   ->orWhere('collected_by', $request->user_id)
                   ->orWhere('origin_approved_by', $request->user_id)
