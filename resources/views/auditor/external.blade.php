@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-
+@section('content')
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -475,6 +475,7 @@
 
     {{-- Filter Bar --}}
     <form action="{{ route('external-auditor.dashboard') }}" method="GET" class="filter-card-audit">
+        <input type="hidden" name="active_tab" id="active_tab_input" value="{{ request('active_tab', 'audit_trail') }}">
         <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 6px;">
             <i data-lucide="sliders-horizontal" style="width: 14px; color: var(--audit-primary);"></i>
             External Search &amp; Compliance Filter
@@ -526,27 +527,31 @@
         </div>
     </form>
 
+    @php
+        $activeTab = request('active_tab', 'audit_trail');
+    @endphp
+
     {{-- Tabs Container --}}
     <div class="audit-tabs-container">
-        <button class="audit-tab-btn active" onclick="switchAuditTab('audit_trail', this)">
+        <button class="audit-tab-btn {{ $activeTab === 'audit_trail' ? 'active' : '' }}" onclick="switchAuditTab('audit_trail', this)">
             <i data-lucide="shield-alert" style="width: 16px;"></i> System Audit Trail ({{ $systemLogs->total() }})
         </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('received_items', this)">
+        <button class="audit-tab-btn {{ $activeTab === 'received_items' ? 'active' : '' }}" onclick="switchAuditTab('received_items', this)">
             <i data-lucide="package-check" style="width: 16px;"></i> Received Items ({{ $receivedItems->total() }})
         </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('issued_items', this)">
+        <button class="audit-tab-btn {{ $activeTab === 'issued_items' ? 'active' : '' }}" onclick="switchAuditTab('issued_items', this)">
             <i data-lucide="package-minus" style="width: 16px;"></i> Issued Items ({{ $issuedItems->total() }})
         </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('returned_items', this)">
+        <button class="audit-tab-btn {{ $activeTab === 'returned_items' ? 'active' : '' }}" onclick="switchAuditTab('returned_items', this)">
             <i data-lucide="rotate-ccw" style="width: 16px;"></i> Returned Items ({{ $returnedItems->total() }})
         </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('requisitions', this)">
+        <button class="audit-tab-btn {{ $activeTab === 'requisitions' ? 'active' : '' }}" onclick="switchAuditTab('requisitions', this)">
             <i data-lucide="clipboard-list" style="width: 16px;"></i> Requisitions Log ({{ $requisitions->total() }})
         </button>
     </div>
 
     {{-- Tab 1: Audit Trail --}}
-    <div id="tab-audit_trail" class="audit-tab-panel active">
+    <div id="tab-audit_trail" class="audit-tab-panel {{ $activeTab === 'audit_trail' ? 'active' : '' }}">
         <div class="auditor-card" style="padding: 0; overflow: hidden;">
             <table class="audit-table">
                 <thead>
@@ -569,8 +574,8 @@
         </div>
     </div>
 
-    {{-- Tab 2: Received Items Ledger --}}
-    <div id="tab-received_items" class="audit-tab-panel">
+    {{-- Tab 2: Received Items --}}
+    <div id="tab-received_items" class="audit-tab-panel {{ $activeTab === 'received_items' ? 'active' : '' }}">
         <div class="auditor-card" style="padding: 0; overflow: hidden;">
             <table class="audit-table">
                 <thead>
@@ -593,8 +598,8 @@
         </div>
     </div>
 
-    {{-- Tab 3: Issued Items Ledger --}}
-    <div id="tab-issued_items" class="audit-tab-panel">
+    {{-- Tab 3: Issued Items --}}
+    <div id="tab-issued_items" class="audit-tab-panel {{ $activeTab === 'issued_items' ? 'active' : '' }}">
         <div class="auditor-card" style="padding: 0; overflow: hidden;">
             <table class="audit-table">
                 <thead>
@@ -619,7 +624,7 @@
     </div>
 
     {{-- Tab 4: Returned Items --}}
-    <div id="tab-returned_items" class="audit-tab-panel">
+    <div id="tab-returned_items" class="audit-tab-panel {{ $activeTab === 'returned_items' ? 'active' : '' }}">
         <div class="auditor-card" style="padding: 0; overflow: hidden;">
             <table class="audit-table">
                 <thead>
@@ -643,7 +648,7 @@
     </div>
 
     {{-- Tab 5: Requisitions Log --}}
-    <div id="tab-requisitions" class="audit-tab-panel">
+    <div id="tab-requisitions" class="audit-tab-panel {{ $activeTab === 'requisitions' ? 'active' : '' }}">
         <div class="auditor-card" style="padding: 0; overflow: hidden;">
             <table class="audit-table">
                 <thead>
@@ -673,9 +678,25 @@
         document.querySelectorAll('.audit-tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.audit-tab-panel').forEach(p => p.classList.remove('active'));
 
-        btn.classList.add('active');
-        document.getElementById('tab-' + tabId).classList.add('active');
+        if (!btn && typeof tabId === 'string') {
+            btn = document.querySelector(`.audit-tab-btn[onclick*="'${tabId}'"]`);
+        }
+
+        if (btn) btn.classList.add('active');
+        const panel = document.getElementById('tab-' + tabId);
+        if (panel) panel.classList.add('active');
+
+        const activeInput = document.getElementById('active_tab_input');
+        if (activeInput) activeInput.value = tabId;
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTabParam = urlParams.get('active_tab');
+        if (activeTabParam && document.getElementById('tab-' + activeTabParam)) {
+            switchAuditTab(activeTabParam);
+        }
+    });
 
     function toggleSupplierPopover(btn, event) {
         event.stopPropagation();

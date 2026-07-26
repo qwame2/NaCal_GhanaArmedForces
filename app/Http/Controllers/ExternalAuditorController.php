@@ -85,7 +85,16 @@ class ExternalAuditorController extends Controller
         }
         if ($request->filled('search_query')) {
             $search = $request->search_query;
-            $receivedQuery->where('inventory_items.description', 'LIKE', "%{$search}%");
+            $receivedQuery->where(function($q) use ($search) {
+                $q->where('inventory_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.batch_id', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.supplier_name', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.donor_name', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.delivery_person', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('user_id')) {
+            $receivedQuery->where('inventory_batches.user_id', $request->user_id);
         }
 
         $receivedItems = $receivedQuery->paginate(15, ['*'], 'received_page')->withQueryString();
@@ -119,8 +128,19 @@ class ExternalAuditorController extends Controller
         }
         if ($request->filled('search_query')) {
             $search = $request->search_query;
-            $issuedQuery->where('issued_items.description', 'LIKE', "%{$search}%")
-                ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%");
+            $issuedQuery->where(function($q) use ($search) {
+                $q->where('issued_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.authority', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.issuance_type', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('user_id')) {
+            $issuedQuery->where(function($q) use ($request) {
+                $q->where('store_requisitions.user_id', $request->user_id)
+                  ->orWhere('store_requisitions.processed_by', $request->user_id)
+                  ->orWhere('store_requisitions.collected_by', $request->user_id);
+            });
         }
 
         $issuedItems = $issuedQuery->paginate(15, ['*'], 'issued_page')->withQueryString();
@@ -144,8 +164,14 @@ class ExternalAuditorController extends Controller
         }
         if ($request->filled('search_query')) {
             $search = $request->search_query;
-            $returnedQuery->where('issued_items.description', 'LIKE', "%{$search}%")
-                ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%");
+            $returnedQuery->where(function($q) use ($search) {
+                $q->where('issued_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
+                  ->orWhere('returned_items.remarks', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('user_id')) {
+            $returnedQuery->where('returned_items.returned_by', $request->user_id);
         }
 
         $returnedItems = $returnedQuery->paginate(15, ['*'], 'returned_page')->withQueryString();
@@ -165,7 +191,14 @@ class ExternalAuditorController extends Controller
                 $q->where('purpose', 'LIKE', "%{$search}%")
                   ->orWhere('id', 'LIKE', "%{$search}%")
                   ->orWhere('requester_name', 'LIKE', "%{$search}%")
-                  ->orWhere('department', 'LIKE', "%{$search}%");
+                  ->orWhere('department', 'LIKE', "%{$search}%")
+                  ->orWhere('status', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('user_id')) {
+            $requisitionsQuery->where(function($q) use ($request) {
+                $q->where('user_id', $request->user_id)
+                  ->orWhere('processed_by', $request->user_id);
             });
         }
 
