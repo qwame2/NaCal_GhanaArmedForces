@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Support\Facades\Route;
 
@@ -270,9 +270,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return redirect()->route('admin.index')->with('warning', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 
-        // Redirect Auditors to their designated page
-        if (auth()->user()->role === 'Auditor') {
-            return redirect()->route('auditor.dashboard');
+        // Redirect Auditors & External Auditors to their designated page
+        if (in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
+            return redirect()->route(auth()->user()->role === 'External Auditor' ? 'external-auditor.dashboard' : 'auditor.dashboard');
         }
 
         // Redirect Director General to their designated page
@@ -715,8 +715,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/main-admin/requisitions/{id}/alternative-response', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminAlternativeResponse'])->name('main-admin.requisitions.alternative-response');
     Route::get('/overdue-assets', [\App\Http\Controllers\StoreRequisitionController::class, 'overdueAssets'])->name('requisitions.overdue');
 
-    // Auditor Routes
+    // Auditor & External Auditor Routes
     Route::get('/auditor', [\App\Http\Controllers\AuditorController::class, 'index'])->name('auditor.dashboard');
+    Route::get('/external-auditor', [\App\Http\Controllers\AuditorController::class, 'externalIndex'])->name('external-auditor.dashboard');
     Route::get('/auditor/print', [\App\Http\Controllers\AuditorController::class, 'printReport'])->name('auditor.print');
     Route::get('/auditor/supplier-info', [\App\Http\Controllers\AuditorController::class, 'getSupplierInfo'])->name('auditor.supplier_info');
     Route::get('/auditor/staff-approvals', [\App\Http\Controllers\AuditorController::class, 'staffApprovals'])->name('auditor.staff-approvals');

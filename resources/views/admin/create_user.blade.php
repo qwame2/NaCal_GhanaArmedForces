@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Register Users')
 
@@ -710,6 +710,7 @@
                                         <option value="Dept Head HR" {{ $selectedRole === 'Dept Head HR' ? 'selected' : '' }}>Dept. Head (HR)</option>
                                         <option value="Head of Welfare" {{ $selectedRole === 'Head of Welfare' ? 'selected' : '' }}>Dept. Head (Welfare)</option>
                                         <option value="Auditor" {{ $selectedRole === 'Auditor' ? 'selected' : '' }}>Auditor</option>
+                                        <option value="External Auditor" {{ $selectedRole === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
                                         <option value="Officer" {{ $selectedRole === 'Officer' ? 'selected' : '' }}>Store Officer</option>
                                         <option value="Requisitioner" {{ $selectedRole === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
                                     </select>
@@ -773,6 +774,7 @@
                                         </optgroup>
                                         <optgroup label="AUDIT DEPARTMENT">
                                             <option value="Audit Department" {{ $selectedDept === 'Audit Department' ? 'selected' : '' }}>Audit Department</option>
+                                            <option value="External Auditor" {{ $selectedDept === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
                                         </optgroup>
                                         <option value="custom" {{ $isCustomDept ? 'selected' : '' }}>-- Custom / Other Department --</option>
                                     </select>
@@ -899,6 +901,7 @@
                                 <option value="Dept Head HR">Dept. Head (HR)</option>
                                 <option value="Head of Welfare">Dept. Head (Welfare)</option>
                                 <option value="Auditor">Auditor</option>
+                                <option value="External Auditor">External Auditor</option>
                                 <option value="Officer">Store Officer</option>
                                 <option value="Requisitioner">Requisitioner</option>
                             </select>
@@ -962,6 +965,7 @@
                                 </optgroup>
                                 <optgroup label="AUDIT DEPARTMENT">
                                     <option value="Audit Department">Audit Department</option>
+                                    <option value="External Auditor">External Auditor</option>
                                 </optgroup>
                                 <option value="custom">-- Custom / Other Department --</option>
                             </select>

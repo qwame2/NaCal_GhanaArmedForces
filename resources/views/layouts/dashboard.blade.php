@@ -160,11 +160,11 @@
         <div class="nav-section-title">Main Menu</div>
 
         <ul class="nav-menu">
-            @if(auth()->user()->role === 'Auditor')
+            @if(in_array(auth()->user()->role, ['Auditor', 'External Auditor']))
                 <li class="nav-item">
-                    <a href="{{ route('auditor.dashboard') }}" class="nav-link {{ request()->routeIs('auditor.dashboard') ? 'active' : '' }}" data-tooltip="Auditing Center" style="position: relative;">
+                    <a href="{{ auth()->user()->role === 'External Auditor' ? route('external-auditor.dashboard') : route('auditor.dashboard') }}" class="nav-link {{ (request()->routeIs('auditor.dashboard') || request()->routeIs('external-auditor.dashboard')) ? 'active' : '' }}" data-tooltip="{{ auth()->user()->role === 'External Auditor' ? 'External Audit Portal' : 'Auditing Center' }}" style="position: relative;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
-                        <span>Auditing Center</span>
+                        <span>{{ auth()->user()->role === 'External Auditor' ? 'External Audit Portal' : 'Auditing Center' }}</span>
                         <span id="sidebar-badge-auditor-pending"
                               style="display: none; background: #ef4444; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto; animation: auditor-badge-blink 1s infinite; flex-shrink: 0;"
                               title="Pending approvals in Auditing Center">0</span>

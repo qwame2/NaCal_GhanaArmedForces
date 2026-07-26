@@ -83,7 +83,7 @@ class User extends Authenticatable implements LdapAuthenticatable
 
     public function getIsTempAccountAttribute($value)
     {
-        return $this->role === 'Auditor' ? true : (bool)$value;
+        return in_array($this->role, ['Auditor', 'External Auditor']) ? true : (bool)$value;
     }
 
     /**

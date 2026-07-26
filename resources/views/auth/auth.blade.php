@@ -757,6 +757,7 @@
                                             </optgroup>
                                             <optgroup label="AUDIT DEPARTMENT">
                                                 <option value="Audit Department">Audit Department</option>
+                                                <option value="External Auditor">External Auditor</option>
                                             </optgroup>
                                         </select>
                                     </div>

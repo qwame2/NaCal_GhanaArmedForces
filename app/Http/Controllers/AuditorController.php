@@ -16,7 +16,7 @@ class AuditorController extends Controller
 {
     public function index(Request $request)
     {
-        if (auth()->user()->role !== 'Auditor') {
+        if (!in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
             abort(403, 'Access Restricted: Auditor clearance required.');
         }
         // 1. Gather Summary Statistics
@@ -263,7 +263,7 @@ class AuditorController extends Controller
 
     public function printReport(Request $request)
     {
-        if (auth()->user()->role !== 'Auditor') {
+        if (!in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
             abort(403, 'Access Restricted: Auditor clearance required.');
         }
 
@@ -335,7 +335,7 @@ class AuditorController extends Controller
 
     public function getSupplierInfo(Request $request)
     {
-        if (auth()->user()->role !== 'Auditor') {
+        if (!in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
         $name = $request->query('name');
@@ -369,12 +369,21 @@ class AuditorController extends Controller
 
     public function staffApprovals(Request $request)
     {
-        if (auth()->user()->role !== 'Auditor') {
+        if (!in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
             abort(403, 'Access Restricted: Auditor clearance required.');
         }
 
         $hasOverdueReturn = \App\Http\Controllers\TempRequisitionerController::hasOverdueReturn(auth()->user()->department);
 
         return view('auditor.staff_approvals', compact('hasOverdueReturn'));
+    }
+
+    public function externalIndex(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
+            abort(403, 'Access Restricted: External Auditor clearance required.');
+        }
+
+        return $this->index($request);
     }
 }

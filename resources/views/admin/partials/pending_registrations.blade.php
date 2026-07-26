@@ -80,6 +80,7 @@
                             <option value="Officer" {{ $req->role === 'Officer' ? 'selected' : '' }}>Store Officer</option>
                             <option value="Department Head" {{ $req->role === 'Department Head' ? 'selected' : '' }}>Departmental Head</option>
                             <option value="Auditor" {{ $req->role === 'Auditor' ? 'selected' : '' }}>Auditor</option>
+                            <option value="External Auditor" {{ $req->role === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
                             <option value="Director General" {{ $req->role === 'Director General' ? 'selected' : '' }}>Director General</option>
                             <option value="Requisitioner" {{ $req->role === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
                         </select>
