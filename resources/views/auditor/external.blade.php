@@ -627,5 +627,144 @@
         btn.classList.add('active');
         document.getElementById('tab-' + tabId).classList.add('active');
     }
+
+    function toggleSupplierPopover(btn, event) {
+        event.stopPropagation();
+        
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const acq = btn.getAttribute('data-acquisition');
+        const delPerson = btn.getAttribute('data-delivery-person');
+        const delPhone = btn.getAttribute('data-delivery-phone');
+        const icon = btn.querySelector('svg') || btn.querySelector('i');
+        
+        // Remove existing popover if open
+        const existingPopover = document.getElementById('active-supplier-popover');
+        if (existingPopover) {
+            const existingId = existingPopover.getAttribute('data-trigger-id');
+            existingPopover.remove();
+            
+            document.querySelectorAll('.btn-toggle-supplier-details svg, .btn-toggle-supplier-details i').forEach(el => {
+                el.style.transform = 'rotate(0deg)';
+            });
+            
+            if (existingId === id) {
+                return;
+            }
+        }
+        
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        
+        const popover = document.createElement('div');
+        popover.id = 'active-supplier-popover';
+        popover.setAttribute('data-trigger-id', id);
+        
+        popover.style.position = 'fixed';
+        popover.style.backgroundColor = 'var(--bg-card)';
+        popover.style.border = '1px solid var(--border-color)';
+        popover.style.borderRadius = '16px';
+        popover.style.padding = '1.25rem';
+        popover.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1)';
+        popover.style.zIndex = '10000';
+        popover.style.maxHeight = 'min(420px, 80vh)';
+        popover.style.overflowY = 'auto';
+        
+        const rect = btn.getBoundingClientRect();
+        const width = Math.min(320, window.innerWidth - 24);
+        popover.style.width = width + 'px';
+        
+        let left = rect.left - (width / 2) + (rect.width / 2);
+        left = Math.max(12, Math.min(window.innerWidth - width - 12, left));
+        popover.style.left = left + 'px';
+        
+        const popoverHeight = 380;
+        let top = rect.bottom + 8;
+        if (top + popoverHeight > window.innerHeight && rect.top - popoverHeight - 8 > 0) {
+            top = rect.top - popoverHeight - 8;
+        }
+        popover.style.top = top + 'px';
+        
+        popover.innerHTML = `
+            <div style="font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
+                    <span style="font-weight: 900; color: var(--text-main);">Entity Details</span>
+                    <span style="background: rgba(5, 150, 105, 0.1); color: var(--audit-primary); font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+                        ${acq}
+                    </span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;" id="popover-registry-details">
+                    <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">
+                        <span class="animate-spin" style="display: inline-block;">⚙</span>
+                        <span>Querying logs & registry...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(popover);
+        
+        fetch("{{ route('auditor.supplier_info') }}?name=" + encodeURIComponent(name))
+            .then(res => res.json())
+            .then(data => {
+                const s = data.supplier || {};
+                const detailsContainer = document.getElementById('popover-registry-details');
+                if (detailsContainer) {
+                    detailsContainer.innerHTML = `
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Name</span>
+                            <span style="font-weight: 750; color: var(--text-main);">${name}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Registry Phone</span>
+                            <span style="font-weight: 700; color: var(--text-main);">${s.phone || '-'}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Email Address</span>
+                            <span style="font-weight: 700; color: var(--text-main);">${s.email || '-'}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Physical Address</span>
+                            <span style="font-weight: 700; color: var(--text-main);">${s.address || '-'}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Contact Person</span>
+                            <span style="font-weight: 750; color: var(--text-main);">${s.contact_person || '-'}</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">Phone: ${s.contact_phone || '-'}</span>
+                        </div>
+                        <div style="border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 4px;">
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Delivery Representative</span>
+                            <span style="font-weight: 750; color: var(--text-main);">${delPerson}</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">Phone: ${delPhone}</span>
+                        </div>
+                        <div style="display: flex; gap: 12px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+                            <div style="flex: 1;">
+                                <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">First Delivery</span>
+                                <span style="font-weight: 800; color: #059669; font-size: 0.75rem;">${data.first_delivery || '-'}</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Last Delivery</span>
+                                <span style="font-weight: 800; color: var(--audit-primary); font-size: 0.75rem;">${data.last_delivery || '-'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(err => {
+                const detailsContainer = document.getElementById('popover-registry-details');
+                if (detailsContainer) {
+                    detailsContainer.innerHTML = '<span style="color: #ef4444;">Error loading details</span>';
+                }
+            });
+    }
+
+    document.addEventListener('click', function(e) {
+        const activePopover = document.getElementById('active-supplier-popover');
+        if (activePopover && !activePopover.contains(e.target)) {
+            activePopover.remove();
+            document.querySelectorAll('.btn-toggle-supplier-details svg, .btn-toggle-supplier-details i').forEach(el => {
+                el.style.transform = 'rotate(0deg)';
+            });
+        }
+    });
 </script>
 @endsection
