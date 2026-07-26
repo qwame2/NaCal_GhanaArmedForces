@@ -1568,7 +1568,7 @@
                 if (!data.pending || data.pending.length === 0) {
                     const emptyHtml = `
                         <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                            <div style="font-size:1.75rem;margin-bottom:.4rem;">ðŸ‘¥</div>
+                            <div style="display:flex;justify-content:center;margin-bottom:.4rem;color:var(--text-muted);opacity:.5;"><i data-lucide="clipboard-x" style="width:32px;height:32px;"></i></div>
                             <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
                             <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any pending staff registrations in your department will appear here.</div>
                         </div>`;
@@ -1618,7 +1618,7 @@
                 if (!data.accounts || data.accounts.length === 0) {
                     const emptyHtml = `
                         <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                            <div style="font-size:1.75rem;margin-bottom:.4rem;">ðŸ‘¥</div>
+                            <div style="display:flex;justify-content:center;margin-bottom:.4rem;color:var(--text-muted);opacity:.5;"><i data-lucide="users" style="width:32px;height:32px;"></i></div>
                             <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
                             <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
                         </div>`;
