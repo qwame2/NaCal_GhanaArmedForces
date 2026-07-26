@@ -1281,7 +1281,9 @@
             <div class="filter-field-wrapper" style="min-width:200px;flex:1.5;">
                 <i data-lucide="activity" class="filter-icon" style="width:14px;height:14px;"></i>
                 <select name="status" class="filter-control" id="filter-status">
-                    <option value="pending"  {{ request('status', $defaultStatus)==='pending'  ?'selected':'' }}>Awaiting My Review</option>
+                    @if(!in_array(auth()->user()->role, ['Auditor', 'External Auditor']))
+                        <option value="pending"  {{ request('status', $defaultStatus)==='pending'  ?'selected':'' }}>Awaiting My Review</option>
+                    @endif
                     <option value="approved" {{ request('status', $defaultStatus)==='approved' ?'selected':'' }}>Approved History</option>
                     <option value="declined" {{ request('status', $defaultStatus)==='declined' ?'selected':'' }}>Declined History</option>
                     <option value="history"  {{ request('status', $defaultStatus)==='history'  ?'selected':'' }}>Oversight History (All)</option>
