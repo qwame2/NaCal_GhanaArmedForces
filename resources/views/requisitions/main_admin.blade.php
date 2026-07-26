@@ -1278,12 +1278,12 @@
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('main-admin.requisitions') }}">
             {{-- Status --}}
             @php
-                $defaultStatus = (in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) ? 'approved' : 'pending';
+                $defaultStatus = (auth()->user()->role === 'External Auditor') ? 'approved' : 'pending';
             @endphp
             <div class="filter-field-wrapper" style="min-width:200px;flex:1.5;">
                 <i data-lucide="activity" class="filter-icon" style="width:14px;height:14px;"></i>
                 <select name="status" class="filter-control" id="filter-status">
-                    @if(!in_array(auth()->user()->role, ['Auditor', 'External Auditor']))
+                    @if(auth()->user()->role !== 'External Auditor')
                         <option value="pending"  {{ request('status', $defaultStatus)==='pending'  ?'selected':'' }}>Awaiting My Review</option>
                     @endif
                     <option value="approved" {{ request('status', $defaultStatus)==='approved' ?'selected':'' }}>Approved History</option>
