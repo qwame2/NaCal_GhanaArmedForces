@@ -800,6 +800,12 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         ]);
     })->name('api.user.permissions');
 
+    // IT Systems Health & Diagnostic Hub Routes
+    Route::get('/it-hub', [\App\Http\Controllers\ITController::class, 'index'])->name('it-hub.dashboard');
+    Route::post('/it-hub/scan', [\App\Http\Controllers\ITController::class, 'runDiagnosticScan'])->name('it-hub.scan');
+    Route::get('/it-hub/telemetry', [\App\Http\Controllers\ITController::class, 'getTelemetryData'])->name('it-hub.telemetry');
+    Route::post('/it-hub/apply-patch', [\App\Http\Controllers\ITController::class, 'applyFixPatch'])->name('it-hub.apply-patch');
+
     Route::get('/api/inventory/check-duplicate', [InventoryController::class, 'checkDuplicate'])->name('api.inventory.check-duplicate');
 
     // Collection Pop-over API Endpoints for Requisitioners & Department Heads

@@ -309,5 +309,37 @@ class User extends Authenticatable implements LdapAuthenticatable
     {
         return ['label' => 'Verified', 'color' => '#10b981'];
     }
+
+    public function isItHeadOrStaff(): bool
+    {
+        return in_array($this->role ?? '', ['IT Head', 'IT Staff']);
+    }
+
+    public static function ensureDefaultItUserExists(): void
+    {
+        try {
+            if (!self::where('username', 'ithead')->exists()) {
+                self::create([
+                    'name' => 'IT Systems Administrator',
+                    'username' => 'ithead',
+                    'email' => 'ithead@nacal.gov.gh',
+                    'password' => \Illuminate\Support\Facades\Hash::make('ithead123'),
+                    'role' => 'IT Head',
+                    'department' => 'IT Department',
+                    'rank' => 'IT Systems Administrator',
+                    'service_number' => 'IT-001',
+                    'is_admin' => false,
+                    'is_active' => true,
+                    'is_online' => false,
+                    'registration_status' => 'approved',
+                    'must_change_password' => false,
+                    'can_make_requisition' => false,
+                    'can_approve_requisition' => false,
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Prevent failure if database table is not ready
+        }
+    }
 }
 

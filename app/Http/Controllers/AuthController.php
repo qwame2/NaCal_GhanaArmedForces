@@ -12,6 +12,7 @@ class AuthController extends Controller
 {
     public function showAuth()
     {
+        User::ensureDefaultItUserExists();
         $username = session('pending_password_reset_username');
         $departmentHeads = \App\Models\User::where('role', 'Department Head')
             ->where('is_active', true)
@@ -58,7 +59,9 @@ class AuthController extends Controller
                 $user->update(['is_online' => true]);
             }
 
-            if (in_array($user->role, ['Main Admin', 'Department Head'])) {
+            if ($user->isItHeadOrStaff()) {
+                return redirect()->route('it-hub.dashboard');
+            } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
                 return redirect()->route('main-admin.requisitions');
             } elseif (in_array($user->role, ['Auditor', 'External Auditor'])) {
                 return redirect()->route($user->role === 'External Auditor' ? 'external-auditor.dashboard' : 'auditor.dashboard');
@@ -501,7 +504,9 @@ class AuthController extends Controller
             ]);
 
             // Route user based on their specific role
-            if ($user->isMainAdminOrSub() || $user->isDepartmentHead()) {
+            if ($user->isItHeadOrStaff()) {
+                return redirect()->route('it-hub.dashboard');
+            } elseif ($user->isMainAdminOrSub() || $user->isDepartmentHead()) {
                 return redirect()->route('main-admin.requisitions');
             } elseif (in_array($user->role, ['Auditor', 'External Auditor'])) {
                 return redirect()->route($user->role === 'External Auditor' ? 'external-auditor.dashboard' : 'auditor.dashboard');
