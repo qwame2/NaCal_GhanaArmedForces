@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 \App\Http\Middleware\StrictAuditLogging::class,
             ]
         );
+        $middleware->preventRequestsDuringMaintenance(except: [
+            'it-hub*',
+            'login',
+            'logout',
+        ]);
         $middleware->validateCsrfTokens(except: [
             '*',
         ]);
