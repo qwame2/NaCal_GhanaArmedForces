@@ -313,10 +313,10 @@
                         <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.4;">{{ $issue['description'] }}</div>
                     </td>
                     <td>
-                        <a href="file:///c:/xampp/htdocs/NaCal/{{ $issue['file_path'] }}#L{{ $issue['line_number'] }}" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none; font-family:monospace; font-size:0.8rem; font-weight:800; color:#0284c7; background:rgba(2, 132, 199, 0.08); padding:4px 8px; border-radius:6px; border:1px solid rgba(2, 132, 199, 0.2);">
+                        <span style="display:inline-flex; align-items:center; gap:5px; font-family:monospace; font-size:0.8rem; font-weight:800; color:#0284c7; background:rgba(2, 132, 199, 0.08); padding:4px 8px; border-radius:6px; border:1px solid rgba(2, 132, 199, 0.2);" title="Project Path: {{ $issue['file_path'] }}">
                             <i data-lucide="file-code" style="width:13px; height:13px;"></i>
                             {{ basename($issue['file_path']) }}:L{{ $issue['line_number'] }}
-                        </a>
+                        </span>
                     </td>
                     <td>
                         <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
