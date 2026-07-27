@@ -1419,18 +1419,20 @@
                     params.append(key, val);
                 }
             }
-            const queryString = params.toString();
-            const url = ROUTE + (queryString ? '?' + queryString : '');
 
-            // Update browser URL without reload
-            history.replaceState(null, '', url);
+            const cleanQuery = params.toString();
+            const cleanUrl = ROUTE + (cleanQuery ? '?' + cleanQuery : '');
+            history.replaceState(null, '', cleanUrl);
+
+            params.append('format', 'json');
+            const fetchUrl = ROUTE + '?' + params.toString();
 
             if (window.renderSkeletonTable) {
                 window.renderSkeletonTable('req-tbody', 5, 8);
             }
 
             showLoading(true);
-            fetch(url, {
+            fetch(fetchUrl, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': CSRF,
@@ -1443,9 +1445,7 @@
                 const pagWrap = document.getElementById('req-pagination-wrap');
                 if (tbody)   tbody.innerHTML   = data.rows;
                 if (pagWrap) pagWrap.innerHTML  = data.pagination;
-                // Re-init lucide icons for newly injected HTML
                 if (window.lucide) lucide.createIcons();
-                // Re-bind pagination clicks
                 bindPaginationClicks();
                 showLoading(false);
             })
@@ -1465,23 +1465,43 @@
 
         // --- Wire filters ---
         function wireFilters() {
-            // Instant on select/date change
+            const form = document.getElementById('filter-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    fetchTable(1);
+                });
+            }
+
             ['filter-status', 'filter-type', 'filter-date-from', 'filter-date-to'].forEach(function(id) {
                 const el = document.getElementById(id);
-                if (el) el.addEventListener('change', function() { fetchTable(1); });
+                if (el) {
+                    el.addEventListener('change', function(e) {
+                        e.preventDefault();
+                        fetchTable(1);
+                    });
+                }
             });
-            // Debounced on text input
+
             const deptInput = document.getElementById('filter-department');
             if (deptInput) {
                 deptInput.addEventListener('input', function() {
                     clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(function() { fetchTable(1); }, 400);
+                    debounceTimer = setTimeout(function() { fetchTable(1); }, 300);
+                });
+                deptInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        clearTimeout(debounceTimer);
+                        fetchTable(1);
+                    }
                 });
             }
-            // Clear button
+
             const clearBtn = document.getElementById('filter-clear-btn');
             if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
+                clearBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     document.getElementById('filter-status').value    = '{{ $defaultStatus }}';
                     if (document.getElementById('filter-type')) document.getElementById('filter-type').value = '';
                     document.getElementById('filter-department').value = '';

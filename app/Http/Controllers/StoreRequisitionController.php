@@ -1822,7 +1822,7 @@ class StoreRequisitionController extends Controller
         }
 
         // AJAX request — return rendered partials as JSON
-        if ($request->ajax()) {
+        if ($request->ajax() || $request->input('format') === 'json' || $request->wantsJson()) {
             $rowsHtml = view('requisitions._req_table_rows', compact('requisitions'))->render();
             $paginationHtml = $requisitions->hasPages()
                 ? view('requisitions._req_pagination', compact('requisitions'))->render()
