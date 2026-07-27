@@ -306,13 +306,26 @@ class ITController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized IT Access'], 403);
         }
 
-        $enable = $request->input('enable', false);
+        $enable = filter_var($request->input('enable'), FILTER_VALIDATE_BOOLEAN);
+        $downFile = storage_path('framework/down');
+
         try {
             if ($enable) {
-                \Illuminate\Support\Facades\Artisan::call('down', ['--secret' => 'it-bypass-key-2026']);
-                $msg = 'Emergency Maintenance Mode ENABLED. Application is locked for users.';
+                $payload = [
+                    'time' => time(),
+                    'message' => 'Emergency System Maintenance in progress. Authorized IT Access active.',
+                    'retry' => null,
+                    'allowed' => [],
+                    'secret' => 'it-bypass-key-2026',
+                    'status' => 503,
+                    'template' => null,
+                ];
+                File::put($downFile, json_encode($payload, JSON_PRETTY_PRINT));
+                $msg = 'Emergency Maintenance Mode ENABLED. General user access locked.';
             } else {
-                \Illuminate\Support\Facades\Artisan::call('up');
+                if (File::exists($downFile)) {
+                    File::delete($downFile);
+                }
                 $msg = 'Maintenance Mode DISABLED. System restored to normal operations.';
             }
 
@@ -325,7 +338,11 @@ class ITController extends Controller
                 'ip_address'  => $request->ip()
             ]);
 
-            return response()->json(['success' => true, 'message' => $msg]);
+            return response()->json([
+                'success' => true,
+                'message' => $msg,
+                'is_down' => File::exists($downFile)
+            ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Maintenance toggle error: ' . $e->getMessage()], 500);
         }
