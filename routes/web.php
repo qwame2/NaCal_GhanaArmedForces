@@ -800,11 +800,18 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         ]);
     })->name('api.user.permissions');
 
-    // IT Systems Health & Diagnostic Hub Routes
+    // IT Systems Health & Enterprise Diagnostic Hub Routes
     Route::get('/it-hub', [\App\Http\Controllers\ITController::class, 'index'])->name('it-hub.dashboard');
     Route::post('/it-hub/scan', [\App\Http\Controllers\ITController::class, 'runDiagnosticScan'])->name('it-hub.scan');
     Route::get('/it-hub/telemetry', [\App\Http\Controllers\ITController::class, 'getTelemetryData'])->name('it-hub.telemetry');
     Route::post('/it-hub/apply-patch', [\App\Http\Controllers\ITController::class, 'applyFixPatch'])->name('it-hub.apply-patch');
+    Route::post('/it-hub/kill-session', [\App\Http\Controllers\ITController::class, 'killUserSession'])->name('it-hub.kill-session');
+    Route::post('/it-hub/optimize-db', [\App\Http\Controllers\ITController::class, 'optimizeDatabase'])->name('it-hub.optimize-db');
+    Route::post('/it-hub/purge-storage', [\App\Http\Controllers\ITController::class, 'purgeStorageCaches'])->name('it-hub.purge-storage');
+    Route::post('/it-hub/toggle-maintenance', [\App\Http\Controllers\ITController::class, 'toggleMaintenanceMode'])->name('it-hub.toggle-maintenance');
+    Route::get('/it-hub/active-sessions', [\App\Http\Controllers\ITController::class, 'getActiveUserSessions'])->name('it-hub.active-sessions');
+    Route::get('/it-hub/security-threats', [\App\Http\Controllers\ITController::class, 'getSecurityThreats'])->name('it-hub.security-threats');
+    Route::get('/it-hub/live-logs', [\App\Http\Controllers\ITController::class, 'getLiveLogs'])->name('it-hub.live-logs');
 
     Route::get('/api/inventory/check-duplicate', [InventoryController::class, 'checkDuplicate'])->name('api.inventory.check-duplicate');
 

