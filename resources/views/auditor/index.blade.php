@@ -1441,8 +1441,8 @@
                     // Re-initialize lucide icons
                     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-                    // Update URL
-                    history.pushState(null, '', url);
+                    // Update URL without page reload
+                    history.replaceState(null, '', url);
                 })
                 .catch(error => {
                     console.error('Audit filter fetch error:', error);
@@ -1455,6 +1455,14 @@
                 for (const [key, val] of formData.entries()) {
                     if (val !== null && val !== undefined && val.trim() !== '') {
                         params.append(key, val);
+                    }
+                }
+                if (window.jQuery && $('#audit-user-select').length) {
+                    const selVal = $('#audit-user-select').val();
+                    if (selVal) {
+                        params.set('user_id', selVal);
+                    } else {
+                        params.delete('user_id');
                     }
                 }
                 const queryString = params.toString();
