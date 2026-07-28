@@ -3,20 +3,64 @@
 @section('content')
 <style>
     :root {
-        --audit-primary: #059669;
-        --audit-primary-hover: #065f46;
-        --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.12);
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f3f4f6;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-nav: rgba(255, 255, 255, 0.8);
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #f1f5f9;
+        --radius-xl: 1.5rem;
+        --radius-lg: 1rem;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+        --audit-primary: var(--primary);
+        --audit-primary-hover: var(--primary-dark);
+        --shadow-premium: var(--card-shadow);
+    }
+
+    @keyframes auditFadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(22px) scale(0.985);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .audit-page-banner {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(15, 23, 42, 0.02) 50%, rgba(16, 185, 129, 0.04) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 1.75rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-premium);
+        animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    #provisioningSection {
+        animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.1s;
     }
 </style>
 
 <div style="padding: 2rem;">
     {{-- Header Section --}}
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+    <div class="audit-page-banner" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
         <div>
-            <div style="font-size:0.8rem; font-weight:800; text-transform:uppercase; color:var(--audit-primary); letter-spacing:0.08em; margin-bottom:4px;">
+            <div style="font-size:0.75rem; font-weight:850; text-transform:uppercase; color:var(--primary); letter-spacing:0.08em; margin-bottom:4px;">
                 Auditor Management
             </div>
-            <h1 style="font-size:1.75rem; font-weight:900; color:var(--text-main); margin:0; letter-spacing:-0.03em;">
+            <h1 style="font-size:1.85rem; font-weight:950; color:var(--text-main); margin:0; letter-spacing:-0.03em;">
                 Staff Access &amp; Approvals
             </h1>
             <p style="font-size:0.88rem; color:var(--text-muted); font-weight:600; margin:4px 0 0;">

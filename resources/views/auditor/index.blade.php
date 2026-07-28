@@ -3,98 +3,261 @@
 @section('content')
 <style>
     :root {
-        --audit-primary: #059669;
-        --audit-primary-hover: #047857;
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.12);
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f3f4f6;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-nav: rgba(255, 255, 255, 0.8);
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #f1f5f9;
+        --sidebar-width: 320px;
+        --sidebar-mini-width: 88px;
+        --header-height: 80px;
+        --radius-xl: 1.5rem;
+        --radius-lg: 1rem;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+        --audit-primary: var(--primary);
+        --audit-primary-hover: var(--primary-dark);
         --audit-slate: #0f172a;
         --audit-slate-light: #1e293b;
-        --audit-danger-glow: rgba(239, 68, 68, 0.08);
-        --audit-warning-glow: rgba(5, 150, 105, 0.08);
-        --audit-info-glow: rgba(59, 130, 246, 0.08);
-        --audit-success-glow: rgba(5, 150, 105, 0.08);
-        --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
+        --audit-danger-glow: rgba(239, 68, 68, 0.12);
+        --audit-warning-glow: rgba(245, 158, 11, 0.12);
+        --audit-info-glow: rgba(99, 102, 241, 0.12);
+        --audit-success-glow: rgba(16, 185, 129, 0.14);
+        --shadow-premium: var(--card-shadow);
+        --shadow-hover: var(--card-shadow-hover);
+    }
+
+    /* Executive Keyframe Animations & Fading */
+    @keyframes auditFadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(22px) scale(0.985);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes fadeInPanel {
+        0% {
+            opacity: 0;
+            transform: translateY(14px) scale(0.99);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes logRowFade {
+        0% {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Hero Header Banner */
+    .audit-hero-banner {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(15, 23, 42, 0.02) 50%, rgba(16, 185, 129, 0.04) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem 2.25rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-premium);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        backdrop-filter: blur(10px);
+        animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.02s;
+    }
+
+    .audit-hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 99px;
+        background: var(--primary-glow);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        color: var(--primary);
+        font-size: 0.68rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    /* Executive Action Buttons */
+    .audit-btn-action {
+        padding: 0.75rem 1.35rem;
+        border-radius: var(--radius-lg);
+        font-weight: 800;
+        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .audit-btn-action-primary {
+        background: var(--primary);
+        color: white;
+        border: 1.5px solid var(--primary);
+    }
+
+    .audit-btn-action-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .audit-btn-action-secondary {
+        background: var(--bg-card);
+        color: var(--text-main);
+        border: 1.5px solid var(--border-color);
+    }
+
+    .audit-btn-action-secondary:hover {
+        background: var(--bg-main);
+        border-color: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
     }
 
     .auditor-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 1.75rem;
+        border-radius: var(--radius-xl);
+        padding: 1.6rem 1.75rem;
         box-shadow: var(--shadow-premium);
-        transition: transform 0.25s, box-shadow 0.25s;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .auditor-card:nth-child(1) { animation-delay: 0.08s; }
+    .auditor-card:nth-child(2) { animation-delay: 0.16s; }
+    .auditor-card:nth-child(3) { animation-delay: 0.24s; }
+
+    .auditor-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: transparent;
+        transition: background 0.3s ease;
     }
 
     .auditor-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.08);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+        border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .auditor-card:hover::after {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
     }
 
     .stat-number {
-        font-size: 2rem;
+        font-size: 2.15rem;
         font-weight: 950;
         letter-spacing: -0.05em;
-        line-height: 1;
-        margin-top: 4px;
+        line-height: 1.1;
+        margin-top: 10px;
         color: var(--text-main);
     }
 
     /* Stepper/Tabs navigation */
     .audit-tabs-container {
         display: flex;
-        background: rgba(0, 0, 0, 0.02);
+        background: rgba(0, 0, 0, 0.03);
         border: 1px solid var(--border-color);
         padding: 6px;
-        border-radius: 16px;
+        border-radius: 18px;
         gap: 6px;
         margin-bottom: 2rem;
         width: fit-content;
         max-width: 100%;
         overflow-x: auto;
+        backdrop-filter: blur(8px);
+        animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.40s;
     }
 
     .audit-tab-btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        border: none;
+        padding: 0.75rem 1.4rem;
+        border-radius: 13px;
+        border: 1px solid transparent;
         background: transparent;
         color: var(--text-muted);
         font-weight: 800;
         font-size: 0.82rem;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
         white-space: nowrap;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
+    .audit-tab-btn:hover:not(.active) {
+        color: var(--text-main);
+        background: rgba(0, 0, 0, 0.03);
+    }
+
     .audit-tab-btn.active {
         background: var(--bg-card);
         color: var(--audit-primary);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(5, 150, 105, 0.1);
+        border-color: rgba(99, 102, 241, 0.15);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
     }
 
     .audit-tab-panel {
         display: none;
-        animation: fadeInPanel 0.4s ease;
     }
 
     .audit-tab-panel.active {
         display: block;
-    }
-
-    @keyframes fadeInPanel {
-        from { opacity: 0; transform: translateY(8px); }
-        to   { opacity: 1; transform: translateY(0); }
+        animation: fadeInPanel 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     /* Logs view layout */
     .log-row {
         border-bottom: 1px solid var(--border-color);
-        transition: background 0.2s;
+        transition: background 0.2s, transform 0.2s;
+        animation: logRowFade 0.35s ease-out forwards;
     }
 
     .log-row:hover {
-        background: rgba(5, 150, 105, 0.01);
+        background: rgba(99, 102, 241, 0.02);
     }
 
     .log-badge {
@@ -110,9 +273,9 @@
     }
 
     .log-badge.danger { background: var(--audit-danger-glow); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .log-badge.warning { background: var(--audit-warning-glow); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2); }
-    .log-badge.info { background: var(--audit-info-glow); color: #059669; border: 1px solid rgba(59, 130, 246, 0.2); }
-    .log-badge.success { background: var(--audit-success-glow); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2); }
+    .log-badge.warning { background: var(--audit-warning-glow); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .log-badge.info { background: var(--audit-info-glow); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.2); }
+    .log-badge.success { background: var(--audit-success-glow); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
 
     .audit-table {
         width: 100%;
@@ -121,18 +284,18 @@
     }
 
     .audit-table th {
-        padding: 1rem 1.25rem;
+        padding: 1.1rem 1.25rem;
         font-size: 0.72rem;
-        font-weight: 800;
+        font-weight: 850;
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        background: rgba(0, 0, 0, 0.01);
-        border-bottom: 1px solid var(--border-color);
+        background: rgba(0, 0, 0, 0.015);
+        border-bottom: 1.5px solid var(--border-color);
     }
 
     .audit-table td {
-        padding: 1.1rem 1.25rem;
+        padding: 1.15rem 1.25rem;
         border-bottom: 1px solid var(--border-color);
         font-size: 0.85rem;
         color: var(--text-main);
@@ -153,6 +316,8 @@
         flex-direction: column;
         gap: 1rem;
         box-shadow: var(--shadow-premium);
+        animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.32s;
     }
 
     .filter-controls-grid {
@@ -228,7 +393,7 @@
 
     .filter-control-audit:focus {
         border-color: var(--audit-primary);
-        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
         background: var(--bg-card);
     }
 
@@ -261,8 +426,8 @@
         color: var(--text-muted);
         font-size: 0.7rem;
         font-weight: 800;
-        padding: 3px 8px;
-        border-radius: 6px;
+        padding: 4px 10px;
+        border-radius: 8px;
         text-transform: uppercase;
     }
 
@@ -316,7 +481,7 @@
         color: white;
         border-color: var(--audit-primary);
         transform: translateY(-1.5px);
-        box-shadow: 0 8px 16px rgba(5, 150, 105, 0.2);
+        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.25);
     }
 
     .audit-page-btn.disabled {
@@ -328,7 +493,7 @@
         opacity: 0.6;
     }
 
-    /* â”€â”€ Select2 overrides for Audit User â”€â”€ */
+    /* ── Select2 overrides for Audit User ── */
     #audit-user-select + .select2-container {
         min-width: 220px !important;
     }
@@ -344,7 +509,7 @@
     .select2-container--default.select2-container--focus .select2-selection--single,
     .select2-container--default.select2-container--open .select2-selection--single {
         border-color: var(--audit-primary) !important;
-        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1) !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12) !important;
         background: var(--bg-card) !important;
     }
     .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -420,22 +585,22 @@
 
 <div style="padding: 2rem;">
 
-    {{-- Header --}}
-    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+    {{-- Executive Command Hero Banner --}}
+    <div class="audit-hero-banner">
         <div>
-            <div style="font-size: .7rem; font-weight: 800; color: var(--audit-primary); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 4px;">
+            <div class="audit-hero-pill">
                 Internal Audit Oversight Terminal
             </div>
-            <h1 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -.03em; margin: 0;">
-                Oversight Ledger & Registry Audit
+            <h1 style="font-size: 1.85rem; font-weight: 950; color: var(--text-main); letter-spacing: -.04em; margin: 6px 0 4px 0;">
+                Oversight Ledger &amp; Registry Audit
             </h1>
-            <p style="font-size: .9rem; color: var(--text-muted); margin: 6px 0 0;">
+            <p style="font-size: .88rem; color: var(--text-muted); margin: 0; font-weight: 600;">
                 System-wide audit trail and real-time transaction verification checks.
             </p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <a href="{{ route('stockcheck.index') }}" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: #059669; border-radius: 12px; border: 1.5px solid #059669; background: rgba(5, 150, 105,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(5, 150, 105,0.1)'" onmouseout="this.style.background='rgba(5, 150, 105,0.05)'">
-                <i data-lucide="clipboard-check" style="width: 18px;"></i>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <a href="{{ route('stockcheck.index') }}" class="audit-btn-action audit-btn-action-secondary" style="border-color: var(--secondary); color: var(--secondary);">
+                <i data-lucide="clipboard-check" style="width: 18px; height: 18px;"></i>
                 Perform Stock Check
             </a>
             <a id="print-ledger-btn" href="{{ route('auditor.print', array_filter([
@@ -445,44 +610,58 @@
                 'log_severity' => request('log_severity'),
                 'log_event' => request('log_event'),
                 'user_id' => request('user_id')
-            ], fn($val) => !is_null($val) && $val !== '')) }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(5, 150, 105,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(5, 150, 105,0.1)'" onmouseout="this.style.background='rgba(5, 150, 105,0.05)'">
-                <i data-lucide="printer" style="width: 18px;"></i>
+            ], fn($val) => !is_null($val) && $val !== '')) }}" target="_blank" class="audit-btn-action audit-btn-action-primary">
+                <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
                 Print Audit Ledger
             </a>
-            <button onclick="window.location.reload()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main); border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card);">
-                <i data-lucide="refresh-cw" style="width: 18px;"></i>
-                Refresh
+            <button onclick="window.location.reload()" class="audit-btn-action audit-btn-action-secondary">
+                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+                Refresh Hub
             </button>
         </div>
     </div>
 
-    {{-- Stats Cards --}}
+    {{-- Stats Cards (Executive KPI Metrics) --}}
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
         <div class="auditor-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="database" style="color: var(--audit-primary); width: 16px;"></i></div>
-                Audit Trail Logs
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    Audit Trail Logs
+                </div>
+                <div style="width: 38px; height: 38px; background: var(--primary-glow); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                    <i data-lucide="database" style="width: 18px; height: 18px;"></i>
+                </div>
             </div>
             <div class="stat-number" id="stat-total-logs">{{ number_format($totalLogsCount) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Total events archived in database</div>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 8px; font-weight: 600;">Total events archived in database</div>
         </div>
 
         <div class="auditor-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(239,68,68,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="scale" style="color: #ef4444; width: 16px;"></i></div>
-                System Variance
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    System Variance
+                </div>
+                <div style="width: 38px; height: 38px; background: rgba(239, 68, 68, 0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ef4444;">
+                    <i data-lucide="scale" style="width: 18px; height: 18px;"></i>
+                </div>
             </div>
             <div class="stat-number" id="stat-total-variance" style="color: {{ $totalVariance > 0 ? '#ef4444' : 'var(--text-main)' }};">{{ number_format($totalVariance) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Cumulative discrepancy logs</div>
+            <div style="font-size: 0.74rem; color: {{ $totalVariance > 0 ? '#ef4444' : 'var(--text-muted)' }}; margin-top: 8px; font-weight: 700;">
+                {{ $totalVariance > 0 ? '⚠️ Discrepancy flags logged' : 'No variance discrepancies' }}
+            </div>
         </div>
 
         <div class="auditor-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock" style="color: #059669; width: 16px;"></i></div>
-                Active Loans (Temp)
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    Active Loans (Temp)
+                </div>
+                <div style="width: 38px; height: 38px; background: rgba(245, 158, 11, 0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+                    <i data-lucide="clock" style="width: 18px; height: 18px;"></i>
+                </div>
             </div>
             <div class="stat-number" id="stat-active-loans">{{ number_format($activeLoansCount) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Unreturned temporary assets</div>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 8px; font-weight: 600;">Unreturned temporary assets</div>
         </div>
     </div>
 

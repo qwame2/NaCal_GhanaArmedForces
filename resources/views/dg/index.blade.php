@@ -3,98 +3,328 @@
 @section('content')
 <style>
     :root {
-        --dg-primary: #059669;
-        --dg-primary-hover: #059669;
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.12);
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f3f4f6;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-nav: rgba(255, 255, 255, 0.8);
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #f1f5f9;
+        --sidebar-width: 320px;
+        --sidebar-mini-width: 88px;
+        --header-height: 80px;
+        --radius-xl: 1.5rem;
+        --radius-lg: 1rem;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+        --dg-primary: var(--primary);
+        --dg-primary-hover: var(--primary-dark);
+        --dg-primary-glow: var(--primary-glow);
         --dg-slate: #0f172a;
         --dg-slate-light: #1e293b;
-        --dg-danger-glow: rgba(239, 68, 68, 0.08);
-        --dg-warning-glow: rgba(5, 150, 105, 0.08);
-        --dg-info-glow: rgba(59, 130, 246, 0.08);
-        --dg-success-glow: rgba(16, 185, 129, 0.12);
-        --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
+        --dg-danger-glow: rgba(239, 68, 68, 0.12);
+        --dg-warning-glow: rgba(245, 158, 11, 0.12);
+        --dg-info-glow: rgba(99, 102, 241, 0.12);
+        --dg-success-glow: rgba(16, 185, 129, 0.14);
+        --shadow-premium: var(--card-shadow);
+        --shadow-hover: var(--card-shadow-hover);
     }
 
+    /* Executive Keyframe Animations & Fading */
+    @keyframes dgFadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(22px) scale(0.985);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes dgFadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
+    @keyframes fadeInPanel {
+        0% {
+            opacity: 0;
+            transform: translateY(14px) scale(0.99);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes dgRowFade {
+        0% {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Executive Hero Header Banner */
+    .dg-hero-banner {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(15, 23, 42, 0.02) 50%, rgba(16, 185, 129, 0.04) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem 2.25rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-premium);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        backdrop-filter: blur(10px);
+        animation: dgFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.02s;
+    }
+
+    .dg-hero-banner::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .dg-hero-title {
+        font-size: 1.85rem;
+        font-weight: 950;
+        color: var(--text-main);
+        letter-spacing: -0.04em;
+        margin: 6px 0 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dg-hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 99px;
+        background: var(--primary-glow);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        color: var(--primary);
+        font-size: 0.68rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .dg-live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
+        box-shadow: 0 0 8px var(--primary);
+        animation: pulse-online 2s infinite;
+    }
+
+    /* Executive Action Buttons */
+    .dg-btn-action {
+        padding: 0.75rem 1.35rem;
+        border-radius: var(--radius-lg);
+        font-weight: 800;
+        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .dg-btn-action-primary {
+        background: var(--primary);
+        color: white;
+        border: 1.5px solid var(--primary);
+    }
+
+    .dg-btn-action-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .dg-btn-action-secondary {
+        background: var(--bg-card);
+        color: var(--text-main);
+        border: 1.5px solid var(--border-color);
+    }
+
+    .dg-btn-action-secondary:hover {
+        background: var(--bg-main);
+        border-color: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Executive Luxury Cards */
     .dg-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 1.75rem;
+        border-radius: var(--radius-xl);
+        padding: 1.6rem 1.75rem;
         box-shadow: var(--shadow-premium);
-        transition: transform 0.25s, box-shadow 0.25s;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        animation: dgFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .dg-card:nth-child(1) { animation-delay: 0.08s; }
+    .dg-card:nth-child(2) { animation-delay: 0.15s; }
+    .dg-card:nth-child(3) { animation-delay: 0.22s; }
+    .dg-card:nth-child(4) { animation-delay: 0.29s; }
+    .dg-card:nth-child(5) { animation-delay: 0.36s; }
+
+    .dg-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: transparent;
+        transition: background 0.3s ease;
     }
 
     .dg-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.08);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+        border-color: rgba(99, 102, 241, 0.2);
     }
 
+    .dg-card-emerald:hover::after { background: linear-gradient(90deg, #059669, #10b981); }
+    .dg-card-rose:hover::after { background: linear-gradient(90deg, #ef4444, #f43f5e); }
+    .dg-card-indigo:hover::after { background: linear-gradient(90deg, #6366f1, #818cf8); }
+    .dg-card-amber:hover::after { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .dg-card-cyan:hover::after { background: linear-gradient(90deg, #06b6d4, #38bdf8); }
+
     .stat-number {
-        font-size: 2rem;
+        font-size: 2.15rem;
         font-weight: 950;
         letter-spacing: -0.05em;
-        line-height: 1;
-        margin-top: 4px;
+        line-height: 1.1;
+        margin-top: 10px;
         color: var(--text-main);
     }
 
-    /* Tabs navigation */
+    .stat-icon-wrapper {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease;
+    }
+
+    .dg-card:hover .stat-icon-wrapper {
+        transform: scale(1.1) rotate(4deg);
+    }
+
+    /* Executive Tabs Navigation */
     .dg-tabs-container {
         display: flex;
-        background: rgba(0, 0, 0, 0.02);
+        background: rgba(0, 0, 0, 0.03);
         border: 1px solid var(--border-color);
         padding: 6px;
-        border-radius: 16px;
+        border-radius: 18px;
         gap: 6px;
         margin-bottom: 2rem;
         width: fit-content;
         max-width: 100%;
         overflow-x: auto;
+        backdrop-filter: blur(8px);
+        animation: dgFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.48s;
     }
 
     .dg-tab-btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        border: none;
+        padding: 0.75rem 1.4rem;
+        border-radius: 13px;
+        border: 1px solid transparent;
         background: transparent;
         color: var(--text-muted);
         font-weight: 800;
         font-size: 0.82rem;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
         white-space: nowrap;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
+    .dg-tab-btn:hover:not(.active) {
+        color: var(--text-main);
+        background: rgba(0, 0, 0, 0.03);
+    }
+
     .dg-tab-btn.active {
         background: var(--bg-card);
         color: var(--dg-primary);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(5, 150, 105, 0.1);
+        border-color: rgba(99, 102, 241, 0.15);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
     }
 
     .dg-tab-panel {
         display: none;
-        animation: fadeInPanel 0.4s ease;
     }
 
     .dg-tab-panel.active {
         display: block;
-    }
-
-    @keyframes fadeInPanel {
-        from { opacity: 0; transform: translateY(8px); }
-        to   { opacity: 1; transform: translateY(0); }
+        animation: fadeInPanel 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     /* Rows layout */
     .dg-row {
         border-bottom: 1px solid var(--border-color);
-        transition: background 0.2s;
+        transition: background 0.2s, transform 0.2s;
+        animation: dgRowFade 0.35s ease-out forwards;
     }
 
-    .dg-row:hover {
-        background: rgba(5, 150, 105, 0.01);
+    .filter-card-dg {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.35rem 1.6rem;
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        box-shadow: var(--shadow-premium);
+        animation: dgFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.42s;
     }
 
     .dg-badge {
@@ -110,7 +340,7 @@
     }
 
     .dg-badge.danger { background: var(--dg-danger-glow); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .dg-badge.warning { background: var(--dg-warning-glow); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2); }
+    .dg-badge.warning { background: var(--dg-warning-glow); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.2); }
     .dg-badge.info { background: var(--dg-info-glow); color: #059669; border: 1px solid rgba(59, 130, 246, 0.2); }
     .dg-badge.success { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1.5px solid #10b981; font-weight: 800; }
 
@@ -121,18 +351,18 @@
     }
 
     .dg-table th {
-        padding: 1rem 1.25rem;
+        padding: 1.1rem 1.25rem;
         font-size: 0.72rem;
-        font-weight: 800;
+        font-weight: 850;
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        background: rgba(0, 0, 0, 0.01);
-        border-bottom: 1px solid var(--border-color);
+        background: rgba(0, 0, 0, 0.015);
+        border-bottom: 1.5px solid var(--border-color);
     }
 
     .dg-table td {
-        padding: 1.1rem 1.25rem;
+        padding: 1.15rem 1.25rem;
         border-bottom: 1px solid var(--border-color);
         font-size: 0.85rem;
         color: var(--text-main);
@@ -146,32 +376,32 @@
     .filter-card-dg {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 18px;
-        padding: 1.25rem;
+        border-radius: 20px;
+        padding: 1.35rem 1.6rem;
         margin-bottom: 2rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.85rem;
         box-shadow: var(--shadow-premium);
     }
 
     .filter-control-dg {
-        padding: 0.65rem 1rem;
+        padding: 0.7rem 1.1rem;
         border: 1.5px solid var(--border-color);
-        border-radius: 12px;
+        border-radius: 13px;
         background: var(--bg-main);
         color: var(--text-main);
         font-size: 0.85rem;
         font-weight: 600;
         outline: none;
-        transition: all 0.2s;
+        transition: all 0.25s ease;
         min-width: 160px;
     }
 
     .filter-control-dg:focus {
         border-color: var(--dg-primary);
-        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
-        background: white;
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+        background: var(--bg-card);
     }
 
     .badge-event {
@@ -180,8 +410,8 @@
         color: var(--text-muted);
         font-size: 0.7rem;
         font-weight: 800;
-        padding: 3px 8px;
-        border-radius: 6px;
+        padding: 4px 10px;
+        border-radius: 8px;
         text-transform: uppercase;
     }
 
@@ -291,7 +521,7 @@
 
     @keyframes pulse-red-blink {
         0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 rgba(220, 38, 38, 0.4); }
-        50% { opacity: 0.3; transform: scale(0.95); box-shadow: 0 0 10px rgba(220, 38, 38, 0.7); }
+        50% { opacity: 0.35; transform: scale(0.96); box-shadow: 0 0 12px rgba(220, 38, 38, 0.75); }
     }
 
     .dg-badge-pending-blink {
@@ -314,7 +544,7 @@
 
     /* ── Workflow Redesign ── */
     .workflow-card-modern {
-        background: white;
+        background: var(--bg-card);
         border-radius: 28px;
         border: 1.5px solid var(--border-color);
         box-shadow: 0 10px 30px rgba(5, 150, 105, 0.03);
@@ -324,8 +554,8 @@
     }
 
     .workflow-card-modern:hover {
-        border-color: #c7d2fe;
-        box-shadow: 0 16px 40px rgba(5, 150, 105, 0.06);
+        border-color: rgba(5, 150, 105, 0.3);
+        box-shadow: 0 16px 40px rgba(5, 150, 105, 0.08);
     }
 
     .workflow-cat-grid-modern {
@@ -352,19 +582,19 @@
     .workflow-cat-card-modern:hover {
         border-color: #cbd5e1;
         transform: translateY(-2px);
-        background: #ffffff;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.02);
+        background: var(--bg-card);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.04);
     }
 
     .workflow-cat-card-modern.active {
-        background: #f5f7ff;
+        background: rgba(5, 150, 105, 0.04);
         border-color: #047857;
-        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06);
+        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.1);
     }
 
     .workflow-cat-card-modern.active:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(139, 92, 246, 0.1);
+        box-shadow: 0 12px 28px rgba(5, 150, 105, 0.15);
     }
 
     .workflow-cat-card-modern .corner-glow {
@@ -373,7 +603,7 @@
         right: -20px;
         width: 50px;
         height: 50px;
-        background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(5, 150, 105, 0.25) 0%, transparent 70%);
         opacity: 0;
         transition: opacity 0.25s ease;
         pointer-events: none;
@@ -387,14 +617,14 @@
         width: 38px;
         height: 38px;
         border-radius: 12px;
-        background: #ffffff;
+        background: var(--bg-card);
         color: #047857;
         font-weight: 900;
         font-size: 0.85rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid #e2e8f0;
+        border: 2px solid var(--border-color);
         transition: all 0.25s ease;
         flex-shrink: 0;
     }
@@ -403,13 +633,13 @@
         background: #059669;
         color: #ffffff;
         border-color: transparent;
-        box-shadow: 0 4px 8px rgba(139, 92, 246, 0.18);
+        box-shadow: 0 4px 8px rgba(5, 150, 105, 0.25);
     }
 
     .workflow-cat-card-modern .status-label {
         font-size: 0.7rem;
         font-weight: 700;
-        color: #64748b;
+        color: var(--text-muted);
         margin-top: 2px;
         transition: color 0.25s;
     }
@@ -435,7 +665,7 @@
     .workflow-cat-card-modern.active .indicator-dot {
         background: #047857;
         border-color: #047857;
-        box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
+        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
     }
 
     .flow-line {
@@ -448,7 +678,7 @@
 
     .flow-line.active {
         background: #059669;
-        box-shadow: 0 0 8px rgba(5, 150, 105, 0.25);
+        box-shadow: 0 0 8px rgba(5, 150, 105, 0.35);
     }
 
     .flow-line.dashed {
@@ -477,96 +707,135 @@
 
 <div style="padding: 2rem;">
 
-    {{-- Header --}}
-    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+    {{-- Executive Command Hero Banner --}}
+    <div class="dg-hero-banner">
         <div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <div style="font-size: .7rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: .12em;">
-                    Director General Command Center
-                </div>
-                
+            <div class="dg-hero-pill">
+                Director General Command Center
             </div>
-            <h1 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -.03em; margin: 0;">
-                Director General's Oversight
+            <h1 class="dg-hero-title">
+                Director General's Dashboard
             </h1>
-
+            <p style="margin: 0; color: var(--text-muted); font-size: 0.88rem; font-weight: 600;">
+                High-level operational oversight, stock registry audit, &amp; store requisition authorization.
+            </p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <a id="btn-print-dg-report" href="{{ route('dg.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--dg-primary); border-radius: 12px; border: 1.5px solid var(--dg-primary); background: rgba(5, 150, 105,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(5, 150, 105,0.1)'" onmouseout="this.style.background='rgba(5, 150, 105,0.05)'">
-                <i data-lucide="printer" style="width: 18px;"></i>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <a id="btn-print-dg-report" href="{{ route('dg.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}" target="_blank" class="dg-btn-action dg-btn-action-primary">
+                <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
                 Print Consolidated Ledger
             </a>
-            <button id="btn-refresh-dg" onclick="window.location.reload()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main); border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card);">
-                <i data-lucide="refresh-cw" style="width: 18px;"></i>
-                Refresh
+            <button id="btn-refresh-dg" onclick="window.location.reload()" class="dg-btn-action dg-btn-action-secondary">
+                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+                Refresh Hub
             </button>
         </div>
     </div>
 
-    {{-- Stats Cards --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-        <div class="dg-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="layers" style="color: var(--dg-primary); width: 16px;"></i></div>
-                Total Store Items
+    {{-- Stats Cards (Executive KPI Metrics) --}}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div class="dg-card dg-card-emerald">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    Total Store Items
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(5, 150, 105, 0.12); color: var(--dg-primary);">
+                    <i data-lucide="layers" style="width: 20px; height: 20px;"></i>
+                </div>
             </div>
             <div class="stat-number">{{ number_format($totalItemsCount) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Total unique items in stores inventory</div>
-        </div>
-
-        <div class="dg-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(239,68,68,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="scale" style="color: #ef4444; width: 16px;"></i></div>
-                Stock Variance
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 8px; font-weight: 600;">
+                Registered items in central inventory
             </div>
-            <div class="stat-number" style="color: {{ $totalVariance > 0 ? '#ef4444' : 'var(--text-main)' }};">{{ number_format($totalVariance) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Active inventory discrepancies</div>
         </div>
 
-        <div class="dg-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(139,92,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="shopping-bag" style="color: #047857; width: 16px;"></i></div>
-                Total Items Issued
+        <div class="dg-card dg-card-rose">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    Stock Variance
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                    <i data-lucide="scale" style="width: 20px; height: 20px;"></i>
+                </div>
+            </div>
+            <div class="stat-number" style="color: {{ $totalVariance > 0 ? '#ef4444' : 'var(--text-main)' }};">
+                {{ number_format($totalVariance) }}
+            </div>
+            <div style="font-size: 0.74rem; color: {{ $totalVariance > 0 ? '#ef4444' : 'var(--text-muted)' }}; margin-top: 8px; font-weight: 700;">
+                {{ $totalVariance > 0 ? '⚠️ Discrepancy flags detected' : 'Perfect inventory balance' }}
+            </div>
+        </div>
+
+        <div class="dg-card dg-card-indigo">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    Total Items Issued
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(99, 102, 241, 0.12); color: #6366f1;">
+                    <i data-lucide="shopping-bag" style="width: 20px; height: 20px;"></i>
+                </div>
             </div>
             <div class="stat-number">{{ number_format($totalItemsIssued) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Total number of items disbursed</div>
-        </div>
-
-        <div class="dg-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="file-text" style="color: #059669; width: 16px;"></i></div>
-                Pending Requisitions
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 8px; font-weight: 600;">
+                Cumulative items disbursed to staff
             </div>
-            <div class="stat-number" style="color: {{ $pendingRequisitionsCount > 0 ? '#065f46' : 'var(--text-main)' }}">{{ number_format($pendingRequisitionsCount) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Requisitions awaiting approval</div>
         </div>
 
-        <div class="dg-card">
-            <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(59,130,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="users" style="color: #059669; width: 16px;"></i></div>
-                Approved Officers
+        <div class="dg-card dg-card-amber">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    Pending Requisitions
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                    <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+                </div>
+            </div>
+            <div class="stat-number" style="color: {{ $pendingRequisitionsCount > 0 ? '#d97706' : 'var(--text-main)' }}">
+                {{ number_format($pendingRequisitionsCount) }}
+            </div>
+            <div style="font-size: 0.74rem; color: {{ $pendingRequisitionsCount > 0 ? '#d97706' : 'var(--text-muted)' }}; margin-top: 8px; font-weight: 700;">
+                {{ $pendingRequisitionsCount > 0 ? '⚡ Requests awaiting review' : 'All requisitions processed' }}
+            </div>
+        </div>
+
+        <div class="dg-card dg-card-cyan">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: var(--text-muted); font-size: 0.72rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.06em;">
+                    Approved Officers
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4;">
+                    <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+                </div>
             </div>
             <div class="stat-number">{{ number_format($totalActiveUsers) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Active accounts in the system</div>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 8px; font-weight: 600;">
+                Active personnel user accounts
+            </div>
         </div>
     </div>
 
-    {{-- Filter Bar --}}
+    {{-- Integrated Oversight Filter Bar --}}
     <form id="dg-filter-form" action="{{ route('dg.dashboard') }}" method="GET" class="filter-card-dg">
-        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
-            Oversight Filters & Search
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+            <div style="font-size: 0.72rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="sliders" style="width: 14px; height: 14px; color: var(--dg-primary);"></i>
+                Command Oversight Filters &amp; Search
+            </div>
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-            <input type="text" id="dg-search-query" name="search_query" class="filter-control-dg" placeholder="Search entries, descriptions, names..." value="{{ request('search_query') }}" style="flex: 1; min-width: 240px;">
+            <div style="position: relative; flex: 1; min-width: 260px;">
+                <i data-lucide="search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
+                <input type="text" id="dg-search-query" name="search_query" class="filter-control-dg" placeholder="Search entries, items, staff names, codes..." value="{{ request('search_query') }}" style="width: 100%; padding-left: 40px;">
+            </div>
 
-            <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">From:</span>
+            <span style="font-size: 0.75rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">From:</span>
             <input type="date" id="dg-date-from" name="date_from" class="filter-control-dg" title="From Date" value="{{ request('date_from') }}">
 
-            <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">To:</span>
+            <span style="font-size: 0.75rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">To:</span>
             <input type="date" id="dg-date-to" name="date_to" class="filter-control-dg" title="To Date" value="{{ request('date_to') }}">
 
             <select id="dg-req-status" name="req_status" class="filter-control-dg">
-                <option value="">-- Status (Reqs) --</option>
+                <option value="">-- All Requisition Statuses --</option>
                 <option value="pending" {{ request('req_status') === 'pending' ? 'selected' : '' }}>Pending</option>
                 <option value="approved" {{ request('req_status') === 'approved' ? 'selected' : '' }}>Approved</option>
                 <option value="partially_approved" {{ request('req_status') === 'partially_approved' ? 'selected' : '' }}>Partially Approved</option>
@@ -580,7 +849,7 @@
             </select>
 
             @if(request()->anyFilled(['search_query', 'date_from', 'date_to', 'req_status', 'sra_type']))
-                <a id="btn-dg-clear" href="{{ route('dg.dashboard') }}" class="filter-control-dg" style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; display: inline-flex; align-items: center; justify-content: center;">
+                <a id="btn-dg-clear" href="{{ route('dg.dashboard') }}" class="filter-control-dg" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.3); text-decoration: none; text-align: center; font-weight: 800; min-width: 90px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
                     Clear
                 </a>
             @endif
@@ -590,11 +859,11 @@
     {{-- Tabs Menu --}}
     <div class="dg-tabs-container">
         <button id="tab-btn-stock-oversight" class="dg-tab-btn active" onclick="switchDGTab('dg-stock-oversight-tab', this)">
-            <i data-lucide="archive" style="width: 16px;"></i>
+            <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
             Items Received
         </button>
         <button id="tab-btn-staff-reqs" class="dg-tab-btn" onclick="switchDGTab('dg-staff-reqs-tab', this)">
-            <i data-lucide="file-text" style="width: 16px;"></i>
+            <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
             Staff Requisitions
             @php
                 $dgPendingCount = \App\Models\StoreRequisition::get()->filter(function($r) {
@@ -602,29 +871,29 @@
                 })->count();
             @endphp
             @if($dgPendingCount > 0)
-                <span id="dg-staff-reqs-badge" style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; line-height: 1; margin-left: 4px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);">
+                <span id="dg-staff-reqs-badge" style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 7px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; line-height: 1; margin-left: 4px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);">
                     {{ $dgPendingCount }}
                 </span>
             @endif
         </button>
         <button id="tab-btn-req-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-req-receipts-tab', this)">
-            <i data-lucide="receipt" style="width: 16px;"></i>
+            <i data-lucide="receipt" style="width: 16px; height: 16px;"></i>
             Requisition Receipts
         </button>
         <button id="tab-btn-sra-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-sra-receipts-tab', this)">
-            <i data-lucide="file-check" style="width: 16px;"></i>
+            <i data-lucide="file-check" style="width: 16px; height: 16px;"></i>
             SRA Receipts
         </button>
         <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
-            <i data-lucide="users" style="width: 16px;"></i>
+            <i data-lucide="users" style="width: 16px; height: 16px;"></i>
             Approved Officers Overview
         </button>
         <button id="tab-btn-issued-returned" class="dg-tab-btn" onclick="switchDGTab('dg-issued-returned-tab', this)">
-            <i data-lucide="clipboard-list" style="width: 16px;"></i>
+            <i data-lucide="clipboard-list" style="width: 16px; height: 16px;"></i>
             Issued &amp; Returned Items
         </button>
         <button id="tab-btn-workflow-config" class="dg-tab-btn" onclick="switchDGTab('dg-workflow-config-tab', this)">
-            <i data-lucide="user-cog" style="width: 16px;"></i>
+            <i data-lucide="user-cog" style="width: 16px; height: 16px;"></i>
             Approval Workflow Configuration
         </button>
     </div>

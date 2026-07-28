@@ -5,15 +5,49 @@
 
 <style>
     :root {
-        --audit-primary: #059669;
-        --audit-primary-hover: #047857;
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.12);
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f3f4f6;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-nav: rgba(255, 255, 255, 0.8);
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #f1f5f9;
+        --radius-xl: 1.5rem;
+        --radius-lg: 1rem;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+        --audit-primary: var(--primary);
+        --audit-primary-hover: var(--primary-dark);
         --audit-slate: #0f172a;
         --audit-slate-light: #1e293b;
-        --audit-danger-glow: rgba(239, 68, 68, 0.08);
-        --audit-warning-glow: rgba(5, 150, 105, 0.08);
-        --audit-info-glow: rgba(59, 130, 246, 0.08);
-        --audit-success-glow: rgba(5, 150, 105, 0.08);
-        --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
+        --audit-danger-glow: rgba(239, 68, 68, 0.12);
+        --audit-warning-glow: rgba(245, 158, 11, 0.12);
+        --audit-info-glow: rgba(99, 102, 241, 0.12);
+        --audit-success-glow: rgba(16, 185, 129, 0.14);
+        --shadow-premium: var(--card-shadow);
+        --shadow-hover: var(--card-shadow-hover);
+    }
+
+    @keyframes auditFadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(22px) scale(0.985);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .external-badge-banner {
+        animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .auditor-card {
