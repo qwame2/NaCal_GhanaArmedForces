@@ -817,6 +817,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/it-hub/ai-query', [\App\Http\Controllers\ITController::class, 'handleAiAssistantQuery'])->name('it-hub.ai-query');
     Route::post('/it-hub/db-action', [\App\Http\Controllers\ITController::class, 'runDatabaseAction'])->name('it-hub.db-action');
     Route::post('/it-hub/queue-action', [\App\Http\Controllers\ITController::class, 'runQueueAction'])->name('it-hub.queue-action');
+    Route::post('/it-hub/deep-scan', [\App\Http\Controllers\ITController::class, 'runDeepDiagnosticScan'])->name('it-hub.deep-scan');
+    Route::get('/it-hub/deep-scan-page', [\App\Http\Controllers\ITController::class, 'showDeepScanPage'])->name('it-hub.deep-scan-page');
 
     Route::get('/api/inventory/check-duplicate', [InventoryController::class, 'checkDuplicate'])->name('api.inventory.check-duplicate');
 

@@ -207,10 +207,10 @@
 
         {{-- Enterprise Quick Actions Toolbar --}}
         <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
-            <button onclick="runSystemScan()" id="btnScanNow" style="display:inline-flex; align-items:center; gap:8px; padding:0.6rem 1.1rem; background:#0284c7; color:white; border:none; border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; box-shadow:0 4px 12px rgba(2, 132, 199, 0.25);">
+            <a href="{{ route('it-hub.deep-scan-page') }}" id="btnScanNow" style="display:inline-flex; align-items:center; gap:8px; padding:0.6rem 1.1rem; background:#0284c7; color:white; border:none; border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; box-shadow:0 4px 12px rgba(2, 132, 199, 0.25); text-decoration:none;">
                 <i data-lucide="cpu" style="width:15px; height:15px;" id="scanIcon"></i>
                 <span>Run Diagnostic Scan</span>
-            </button>
+            </a>
 
             <button onclick="triggerStoragePurge()" style="display:inline-flex; align-items:center; gap:6px; padding:0.6rem 1.1rem; background:rgba(245, 158, 11, 0.1); color:#d97706; border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer;">
                 <i data-lucide="trash-2" style="width:15px; height:15px;"></i>
@@ -730,6 +730,63 @@
     </div>
 </div>
 
+{{-- ══════════════════════════════════════════════════════════
+     DEEP DIAGNOSTIC SCAN RESULTS MODAL
+══════════════════════════════════════════════════════════ --}}
+<div id="deepScanOverlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(10px); z-index:200000; align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:#ffffff; border-radius:24px; width:100%; max-width:1200px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.4); border:1px solid #e2e8f0;">
+
+        {{-- Header --}}
+        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #e2e8f0; background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:12px; background:rgba(37,99,235,0.3); display:flex; align-items:center; justify-content:center; color:#60a5fa;">
+                    <i data-lucide="scan-line" style="width:22px; height:22px;"></i>
+                </div>
+                <div>
+                    <div style="font-size:1rem; font-weight:900; color:#ffffff;">Deep Diagnostic Scan</div>
+                    <div style="font-size:0.72rem; color:#94a3b8; font-weight:600;">System · Server · Database · Application · API</div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="deepScanScoreBadge" style="display:none; padding:6px 14px; border-radius:99px; font-size:0.8rem; font-weight:900;"></div>
+                <button onclick="closeDeepScanModal()" style="border:none; background:rgba(255,255,255,0.1); color:#94a3b8; cursor:pointer; border-radius:8px; padding:6px; display:flex; align-items:center; justify-content:center;">
+                    <i data-lucide="x" style="width:20px; height:20px;"></i>
+                </button>
+            </div>
+        </div>
+
+        {{-- Scan progress bar --}}
+        <div id="deepScanProgressBar" style="height:3px; background:#2563eb; width:0%; transition:width 2s ease; flex-shrink:0;"></div>
+
+        {{-- Status bar --}}
+        <div id="deepScanStatusBar" style="padding:0.65rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:10px; flex-shrink:0;">
+            <span id="deepScanSpinner" style="display:inline-block; width:12px; height:12px; border:2px solid #2563eb; border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite;"></span>
+            <span id="deepScanStatusText" style="font-size:0.78rem; font-weight:700; color:#475569;">Initialising deep scan engine…</span>
+            <span id="deepScanSummaryStats" style="margin-left:auto; font-size:0.72rem; font-weight:800; color:#64748b;"></span>
+        </div>
+
+        {{-- Results body --}}
+        <div id="deepScanBody" style="overflow-y:auto; padding:1.25rem 1.5rem; flex:1; display:flex; flex-direction:column; gap:1rem;">
+            <div id="deepScanPlaceholder" style="text-align:center; padding:3rem; color:#94a3b8;">
+                <div style="font-size:2rem; margin-bottom:0.5rem;">⟳</div>
+                <div style="font-weight:700;">Running comprehensive scan across all layers…</div>
+                <div style="font-size:0.78rem; margin-top:0.3rem;">This may take a few seconds while probing all API endpoints.</div>
+            </div>
+        </div>
+
+        {{-- Footer --}}
+        <div style="padding:0.85rem 1.5rem; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; background:#f8fafc;">
+            <span id="deepScanTimestamp" style="font-size:0.72rem; color:#94a3b8; font-weight:600;"></span>
+            <div style="display:flex; gap:0.65rem;">
+                <button onclick="closeDeepScanModal()" style="padding:0.5rem 1rem; border-radius:10px; font-weight:800; font-size:0.8rem; background:#f1f5f9; color:#64748b; border:none; cursor:pointer;">Close</button>
+                <button onclick="runSystemScan()" style="padding:0.5rem 1.1rem; border-radius:10px; font-weight:800; font-size:0.8rem; background:#2563eb; color:white; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                    <i data-lucide="refresh-cw" style="width:14px; height:14px;"></i> Re-Scan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -869,32 +926,141 @@
         }
     }
 
+    /* ── Deep Diagnostic Scan ─────────────────────────────────────────── */
+    function closeDeepScanModal() {
+        document.getElementById('deepScanOverlay').style.display = 'none';
+    }
+
     async function runSystemScan() {
-        const btn = document.getElementById('btnScanNow');
+        const btn  = document.getElementById('btnScanNow');
         const icon = document.getElementById('scanIcon');
-        if (btn) btn.disabled = true;
+        if (btn)  { btn.disabled = true; btn.style.opacity = '0.7'; }
         if (icon) icon.style.animation = 'spin 1s linear infinite';
 
+        // Open the modal immediately and show progress
+        const overlay   = document.getElementById('deepScanOverlay');
+        const body      = document.getElementById('deepScanBody');
+        const statusTxt = document.getElementById('deepScanStatusText');
+        const spinner   = document.getElementById('deepScanSpinner');
+        const progress  = document.getElementById('deepScanProgressBar');
+        const scoreBadge= document.getElementById('deepScanScoreBadge');
+        const statsEl   = document.getElementById('deepScanSummaryStats');
+        const tsEl      = document.getElementById('deepScanTimestamp');
+
+        overlay.style.display = 'flex';
+        body.innerHTML = `<div id="deepScanPlaceholder" style="text-align:center; padding:3rem; color:#94a3b8;">
+            <div style="font-size:2rem; margin-bottom:0.5rem; animation:spin 1.5s linear infinite; display:inline-block;">⟳</div>
+            <div style="font-weight:700; margin-top:0.5rem;">Running comprehensive scan across all layers…</div>
+            <div style="font-size:0.78rem; margin-top:0.3rem;">This may take a few seconds while probing all API endpoints.</div>
+        </div>`;
+        scoreBadge.style.display = 'none';
+        statsEl.textContent = '';
+        tsEl.textContent = '';
+        statusTxt.textContent = 'Initialising deep scan engine…';
+        spinner.style.display = 'inline-block';
+        progress.style.width = '0%';
+        setTimeout(() => { progress.style.width = '60%'; }, 100);
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
         try {
-            const res = await fetch('{{ route("it-hub.scan") }}', {
+            const res  = await fetch('{{ route("it-hub.deep-scan") }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
             const data = await res.json();
-            if (data.success) {
-                Swal.fire({
-                    title: 'Diagnostic Scan Complete!',
-                    text: `Health Score: ${data.diagnostics.health_score}% | Latency: ${data.diagnostics.db_latency_ms}ms`,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                window.location.reload();
+
+            progress.style.width = '100%';
+
+            if (!data.success) {
+                statusTxt.textContent = 'Scan failed.';
+                spinner.style.display = 'none';
+                body.innerHTML = `<div style="text-align:center; padding:2rem; color:#ef4444; font-weight:700;">Scan returned an error. Please try again.</div>`;
+                return;
             }
+
+            // ── Render results ──────────────────────────────────────────────────
+            const sectionIcons = {
+                system:      'monitor',
+                server:      'server',
+                database:    'database',
+                application: 'layers',
+                api:         'activity',
+            };
+            const sectionColors = {
+                system:      '#2563eb',
+                server:      '#7c3aed',
+                database:    '#06b6d4',
+                application: '#10b981',
+                api:         '#f59e0b',
+            };
+
+            let html = '';
+            for (const [key, section] of Object.entries(data.results)) {
+                const passed  = section.checks.filter(c => c.pass).length;
+                const total   = section.checks.length;
+                const pct     = total > 0 ? Math.round((passed / total) * 100) : 0;
+                const color   = sectionColors[key] || '#64748b';
+                const icon    = sectionIcons[key]  || 'check-circle';
+                const badgeClr = pct >= 90 ? '#10b981' : pct >= 70 ? '#f59e0b' : '#ef4444';
+
+                html += `
+                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.04);">
+                    <div style="padding:0.85rem 1.1rem; background:linear-gradient(135deg,${color}12 0%,${color}06 100%); border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:28px; height:28px; border-radius:8px; background:${color}20; display:flex; align-items:center; justify-content:center; color:${color};">
+                                <i data-lucide="${icon}" style="width:15px; height:15px;"></i>
+                            </div>
+                            <span style="font-size:0.85rem; font-weight:900; color:#0f172a;">${section.label}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:0.7rem; font-weight:800; color:#64748b;">${passed}/${total} passed</span>
+                            <span style="font-size:0.72rem; font-weight:900; padding:3px 10px; border-radius:99px; color:${badgeClr}; background:${badgeClr}18;">${pct}%</span>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:0;">
+                        ${section.checks.map((c, i) => {
+                            const rowBg  = i % 2 === 0 ? '#fafafa' : '#ffffff';
+                            const passIco = c.pass
+                                ? `<span style="color:#10b981; font-size:0.7rem; font-weight:900; background:rgba(16,185,129,0.1); padding:2px 7px; border-radius:99px;">✓ PASS</span>`
+                                : `<span style="color:#ef4444; font-size:0.7rem; font-weight:900; background:rgba(239,68,68,0.1); padding:2px 7px; border-radius:99px;">✗ FAIL</span>`;
+                            return `<div style="display:flex; justify-content:space-between; align-items:center; padding:0.45rem 0.9rem; border-bottom:1px solid #f1f5f9; background:${rowBg};">
+                                <span style="font-size:0.74rem; font-weight:700; color:#334155;">${c.name}</span>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span style="font-size:0.7rem; color:#64748b; font-weight:600; font-family:monospace;">${c.value}</span>
+                                    ${passIco}
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+            }
+            body.innerHTML = html;
+
+            // Overall score badge
+            const sc = data.overall_score;
+            const scColor = sc >= 90 ? '#10b981' : sc >= 70 ? '#f59e0b' : '#ef4444';
+            scoreBadge.style.display = 'block';
+            scoreBadge.style.background = scColor + '20';
+            scoreBadge.style.color = scColor;
+            scoreBadge.style.border = `1px solid ${scColor}40`;
+            scoreBadge.textContent = `${sc}% Health`;
+
+            spinner.style.display = 'none';
+            statusTxt.textContent = `Scan complete — ${data.passed}/${data.total} checks passed`;
+            statsEl.textContent   = `Duration: ${data.elapsed_ms}ms`;
+            tsEl.textContent      = `Completed at ${data.timestamp}`;
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
         } catch (e) {
-            Swal.fire('Scan Error', 'Unable to complete diagnostic scan.', 'error');
+            progress.style.width = '100%';
+            progress.style.background = '#ef4444';
+            statusTxt.textContent = 'Deep scan error — check server connectivity.';
+            spinner.style.display = 'none';
+            body.innerHTML = `<div style="text-align:center; padding:2rem; color:#ef4444; font-weight:700;">${e.message}</div>`;
         } finally {
-            if (btn) btn.disabled = false;
+            if (btn)  { btn.disabled = false; btn.style.opacity = '1'; }
             if (icon) icon.style.animation = 'none';
         }
     }
