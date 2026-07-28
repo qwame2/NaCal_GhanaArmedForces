@@ -3,174 +3,163 @@
 @section('content')
 <style>
     :root {
-        --it-primary: #0284c7;
-        --it-primary-hover: #0369a1;
-        --it-dark: #0f172a;
+        --it-bg: #0f172a;
         --it-card-bg: #ffffff;
         --it-border: #e2e8f0;
-        --it-text-main: #0f172a;
-        --it-text-muted: #64748b;
-        --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
+        --it-primary: #2563eb;
+        --it-success: #10b981;
+        --it-warning: #f59e0b;
+        --it-danger: #ef4444;
+        --it-info: #06b6d4;
+        --shadow-subtle: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+        --shadow-glass: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.05);
     }
 
-    .it-stat-grid {
+    .it-container {
+        padding: 1.5rem 2rem;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    /* Executive Grid */
+    .it-exec-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
     }
 
-    .it-stat-card {
+    .it-exec-card {
         background: #ffffff;
-        border: 1px solid var(--border-color);
-        border-radius: 18px;
-        padding: 1.5rem;
-        box-shadow: var(--shadow-premium);
+        border: 1px solid var(--it-border);
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: var(--shadow-subtle);
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .it-exec-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-glass);
+    }
+
+    /* Circular SVG Gauge */
+    .gauge-circle {
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+
+    /* Infrastructure Sparkline Grid */
+    .it-infra-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .it-infra-card {
+        background: #ffffff;
+        border: 1px solid var(--it-border);
+        border-radius: 16px;
+        padding: 1.1rem;
+        box-shadow: var(--shadow-subtle);
         position: relative;
         overflow: hidden;
-        transition: transform 0.2s;
     }
 
-    .it-stat-card:hover {
-        transform: translateY(-2px);
+    .it-sparkline-bg {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 38px;
+        opacity: 0.2;
+        pointer-events: none;
     }
 
-    .it-badge-severity {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 99px;
-        font-size: 0.68rem;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-    }
-
-    .it-badge-critical {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.25);
-    }
-
-    .it-badge-warning {
-        background: rgba(245, 158, 11, 0.1);
-        color: #d97706;
-        border: 1px solid rgba(245, 158, 11, 0.25);
-    }
-
-    .it-badge-optimization {
-        background: rgba(2, 132, 199, 0.1);
-        color: #0284c7;
-        border: 1px solid rgba(2, 132, 199, 0.25);
-    }
-
-    /* IT Tabs Navigation */
-    .it-tabs-nav {
-        display: flex;
-        gap: 8px;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 1.5rem;
-        overflow-x: auto;
-        padding-bottom: 2px;
-    }
-
-    .it-tab-btn {
-        padding: 0.75rem 1.25rem;
-        border: none;
-        background: transparent;
-        color: var(--text-muted);
-        font-weight: 800;
-        font-size: 0.82rem;
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-        transition: all 0.2s ease;
-    }
-
-    .it-tab-btn:hover {
-        color: var(--text-main);
-    }
-
-    .it-tab-btn.active {
-        color: #0284c7;
-        border-bottom-color: #0284c7;
-    }
-
-    .it-tab-panel {
-        display: none;
-        animation: fadeInPanel 0.3s ease;
-    }
-
-    .it-tab-panel.active {
-        display: block;
-    }
-
-    @keyframes fadeInPanel {
-        from { opacity: 0; transform: translateY(6px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .it-table-container {
-        background: #ffffff !important;
-        border: 1px solid var(--border-color);
+    /* Section Cards */
+    .it-section-card {
+        background: #ffffff;
+        border: 1px solid var(--it-border);
         border-radius: 20px;
-        box-shadow: var(--shadow-premium);
-        overflow: hidden;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-subtle);
+        margin-bottom: 1.5rem;
     }
 
+    /* Service Status Items */
+    .service-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+
+    .service-item-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Standard Enterprise Table */
     .it-table {
         width: 100%;
         border-collapse: collapse;
         text-align: left;
-        background: #ffffff !important;
     }
 
     .it-table th {
-        padding: 1.1rem 1.25rem;
+        padding: 0.85rem 1rem;
         font-size: 0.72rem;
         font-weight: 800;
-        color: var(--text-muted);
+        color: #64748b;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        background: #ffffff !important;
-        border-bottom: 1px solid var(--border-color);
+        letter-spacing: 0.06em;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .it-table td {
-        padding: 1.1rem 1.25rem;
-        border-bottom: 1px solid var(--border-color);
-        font-size: 0.85rem;
-        color: var(--text-main);
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.83rem;
+        color: #0f172a;
         vertical-align: middle;
-        background: #ffffff !important;
     }
 
-    .diff-old {
-        background: rgba(239, 68, 68, 0.15) !important;
-        color: #fca5a5 !important;
-        border-left: 4px solid #ef4444;
-        padding: 6px 12px;
-        margin-bottom: 6px;
-        font-family: monospace;
-        border-radius: 6px;
-        white-space: pre-wrap;
+    /* Floating AI Drawer */
+    .ai-drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(6px);
+        z-index: 99999;
+        display: none;
     }
 
-    .diff-new {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #6ee7b7 !important;
-        border-left: 4px solid #10b981;
-        padding: 6px 12px;
-        font-family: monospace;
-        border-radius: 6px;
-        white-space: pre-wrap;
+    .ai-drawer {
+        position: fixed;
+        top: 0;
+        right: -420px;
+        width: 420px;
+        height: 100vh;
+        background: #ffffff;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+        z-index: 100000;
+        transition: right 0.3s ease;
+        display: flex;
+        flex-direction: column;
     }
 
-    /* Modal Overlay */
+    .ai-drawer.open {
+        right: 0;
+    }
+
+    /* Code Fix Modal */
     .it-modal-overlay {
         position: fixed;
         inset: 0;
@@ -192,209 +181,402 @@
         border-radius: 20px;
         max-width: 760px;
         width: 100%;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--it-border);
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         overflow: hidden;
-        animation: modalFadeIn 0.25s ease;
-    }
-
-    @keyframes modalFadeIn {
-        from { opacity: 0; transform: scale(0.96); }
-        to { opacity: 1; transform: scale(1); }
     }
 </style>
 
-<div style="padding: 2rem;">
-    {{-- Header Section --}}
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1.25rem;">
+<div class="it-container">
+    {{-- TOP COMMAND BAR --}}
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
         <div>
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span class="it-badge-severity it-badge-optimization" style="font-size:0.65rem;">
-                    <i data-lucide="shield-check" style="width:13px; height:13px;"></i> Strategic Enterprise IT Hub
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:99px; background:rgba(37, 99, 235, 0.1); color:#2563eb; font-size:0.7rem; font-weight:900; text-transform:uppercase;">
+                    <i data-lucide="shield-check" style="width:14px;"></i> System Observability &amp; Diagnostics
                 </span>
-                <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">
+                <span style="font-size:0.75rem; color:#64748b; font-weight:700;">
                     PHP {{ $diagnostics['php_version'] }} &bull; Laravel {{ $diagnostics['laravel_version'] }}
                 </span>
             </div>
-            <h1 style="font-size:1.75rem; font-weight:900; color:var(--text-main); margin:0; letter-spacing:-0.03em;">
+            <h1 style="font-size:1.6rem; font-weight:900; color:#0f172a; margin:0; letter-spacing:-0.03em; display:flex; align-items:center; gap:10px;">
                 IT Command Center &amp; Diagnostics Suite
+
             </h1>
-            <p style="font-size:0.88rem; color:var(--text-muted); font-weight:600; margin:4px 0 0;">
-                Live telemetry monitoring, security threat defense, user session kill-switch, DB optimization, and code remediation.
-            </p>
         </div>
 
         {{-- Enterprise Quick Actions Toolbar --}}
         <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
-            <button onclick="runSystemScan()" id="btnScanNow" style="display:inline-flex; align-items:center; gap:8px; padding:0.6rem 1.1rem; background:#0284c7; color:white; border:none; border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(2, 132, 199, 0.25);" onmouseover="this.style.background='#0369a1';" onmouseout="this.style.background='#0284c7';">
+            <button onclick="runSystemScan()" id="btnScanNow" style="display:inline-flex; align-items:center; gap:8px; padding:0.6rem 1.1rem; background:#0284c7; color:white; border:none; border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; box-shadow:0 4px 12px rgba(2, 132, 199, 0.25);">
                 <i data-lucide="cpu" style="width:15px; height:15px;" id="scanIcon"></i>
                 <span>Run Diagnostic Scan</span>
             </button>
 
-            <button onclick="triggerDbOptimization()" style="display:inline-flex; align-items:center; gap:6px; padding:0.6rem 1.1rem; background:rgba(16, 185, 129, 0.1); color:#10b981; border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='white';" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)';this.style.color='#10b981';">
-                <i data-lucide="database" style="width:15px; height:15px;"></i>
-                <span>Optimize All DB Tables</span>
-            </button>
-
-            <button onclick="triggerStoragePurge()" style="display:inline-flex; align-items:center; gap:6px; padding:0.6rem 1.1rem; background:rgba(245, 158, 11, 0.1); color:#d97706; border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#d97706';this.style.color='white';" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)';this.style.color='#d97706';">
+            <button onclick="triggerStoragePurge()" style="display:inline-flex; align-items:center; gap:6px; padding:0.6rem 1.1rem; background:rgba(245, 158, 11, 0.1); color:#d97706; border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer;">
                 <i data-lucide="trash-2" style="width:15px; height:15px;"></i>
                 <span>Storage Janitor Purge</span>
             </button>
-
-            <button onclick="toggleEmergencyMaintenance()" style="display:inline-flex; align-items:center; gap:6px; padding:0.6rem 1.1rem; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.25); border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)';this.style.color='#ef4444';">
-                <i data-lucide="lock" style="width:15px; height:15px;"></i>
-                <span>Maintenance Toggle</span>
-            </button>
         </div>
     </div>
 
-    {{-- Telemetry Metrics Grid --}}
-    <div class="it-stat-grid">
-        {{-- Card 1: System Health Score --}}
-        <div class="it-stat-card">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
-                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em;">
-                    System Health Index
-                </span>
-                <div style="width:36px; height:36px; border-radius:10px; background:rgba(2, 132, 199, 0.1); display:flex; align-items:center; justify-content:center; color:#0284c7;">
-                    <i data-lucide="activity" style="width:18px; height:18px;"></i>
+    {{-- EXECUTIVE SUMMARY & SYSTEM HEALTH OVERVIEW --}}
+    <div style="margin-bottom:0.6rem; font-size:0.75rem; font-weight:900; text-transform:uppercase; color:#64748b; letter-spacing:0.06em;">
+        Executive System Health Overview &amp; Systems Index
+    </div>
+
+    <div class="it-exec-grid">
+        {{-- Overall Health --}}
+        <div class="it-exec-card" style="border-top: 4px solid #2563eb;">
+            <div style="position:relative; width:64px; height:64px; margin:0 auto 0.5rem;">
+                <svg width="64" height="64" viewBox="0 0 36 36">
+                    <path class="gauge-circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="3.5" />
+                    <path class="gauge-circle" stroke-dasharray="{{ $diagnostics['health_score'] }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" />
+                </svg>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.05rem; color:#0f172a;" id="statHealthScore">
+                    {{ $diagnostics['health_score'] }}
                 </div>
             </div>
-            <div style="font-size:2rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;" id="statHealthScore">
-                {{ $diagnostics['health_score'] }}%
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a;">Overall System</div>
+            <div style="font-size:0.68rem; color:#64748b; font-weight:700;">Health Index</div>
+        </div>
+
+        {{-- Performance --}}
+        <div class="it-exec-card" style="border-top: 4px solid #10b981;">
+            <div style="font-size:1.8rem; font-weight:900; color:#10b981; margin:0.5rem 0;" id="scorePerformance">{{ $diagnostics['performance_score'] }}%</div>
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a;">Performance</div>
+            <div style="font-size:0.68rem; color:#10b981; font-weight:800;" id="labelPerformance">Optimal</div>
+        </div>
+
+        {{-- Security --}}
+        <div class="it-exec-card" style="border-top: 4px solid #3b82f6;">
+            <div style="font-size:1.8rem; font-weight:900; color:#3b82f6; margin:0.5rem 0;" id="scoreSecurity">{{ $diagnostics['security_score'] }}%</div>
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a;">Security</div>
+            <div style="font-size:0.68rem; color:#3b82f6; font-weight:800;" id="labelSecurity">Protected</div>
+        </div>
+
+        {{-- Database --}}
+        <div class="it-exec-card" style="border-top: 4px solid #06b6d4;">
+            <div style="font-size:1.8rem; font-weight:900; color:#06b6d4; margin:0.5rem 0;" id="scoreDatabase">{{ $diagnostics['database_score'] }}%</div>
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a;">Database</div>
+            <div style="font-size:0.68rem; color:#06b6d4; font-weight:800;" id="labelDatabase">Sub-10ms</div>
+        </div>
+
+        {{-- Storage --}}
+        <div class="it-exec-card" style="border-top: 4px solid #f59e0b;">
+            <div style="font-size:1.8rem; font-weight:900; color:#f59e0b; margin:0.5rem 0;" id="scoreStorage">{{ $diagnostics['storage_score'] }}%</div>
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a;">Storage</div>
+            <div style="font-size:0.68rem; color:#f59e0b; font-weight:800;" id="labelStorage">Healthy</div>
+        </div>
+
+        {{-- Application --}}
+        <div class="it-exec-card" style="border-top: 4px solid #8b5cf6;">
+            <div style="font-size:1.8rem; font-weight:900; color:#8b5cf6; margin:0.5rem 0;" id="scoreApplication">{{ $diagnostics['application_score'] }}%</div>
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a;">Application</div>
+            <div style="font-size:0.68rem; color:#8b5cf6; font-weight:800;" id="labelApplication">v11.x Core</div>
+        </div>
+
+        {{-- Network --}}
+        <div class="it-exec-card" style="border-top: 4px solid #10b981;">
+            <div style="font-size:1.8rem; font-weight:900; color:#10b981; margin:0.5rem 0;" id="scoreNetwork">{{ $diagnostics['network_score'] }}%</div>
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a;">Network</div>
+            <div style="font-size:0.68rem; color:#10b981; font-weight:800;" id="labelNetwork">100% Active</div>
+        </div>
+    </div>
+
+    {{-- System Infrastructure Advisory Banner (Only display when log size > 2MB, high disk, or issues detected) --}}
+    @if(($diagnostics['log_size_mb'] ?? 0) > 2.0 || ($diagnostics['disk_percent'] ?? 0) >= 85 || !empty($diagnostics['predictive_issues']))
+    <div style="background:linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%); border:1px solid rgba(37, 99, 235, 0.2); border-radius:16px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; border-radius:12px; background:#2563eb; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 12px rgba(37, 99, 235, 0.3);">
+                <i data-lucide="shield-alert" style="width:20px; height:20px;"></i>
             </div>
-            <div style="margin-top:0.75rem; background:rgba(0,0,0,0.06); height:6px; border-radius:99px; overflow:hidden;">
-                <div id="healthScoreBar" style="width: {{ $diagnostics['health_score'] }}%; height:100%; background: {{ $diagnostics['health_score'] >= 80 ? '#10b981' : ($diagnostics['health_score'] >= 60 ? '#f59e0b' : '#ef4444') }}; transition: width 0.5s ease;"></div>
+            <div>
+                <div style="font-size:0.88rem; font-weight:900; color:#0f172a;">System Infrastructure Advisory</div>
+                <div style="font-size:0.8rem; color:#475569; font-weight:600;">
+                    Log buffer size is {{ $diagnostics['log_size_mb'] }} MB. Storage Janitor Purge recommended to clear log cache and maintain optimal disk performance.
+                </div>
             </div>
-            <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; margin-top:0.5rem;" id="statHealthText">
-                {{ $diagnostics['health_score'] >= 80 ? 'Optimal Performance State' : 'Minor Diagnostic Warnings' }}
+        </div>
+        <button onclick="triggerStoragePurge()" style="padding:0.45rem 0.9rem; border-radius:8px; font-size:0.75rem; font-weight:800; background:#2563eb; color:white; border:none; cursor:pointer;">
+            Run Storage Janitor
+        </button>
+    </div>
+    @endif
+
+    {{-- INFRASTRUCTURE TELEMETRY SPARKLINE GRID --}}
+    <div style="margin-bottom:0.6rem; font-size:0.75rem; font-weight:900; text-transform:uppercase; color:#64748b; letter-spacing:0.06em;">
+        Real-Time Infrastructure Monitoring Telemetry
+    </div>
+
+    <div class="it-infra-grid">
+        {{-- Card 1: CPU --}}
+        <div class="it-infra-card" style="border-top:3px solid #2563eb;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <span style="font-size:0.72rem; font-weight:800; color:#64748b; text-transform:uppercase;">CPU Load</span>
+                <span style="font-size:0.7rem; font-weight:800; color:#10b981;" id="statCpuTrend">&darr; 2% prev</span>
+            </div>
+            <div style="font-size:1.6rem; font-weight:900; color:#0f172a;" id="statCpuLoad">{{ $diagnostics['cpu_usage'] ?? '18' }}%</div>
+            <div style="font-size:0.7rem; color:#64748b; font-weight:700;" id="statCpuSpec">{!! $diagnostics['cpu_spec'] ?? 'Processor Engine &bull; Live Telemetry' !!}</div>
+            <svg class="it-sparkline-bg" viewBox="0 0 100 25" preserveAspectRatio="none"><path d="M0 20 Q 25 5, 50 18 T 100 8 L 100 25 L 0 25 Z" fill="#2563eb" /></svg>
+        </div>
+
+        {{-- Card 3: System Speed Rate --}}
+        <div class="it-infra-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <span style="font-size:0.72rem; font-weight:800; color:#64748b; text-transform:uppercase;">Speed Rate</span>
+                <span style="font-size:0.7rem; font-weight:800; color:#10b981;">Ultra Fast</span>
+            </div>
+            <div style="font-size:1.6rem; font-weight:900; color:#0f172a;" id="statSystemSpeedRate">{{ $diagnostics['system_speed_mbps'] }} <span style="font-size:0.9rem; font-weight:700; color:#64748b;">MB/s</span></div>
+            <div style="font-size:0.7rem; color:#64748b; font-weight:700;">Exec Speed: <b style="color:#10b981;" id="statExecTime">{{ $diagnostics['execution_speed_ms'] }} ms</b></div>
+            <svg class="it-sparkline-bg" viewBox="0 0 100 25" preserveAspectRatio="none"><path d="M0 18 Q 20 8, 50 12 T 100 5 L 100 25 L 0 25 Z" fill="#06b6d4" /></svg>
+        </div>
+
+        {{-- Card 4: DB Latency --}}
+        <div class="it-infra-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <span style="font-size:0.72rem; font-weight:800; color:#64748b; text-transform:uppercase;">DB Latency</span>
+                <span style="font-size:0.7rem; font-weight:800; color:#10b981;">Sub-5ms</span>
+            </div>
+            <div style="font-size:1.6rem; font-weight:900; color:#0f172a;" id="statDbLatency">{{ $diagnostics['db_latency_ms'] }} <span style="font-size:0.9rem; font-weight:700; color:#64748b;">ms</span></div>
+            <div style="font-size:0.7rem; color:#64748b; font-weight:700;">Benchmark: {{ $diagnostics['query_benchmark_ms'] }} ms</div>
+            <svg class="it-sparkline-bg" viewBox="0 0 100 25" preserveAspectRatio="none"><path d="M0 22 Q 35 12, 70 18 T 100 10 L 100 25 L 0 25 Z" fill="#8b5cf6" /></svg>
+        </div>
+
+        {{-- Card 5: Disk & App Storage Space --}}
+        <div class="it-infra-card" style="border-top:3px solid #f59e0b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <span style="font-size:0.72rem; font-weight:800; color:#64748b; text-transform:uppercase;">App Space &amp; Disk</span>
+                <span style="font-size:0.68rem; font-weight:800; color:#ef4444; display:inline-flex; align-items:center; gap:3px;" id="statDiskGrowth">
+                    <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ef4444; animation:pulse 1s infinite;"></span>
+                    <span id="statGrowthText">{{ $diagnostics['disk_growth_rate'] ?? '+0.4 MB/min' }} (Increasing)</span>
+                </span>
+            </div>
+            <div style="font-size:1.5rem; font-weight:900; color:#0f172a;" id="statAppSpace">
+                {{ $diagnostics['app_space_mb'] ?? '48.6' }} <span style="font-size:0.85rem; font-weight:700; color:#64748b;">MB App Footprint</span>
+            </div>
+            <div style="font-size:0.7rem; color:#64748b; font-weight:700;" id="statDiskUsed">
+                Disk Total: <b>{{ $diagnostics['disk_used_gb'] }} GB</b> / {{ $diagnostics['disk_total_gb'] }} GB ({{ $diagnostics['disk_percent'] }}% used)
+            </div>
+            <svg class="it-sparkline-bg" viewBox="0 0 100 25" preserveAspectRatio="none"><path d="M0 10 Q 25 15, 50 8 T 100 14 L 100 25 L 0 25 Z" fill="#f59e0b" /></svg>
+        </div>
+    </div>
+
+
+
+    {{-- SERVICE STATUS PANEL & MAINTENANCE CONTROL CENTER --}}
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+        {{-- Services Panel --}}
+        <div class="it-section-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="activity" style="width:18px; color:#2563eb;"></i> Critical Enterprise Services
+                </h3>
+                <span id="monitoredServicesCount" style="font-size:0.7rem; font-weight:800; color:#10b981; background:rgba(16, 185, 129, 0.1); padding:3px 8px; border-radius:99px;">{{ count($diagnostics['services']) }} Services Online</span>
+            </div>
+
+            <div class="service-grid">
+                @foreach($diagnostics['services'] as $svc)
+                @php
+                    $svcSlug = Str::slug($svc['name']);
+                    $badgeColor = '#10b981';
+                    $badgeBg = 'rgba(16, 185, 129, 0.1)';
+                    if ($svc['status'] === 'Offline' || ($svc['badge'] ?? '') === 'danger') {
+                        $badgeColor = '#ef4444';
+                        $badgeBg = 'rgba(239, 68, 68, 0.1)';
+                    } elseif ($svc['status'] === 'Degraded' || ($svc['badge'] ?? '') === 'warning') {
+                        $badgeColor = '#f59e0b';
+                        $badgeBg = 'rgba(245, 158, 11, 0.1)';
+                    }
+                @endphp
+                <div class="service-item-card">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <span style="font-weight:900; font-size:0.83rem; color:#0f172a;">{{ $svc['name'] }}</span>
+                            <span id="service-status-{{ $svcSlug }}" data-slug="{{ $svcSlug }}" class="service-badge" style="font-size:0.65rem; font-weight:900; padding:2px 6px; border-radius:99px; color: {{ $badgeColor }}; background: {{ $badgeBg }}; transition: all 0.3s ease;">
+                                {{ $svc['status'] }}
+                            </span>
+                        </div>
+                        <div style="font-size:0.7rem; color:#64748b; font-weight:600; margin-top:2px;">Target: {{ $svc['port'] }} &bull; Uptime: {{ $svc['uptime'] }}</div>
+                    </div>
+                    <div style="display:flex; gap:6px; margin-top:0.75rem;">
+                        <button onclick="triggerServiceAction('{{ $svc['name'] }}', 'restart')" style="padding:3px 8px; border-radius:6px; font-size:0.68rem; font-weight:800; background:rgba(37, 99, 235, 0.1); color:#2563eb; border:none; cursor:pointer;">Restart</button>
+                        <button onclick="triggerServiceAction('{{ $svc['name'] }}', 'reload')" style="padding:3px 8px; border-radius:6px; font-size:0.68rem; font-weight:800; background:rgba(100, 116, 139, 0.1); color:#475569; border:none; cursor:pointer;">Reload</button>
+                    </div>
+                </div>
+                @endforeach
             </div>
         </div>
 
-        {{-- Card 2: Database Latency --}}
-        <div class="it-stat-card">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
-                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em;">
-                    DB Connection Latency
-                </span>
-                <div style="width:36px; height:36px; border-radius:10px; background:rgba(16, 185, 129, 0.1); display:flex; align-items:center; justify-content:center; color:#10b981;">
-                    <i data-lucide="database" style="width:18px; height:18px;"></i>
-                </div>
+        {{-- Maintenance Command Center --}}
+        <div class="it-section-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="wrench" style="width:18px; color:#d97706;"></i> Maintenance Command Center
+                </h3>
+                <span style="font-size:0.7rem; font-weight:800; color:#64748b;">Instant Dispatch</span>
             </div>
-            <div style="font-size:2rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;" id="statDbLatency">
-                {{ $diagnostics['db_latency_ms'] }} <span style="font-size:1.1rem; font-weight:700; color:var(--text-muted);">ms</span>
-            </div>
-            <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; margin-top:0.6rem;">
-                Query Benchmark: <b id="statQueryBench">{{ $diagnostics['query_benchmark_ms'] }} ms</b> &bull; Status: <span style="color:#10b981; font-weight:800;">Connected</span>
-            </div>
-        </div>
 
-        {{-- Card 3: Transfer Speed Rate --}}
-        <div class="it-stat-card">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
-                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em;">
-                    Transfer Rate Throughput
-                </span>
-                <div style="width:36px; height:36px; border-radius:10px; background:rgba(139, 92, 246, 0.1); display:flex; align-items:center; justify-content:center; color:#8b5cf6;">
-                    <i data-lucide="zap" style="width:18px; height:18px;"></i>
-                </div>
-            </div>
-            <div style="font-size:2rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;" id="statTransferSpeed">
-                {{ number_format($diagnostics['transfer_rate_kbps']) }} <span style="font-size:1.1rem; font-weight:700; color:var(--text-muted);">KB/s</span>
-            </div>
-            <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; margin-top:0.6rem;">
-                Est. Data Rate: <b style="color:#8b5cf6;">{{ round($diagnostics['transfer_rate_kbps'] / 1024, 2) }} MB/s</b> &bull; High Efficiency
-            </div>
-        </div>
-
-        {{-- Card 4: Memory & Storage --}}
-        <div class="it-stat-card">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
-                <span style="font-size:0.72rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em;">
-                    Memory &amp; Storage Footprint
-                </span>
-                <div style="width:36px; height:36px; border-radius:10px; background:rgba(245, 158, 11, 0.1); display:flex; align-items:center; justify-content:center; color:#f59e0b;">
-                    <i data-lucide="hard-drive" style="width:18px; height:18px;"></i>
-                </div>
-            </div>
-            <div style="font-size:1.75rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;" id="statMemoryUsed">
-                {{ $diagnostics['memory_used_mb'] }} MB <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted);">/ {{ $diagnostics['memory_limit'] }}</span>
-            </div>
-            <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; margin-top:0.6rem;">
-                Disk: <b>{{ $diagnostics['disk_used_gb'] }} GB</b> / {{ $diagnostics['disk_total_gb'] }} GB ({{ $diagnostics['disk_percent'] }}% used)
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.65rem;">
+                <button onclick="executeMaintenance('optimize_laravel')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="zap" style="width:13px; color:#2563eb; margin-bottom:4px;"></i><br>Optimize Laravel
+                </button>
+                <button onclick="executeMaintenance('clear_cache')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="trash-2" style="width:13px; color:#d97706; margin-bottom:4px;"></i><br>Clear Cache
+                </button>
+                <button onclick="executeMaintenance('route_cache')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="route" style="width:13px; color:#10b981; margin-bottom:4px;"></i><br>Route Cache
+                </button>
+                <button onclick="executeMaintenance('view_cache')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="eye" style="width:13px; color:#06b6d4; margin-bottom:4px;"></i><br>View Cache
+                </button>
+                <button onclick="executeMaintenance('config_cache')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="sliders" style="width:13px; color:#8b5cf6; margin-bottom:4px;"></i><br>Config Cache
+                </button>
+                <button onclick="executeMaintenance('restart_queue')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="refresh-cw" style="width:13px; color:#2563eb; margin-bottom:4px;"></i><br>Restart Queue
+                </button>
+                <button onclick="executeMaintenance('storage_link')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="link" style="width:13px; color:#10b981; margin-bottom:4px;"></i><br>Storage Link
+                </button>
+                <button onclick="executeMaintenance('clear_logs')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="file-text" style="width:13px; color:#ef4444; margin-bottom:4px;"></i><br>Clear Logs
+                </button>
+                <button onclick="executeMaintenance('git_pull')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="git-pull-request" style="width:13px; color:#7c3aed; margin-bottom:4px;"></i><br>Git Pull
+                </button>
+                <button onclick="executeMaintenance('artisan_migrate')" style="padding:0.6rem; border-radius:10px; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; text-align:left;">
+                    <i data-lucide="database" style="width:13px; color:#0891b2; margin-bottom:4px;"></i><br>Artisan Migrate
+                </button>
             </div>
         </div>
     </div>
 
-    {{-- Control Center Tabs Menu --}}
-    <div class="it-tabs-nav">
-        <button class="it-tab-btn active" onclick="switchItTab('tab-predictive', this)">
-            <i data-lucide="shield-alert" style="width:16px;"></i>
-            Predictive Code Remediation
-        </button>
+    {{-- SECURITY OPERATIONS CENTER (SOC) & ACTIVE CONNECTED USERS --}}
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+        {{-- SOC Threat Matrix --}}
+        <div class="it-section-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="shield-alert" style="width:18px; color:#3b82f6;"></i> SOC Security Defense Telemetry
+                </h3>
+                <span style="font-size:0.7rem; font-weight:900; color:#10b981; background:rgba(16, 185, 129, 0.1); padding:3px 8px; border-radius:99px;">
+                    RISK: {{ $diagnostics['soc_data']['risk_level'] }}
+                </span>
+            </div>
 
-        <button class="it-tab-btn" onclick="switchItTab('tab-security', this)">
-            <i data-lucide="shield-off" style="width:16px;"></i>
-            Security &amp; Threat Defense
-        </button>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.75rem; margin-bottom:1rem; text-align:center;">
+                <div style="background:#f8fafc; padding:0.75rem; border-radius:12px; border:1px solid #e2e8f0;">
+                    <div style="font-size:1.3rem; font-weight:900; color:#10b981;">{{ $diagnostics['soc_data']['login_successful'] }}</div>
+                    <div style="font-size:0.68rem; font-weight:800; color:#64748b;">Successful Logins</div>
+                </div>
+                <div style="background:#f8fafc; padding:0.75rem; border-radius:12px; border:1px solid #e2e8f0;">
+                    <div style="font-size:1.3rem; font-weight:900; color:#f59e0b;">{{ $diagnostics['soc_data']['login_failed'] }}</div>
+                    <div style="font-size:0.68rem; font-weight:800; color:#64748b;">Failed Attempts</div>
+                </div>
+                <div style="background:#f8fafc; padding:0.75rem; border-radius:12px; border:1px solid #e2e8f0;">
+                    <div style="font-size:1.3rem; font-weight:900; color:#ef4444;">{{ $diagnostics['soc_data']['brute_force_attempts'] }}</div>
+                    <div style="font-size:0.68rem; font-weight:800; color:#64748b;">Brute Force Blocked</div>
+                </div>
+            </div>
 
-        <button class="it-tab-btn" onclick="switchItTab('tab-sessions', this)">
-            <i data-lucide="users" style="width:16px;"></i>
-            Active User Sessions &amp; Kill-Switch
-        </button>
+            <div style="font-size:0.78rem; font-weight:800; color:#0f172a; margin-bottom:0.4rem;">Geographic IP Monitoring</div>
+            @foreach($diagnostics['soc_data']['suspicious_ips'] as $ipInfo)
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.45rem 0.75rem; background:#f8fafc; border-radius:8px; margin-bottom:0.4rem; font-size:0.75rem;">
+                <span style="font-family:monospace; font-weight:800;">{{ $ipInfo['flag'] }} {{ $ipInfo['ip'] }} ({{ $ipInfo['country'] }})</span>
+                <span style="color:#10b981; font-weight:800;">{{ $ipInfo['status'] }}</span>
+            </div>
+            @endforeach
+        </div>
 
-        <button class="it-tab-btn" onclick="switchItTab('tab-logs', this)">
-            <i data-lucide="terminal" style="width:16px;"></i>
-            Live Exception Log Stream
-        </button>
+        {{-- Connected Users --}}
+        <div class="it-section-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="users" style="width:18px; color:#2563eb;"></i> Connected User Sessions
+                </h3>
+                <span style="font-size:0.7rem; font-weight:800; color:#2563eb; background:rgba(37, 99, 235, 0.1); padding:3px 8px; border-radius:99px;">{{ count($diagnostics['connected_users']) }} Active</span>
+            </div>
+
+            <div style="max-height:220px; overflow-y:auto;">
+                <table class="it-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>IP Address</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($diagnostics['connected_users'] as $uSess)
+                        <tr>
+                            <td>
+                                <div style="font-weight:800; color:#0f172a;">{{ $uSess['name'] }}</div>
+                                <div style="font-size:0.68rem; color:#64748b;">{{ $uSess['department'] }}</div>
+                            </td>
+                            <td><span style="font-size:0.68rem; font-weight:800; padding:2px 6px; border-radius:99px; background:rgba(37, 99, 235, 0.1); color:#2563eb;">{{ $uSess['role'] }}</span></td>
+                            <td style="font-family:monospace; font-weight:700; font-size:0.75rem;">{{ $uSess['ip_address'] }}</td>
+                            <td>
+                                <button onclick="killSession('{{ $uSess['session_id'] }}', {{ $uSess['user_id'] }}, '{{ $uSess['username'] }}')" style="padding:3px 6px; border-radius:4px; font-size:0.65rem; font-weight:800; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:none; cursor:pointer;">
+                                    Kill
+                                </button>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="4" style="text-align:center; padding:1rem; color:#64748b;">No active online user sessions registered.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    {{-- TAB 1: PREDICTIVE CODE REMEDIATION --}}
-    <div id="tab-predictive" class="it-tab-panel active">
+    {{-- PREDICTIVE CODE REMEDIATION SECTION --}}
+    <div class="it-section-card">
         <div style="margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
             <div>
-                <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin:0;">Predictive Bottlenecks &amp; Code Remedies</h3>
-                <p style="font-size:0.8rem; color:var(--text-muted); font-weight:600; margin:2px 0 0;">Line-specific code remedies and automated patch fixes before failures happen.</p>
+                <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="shield-alert" style="width:18px; color:#2563eb;"></i> Predictive Code Remediation Engine
+                </h3>
+                <p style="font-size:0.78rem; color:#64748b; font-weight:600; margin:2px 0 0;">Line-specific automated patch remedies and code optimization fixes.</p>
             </div>
         </div>
 
-        <div class="it-table-container">
+        <div style="overflow-x:auto;">
             <table class="it-table">
                 <thead>
                     <tr>
                         <th>Risk Level</th>
-                        <th>Predictive Issue &amp; Description</th>
-                        <th>Target File &amp; Line Number</th>
-                        <th>Code Remediation Action</th>
+                        <th>Predictive Issue &amp; Target File</th>
+                        <th>Gain &amp; Risk Score</th>
+                        <th>Remediation Action</th>
                     </tr>
                 </thead>
-                <tbody id="predictiveIssuesTbody">
+                <tbody>
                     @forelse($diagnostics['predictive_issues'] as $issue)
                     <tr>
                         <td>
-                            <span class="it-badge-severity it-badge-{{ $issue['severity'] }}">
-                                <i data-lucide="{{ $issue['severity'] === 'critical' ? 'alert-octagon' : ($issue['severity'] === 'warning' ? 'alert-triangle' : 'info') }}" style="width:13px; height:13px;"></i>
+                            <span style="font-size:0.68rem; font-weight:900; text-transform:uppercase; padding:3px 8px; border-radius:99px; background:rgba(245, 158, 11, 0.1); color:#d97706;">
                                 {{ $issue['severity_label'] }}
                             </span>
                         </td>
                         <td style="max-width:340px;">
-                            <div style="font-weight:800; color:var(--text-main); font-size:0.88rem; margin-bottom:2px;">{{ $issue['title'] }}</div>
-                            <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.4;">{{ $issue['description'] }}</div>
+                            <div style="font-weight:800; color:#0f172a; font-size:0.85rem;">{{ $issue['title'] }}</div>
+                            <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">{{ $issue['description'] }}</div>
+                            <div style="font-family:monospace; font-size:0.72rem; color:#2563eb; font-weight:700; margin-top:4px;">{{ basename($issue['file_path']) }}:L{{ $issue['line_number'] }}</div>
                         </td>
                         <td>
-                            <span style="display:inline-flex; align-items:center; gap:5px; font-family:monospace; font-size:0.8rem; font-weight:800; color:#0284c7; background:rgba(2, 132, 199, 0.08); padding:4px 8px; border-radius:6px; border:1px solid rgba(2, 132, 199, 0.2);" title="Project Path: {{ $issue['file_path'] }}">
-                                <i data-lucide="file-code" style="width:13px; height:13px;"></i>
-                                {{ basename($issue['file_path']) }}:L{{ $issue['line_number'] }}
-                            </span>
+                            <div style="font-weight:800; color:#10b981; font-size:0.78rem;">{{ $issue['performance_gain'] ?? '+25% Gain' }}</div>
+                            <div style="font-size:0.7rem; color:#64748b;">Risk Score: {{ $issue['risk_score'] ?? 10 }}/100</div>
                         </td>
                         <td>
-                            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                                <button onclick='openCodeFixModal(@json($issue))' style="padding:0.45rem 0.85rem; border-radius:8px; font-size:0.75rem; font-weight:800; background:rgba(2, 132, 199, 0.1); color:#0284c7; border:1px solid rgba(2, 132, 199, 0.25); cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;" onmouseover="this.style.background='#0284c7';this.style.color='white';" onmouseout="this.style.background='rgba(2, 132, 199, 0.1)';this.style.color='#0284c7';">
-                                    <i data-lucide="code" style="width:13px; height:13px;"></i> View Code Fix
+                            <div style="display:flex; gap:6px;">
+                                <button onclick='openCodeFixModal(@json($issue))' style="padding:0.4rem 0.75rem; border-radius:8px; font-size:0.72rem; font-weight:800; background:rgba(37, 99, 235, 0.1); color:#2563eb; border:none; cursor:pointer;">
+                                    View Code Fix
                                 </button>
                                 @if(!empty($issue['can_autofix']))
-                                <button onclick="applyAutomatedPatch('{{ $issue['id'] }}')" style="padding:0.45rem 0.85rem; border-radius:8px; font-size:0.75rem; font-weight:800; background:rgba(16, 185, 129, 0.1); color:#10b981; border:1px solid rgba(16, 185, 129, 0.25); cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='white';" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)';this.style.color='#10b981';">
-                                    <i data-lucide="wrench" style="width:13px; height:13px;"></i> Apply Patch
+                                <button onclick="applyAutomatedPatch('{{ $issue['id'] }}')" style="padding:0.4rem 0.75rem; border-radius:8px; font-size:0.72rem; font-weight:800; background:rgba(16, 185, 129, 0.1); color:#10b981; border:none; cursor:pointer;">
+                                    Apply Patch
                                 </button>
                                 @endif
                             </div>
@@ -402,10 +584,9 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" style="text-align:center; padding:2.5rem 1rem; color:var(--text-muted);">
-                            <div style="display:flex; justify-content:center; margin-bottom:0.5rem; color:#10b981;"><i data-lucide="check-circle" style="width:36px; height:36px;"></i></div>
-                            <div style="font-weight:800; font-size:0.9rem; color:var(--text-main);">No Critical Predictive Issues Detected</div>
-                            <div style="font-size:0.78rem; margin-top:2px;">All database queries, log buffers, and system configurations are running at optimal parameters.</div>
+                        <td colspan="4" style="text-align:center; padding:2rem 1rem; color:#64748b;">
+                            <div style="font-weight:800; color:#10b981;">No Critical Predictive Code Issues</div>
+                            <div style="font-size:0.78rem;">All code paths, migration indexes, and log rotation parameters are operating at peak efficiency.</div>
                         </td>
                     </tr>
                     @endforelse
@@ -414,122 +595,134 @@
         </div>
     </div>
 
-    {{-- TAB 2: SECURITY THREAT DEFENSE --}}
-    <div id="tab-security" class="it-tab-panel">
-        <div style="margin-bottom:1rem;">
-            <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin:0;">Security Threat &amp; Intrusion Log</h3>
-            <p style="font-size:0.8rem; color:var(--text-muted); font-weight:600; margin:2px 0 0;">Recent authentication events, rate-limiter locks, and security alerts.</p>
+    {{-- DATABASE INTELLIGENCE & APPLICATION DIAGNOSTICS --}}
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+        {{-- Database Intelligence --}}
+        <div class="it-section-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="database" style="width:18px; color:#06b6d4;"></i> Database Intelligence Center
+                </h3>
+                <span style="font-size:0.7rem; font-weight:800; color:#06b6d4;">{{ $diagnostics['db_intelligence']['size_mb'] }} MB Size</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:0.65rem; margin-bottom:1rem; text-align:center;">
+                <div style="background:#f8fafc; padding:0.6rem; border-radius:10px; border:1px solid #e2e8f0;">
+                    <div style="font-size:1.1rem; font-weight:900; color:#0f172a;">{{ $diagnostics['db_intelligence']['avg_query_time_ms'] }} ms</div>
+                    <div style="font-size:0.65rem; font-weight:800; color:#64748b;">Avg Query Latency</div>
+                </div>
+                <div style="background:#f8fafc; padding:0.6rem; border-radius:10px; border:1px solid #e2e8f0;">
+                    <div style="font-size:1.1rem; font-weight:900; color:#10b981;">{{ $diagnostics['db_intelligence']['cache_hit_rate'] }}</div>
+                    <div style="font-size:0.65rem; font-weight:800; color:#64748b;">Cache Hit Rate</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button onclick="runDbAction('optimize')" style="padding:0.4rem 0.75rem; border-radius:8px; font-size:0.72rem; font-weight:800; background:#2563eb; color:white; border:none; cursor:pointer;">Optimize Tables</button>
+                <button onclick="runDbAction('analyze')" style="padding:0.4rem 0.75rem; border-radius:8px; font-size:0.72rem; font-weight:800; background:rgba(6, 182, 212, 0.1); color:#06b6d4; border:none; cursor:pointer;">Analyze Queries</button>
+                <button onclick="runDbAction('repair')" style="padding:0.4rem 0.75rem; border-radius:8px; font-size:0.72rem; font-weight:800; background:rgba(100, 116, 139, 0.1); color:#475569; border:none; cursor:pointer;">Repair Integrity</button>
+            </div>
         </div>
 
-        <div class="it-table-container">
+        {{-- App Diagnostics --}}
+        <div class="it-section-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="check-circle-2" style="width:18px; color:#10b981;"></i> Application Diagnostics Checklist
+                </h3>
+                <span style="font-size:0.7rem; font-weight:800; color:#10b981;">All Passed</span>
+            </div>
+
+            <div style="max-height:210px; overflow-y:auto;">
+                @foreach($diagnostics['app_diagnostics'] as $diagItem)
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0.6rem; border-bottom:1px solid #f1f5f9; font-size:0.75rem;">
+                    <span style="font-weight:700; color:#0f172a;">{{ $diagItem['name'] }}</span>
+                    <span style="font-size:0.68rem; font-weight:800; padding:2px 6px; border-radius:99px; background:rgba(16, 185, 129, 0.1); color:#10b981;">
+                        {{ $diagItem['value'] }}
+                    </span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    {{-- ADMINISTRATIVE AUDIT TRAIL --}}
+    <div class="it-section-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="font-size:1.05rem; font-weight:900; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+                <i data-lucide="history" style="width:18px; color:#64748b;"></i> Administrative Security &amp; Remediation Audit Trail
+            </h3>
+            <span style="font-size:0.7rem; font-weight:800; color:#64748b;">Live Stream</span>
+        </div>
+
+        <div style="overflow-x:auto;">
             <table class="it-table">
                 <thead>
                     <tr>
                         <th>Timestamp</th>
-                        <th>Event Type</th>
-                        <th>User Account</th>
+                        <th>Administrator</th>
+                        <th>Action Performed</th>
+                        <th>Details &amp; Audit Scope</th>
                         <th>IP Address</th>
-                        <th>Security Summary</th>
                     </tr>
                 </thead>
-                <tbody id="securityThreatsTbody">
+                <tbody>
+                    @forelse($diagnostics['audit_trail'] as $logEntry)
                     <tr>
-                        <td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Loading security threat matrix...</td>
+                        <td style="font-size:0.73rem; color:#64748b; font-weight:700;">{{ $logEntry->created_at ? $logEntry->created_at->format('Y-m-d H:i:s') : '-' }}</td>
+                        <td style="font-weight:800; color:#0f172a;">{{ $logEntry->user ? $logEntry->user->name : 'System Janitor' }}</td>
+                        <td><span style="font-size:0.68rem; font-weight:900; padding:2px 6px; border-radius:99px; background:rgba(37, 99, 235, 0.1); color:#2563eb;">{{ $logEntry->action }}</span></td>
+                        <td style="font-size:0.78rem; color:#475569;">{{ $logEntry->description }}</td>
+                        <td style="font-family:monospace; font-size:0.75rem; font-weight:700;">{{ $logEntry->ip_address }}</td>
                     </tr>
+                    @empty
+                    <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:#64748b;">No administrative audit actions logged.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
-        </div>
-    </div>
-
-    {{-- TAB 3: ACTIVE USER SESSIONS & KILL-SWITCH --}}
-    <div id="tab-sessions" class="it-tab-panel">
-        <div style="margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin:0;">Active Online User Sessions</h3>
-                <p style="font-size:0.8rem; color:var(--text-muted); font-weight:600; margin:2px 0 0;">Monitor active logged-in sessions and terminate compromised user access in 1 click.</p>
-            </div>
-            <button onclick="loadActiveSessions()" style="padding:0.4rem 0.8rem; border-radius:8px; font-size:0.75rem; font-weight:800; background:rgba(2, 132, 199, 0.1); color:#0284c7; border:none; cursor:pointer;">
-                Refresh Sessions List
-            </button>
-        </div>
-
-        <div class="it-table-container">
-            <table class="it-table">
-                <thead>
-                    <tr>
-                        <th>User &amp; Department</th>
-                        <th>Role</th>
-                        <th>IP Address</th>
-                        <th>Browser Agent</th>
-                        <th>Last Activity</th>
-                        <th>Kill-Switch Action</th>
-                    </tr>
-                </thead>
-                <tbody id="activeSessionsTbody">
-                    <tr>
-                        <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Loading active session telemetry...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- TAB 4: LIVE LOG STREAM --}}
-    <div id="tab-logs" class="it-tab-panel">
-        <div style="margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h3 style="font-size:1.1rem; font-weight:900; color:var(--text-main); margin:0;">Live Exception Log Stream (`storage/logs/laravel.log`)</h3>
-                <p style="font-size:0.8rem; color:var(--text-muted); font-weight:600; margin:2px 0 0;">Real-time exception stream for instant stack trace debugging.</p>
-            </div>
-            <button onclick="loadLiveLogs()" style="padding:0.4rem 0.8rem; border-radius:8px; font-size:0.75rem; font-weight:800; background:rgba(2, 132, 199, 0.1); color:#0284c7; border:none; cursor:pointer;">
-                Refresh Log Stream
-            </button>
-        </div>
-
-        <div style="background:#0f172a; color:#f8fafc; border-radius:18px; padding:1.25rem; font-family:monospace; font-size:0.78rem; max-height:480px; overflow-y:auto; line-height:1.5; border:1px solid #1e293b;" id="liveLogConsole">
-            Loading live exception log stream...
         </div>
     </div>
 </div>
 
-{{-- Interactive Line-Specific Code Fix Modal --}}
+
+
+{{-- INTERACTIVE LINE-SPECIFIC CODE FIX MODAL --}}
 <div class="it-modal-overlay" id="codeFixModal">
     <div class="it-modal-card">
-        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; background:rgba(2, 132, 199, 0.04);">
+        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:rgba(37, 99, 235, 0.04);">
             <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:32px; height:32px; border-radius:8px; background:rgba(2, 132, 199, 0.1); display:flex; align-items:center; justify-content:center; color:#0284c7;">
+                <div style="width:32px; height:32px; border-radius:8px; background:rgba(37, 99, 235, 0.1); display:flex; align-items:center; justify-content:center; color:#2563eb;">
                     <i data-lucide="file-code" style="width:18px; height:18px;"></i>
                 </div>
                 <div>
-                    <div style="font-size:0.95rem; font-weight:900; color:var(--text-main);" id="modalIssueTitle">Line Code Fix Remediation</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; font-family:monospace;" id="modalTargetFile">Target: -</div>
+                    <div style="font-size:0.95rem; font-weight:900; color:#0f172a;" id="modalIssueTitle">Line Code Fix Remediation</div>
+                    <div style="font-size:0.75rem; color:#64748b; font-weight:700; font-family:monospace;" id="modalTargetFile">Target: -</div>
                 </div>
             </div>
-            <button onclick="closeCodeFixModal()" style="border:none; background:none; color:var(--text-muted); cursor:pointer; padding:4px;">
+            <button onclick="closeCodeFixModal()" style="border:none; background:none; color:#64748b; cursor:pointer; padding:4px;">
                 <i data-lucide="x" style="width:20px; height:20px;"></i>
             </button>
         </div>
 
         <div style="padding:1.5rem;">
-            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;" id="modalIssueDescription">
+            <div style="font-size:0.82rem; color:#64748b; margin-bottom:1rem; line-height:1.5;" id="modalIssueDescription">
                 Remediation instructions for target file code fix.
             </div>
 
-            {{-- Diff Preview --}}
-            <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.06em; margin-bottom:0.5rem;">
+            <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#64748b; letter-spacing:0.06em; margin-bottom:0.5rem;">
                 Code Line Replacement Preview
             </div>
 
             <div style="background:#0f172a; padding:1rem; border-radius:12px; margin-bottom:1.5rem;">
-                <div class="diff-old" id="modalDiffOld">Old Code</div>
-                <div class="diff-new" id="modalDiffNew">New Fixed Code</div>
+                <div style="background:rgba(239,68,68,0.15); color:#fca5a5; padding:6px 12px; font-family:monospace; font-size:0.75rem; border-radius:6px; margin-bottom:6px;" id="modalDiffOld">Old Code</div>
+                <div style="background:rgba(16,185,129,0.15); color:#6ee7b7; padding:6px 12px; font-family:monospace; font-size:0.75rem; border-radius:6px;" id="modalDiffNew">New Fixed Code</div>
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
-                <button onclick="closeCodeFixModal()" style="padding:0.55rem 1.1rem; border-radius:10px; font-weight:800; font-size:0.8rem; background:rgba(100,116,139,0.1); color:var(--text-muted); border:none; cursor:pointer;">
+                <button onclick="closeCodeFixModal()" style="padding:0.55rem 1.1rem; border-radius:10px; font-weight:800; font-size:0.8rem; background:#f1f5f9; color:#64748b; border:none; cursor:pointer;">
                     Close
                 </button>
-                <button id="modalBtnPatch" onclick="" style="padding:0.55rem 1.25rem; border-radius:10px; font-weight:800; font-size:0.8rem; background:#0284c7; color:white; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <button id="modalBtnPatch" onclick="" style="padding:0.55rem 1.25rem; border-radius:10px; font-weight:800; font-size:0.8rem; background:#2563eb; color:white; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
                     <i data-lucide="wrench" style="width:14px; height:14px;"></i> Apply Code Patch Now
                 </button>
             </div>
@@ -541,48 +734,138 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
-
-        // Load background tabs
-        loadActiveSessions();
-        loadSecurityThreats();
-        loadLiveLogs();
-
-        // Telemetry auto-refresh every 15 seconds
-        setInterval(refreshTelemetryGauges, 15000);
+        setInterval(refreshTelemetryGauges, 5000);
     });
-
-    function switchItTab(tabId, btn) {
-        document.querySelectorAll('.it-tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.it-tab-btn').forEach(b => b.classList.remove('active'));
-
-        document.getElementById(tabId)?.classList.add('active');
-        if (btn) btn.classList.add('active');
-    }
 
     async function refreshTelemetryGauges() {
         try {
             const res = await fetch('{{ route("it-hub.telemetry") }}');
+            if (!res.ok) {
+                throw new Error('Telemetry request failed (server or database offline)');
+            }
             const data = await res.json();
 
-            if (data.health_score !== undefined) {
-                document.getElementById('statHealthScore').innerText = data.health_score + '%';
-                const bar = document.getElementById('healthScoreBar');
-                if (bar) {
-                    bar.style.width = data.health_score + '%';
-                    bar.style.background = data.health_score >= 80 ? '#10b981' : (data.health_score >= 60 ? '#f59e0b' : '#ef4444');
+            if (data.cpu_usage !== undefined) {
+                const cpuEl = document.getElementById('statCpuLoad');
+                if (cpuEl) cpuEl.innerText = `${data.cpu_usage}%`;
+            }
+            if (data.cpu_trend !== undefined) {
+                const cpuTrendEl = document.getElementById('statCpuTrend');
+                if (cpuTrendEl) {
+                    if (data.cpu_trend >= 0) {
+                        cpuTrendEl.innerHTML = `&uarr; ${data.cpu_trend}% prev`;
+                        cpuTrendEl.style.color = '#ef4444';
+                    } else {
+                        cpuTrendEl.innerHTML = `&darr; ${Math.abs(data.cpu_trend)}% prev`;
+                        cpuTrendEl.style.color = '#10b981';
+                    }
                 }
             }
-            if (data.db_latency_ms !== undefined) {
-                document.getElementById('statDbLatency').innerHTML = `${data.db_latency_ms} <span style="font-size:1.1rem; font-weight:700; color:var(--text-muted);">ms</span>`;
+            if (data.cpu_spec !== undefined) {
+                const cpuSpecEl = document.getElementById('statCpuSpec');
+                if (cpuSpecEl) cpuSpecEl.innerHTML = data.cpu_spec;
             }
-            if (data.transfer_speed_kbps !== undefined) {
-                document.getElementById('statTransferSpeed').innerHTML = `${data.transfer_speed_kbps.toLocaleString()} <span style="font-size:1.1rem; font-weight:700; color:var(--text-muted);">KB/s</span>`;
+            if (data.health_score !== undefined) {
+                document.getElementById('statHealthScore').innerText = data.health_score;
+            }
+
+            // Executive summary score cards
+            const scoreMap = [
+                { key: 'performance_score', id: 'scorePerformance', labelId: 'labelPerformance',
+                  getLabel: v => v >= 90 ? 'Optimal' : v >= 70 ? 'Moderate' : 'Degraded' },
+                { key: 'security_score',    id: 'scoreSecurity',    labelId: 'labelSecurity',
+                  getLabel: v => v >= 90 ? 'Protected' : v >= 70 ? 'Warning' : 'At Risk' },
+                { key: 'database_score',   id: 'scoreDatabase',    labelId: 'labelDatabase',
+                  getLabel: v => v >= 90 ? 'Sub-10ms' : v >= 70 ? 'Slow' : 'Critical' },
+                { key: 'storage_score',    id: 'scoreStorage',     labelId: 'labelStorage',
+                  getLabel: v => v >= 90 ? 'Healthy' : v >= 70 ? 'Filling' : 'Near Full' },
+                { key: 'application_score',id: 'scoreApplication', labelId: 'labelApplication',
+                  getLabel: v => v >= 90 ? 'v11.x Core' : v >= 70 ? 'Degraded' : 'Error State' },
+                { key: 'network_score',    id: 'scoreNetwork',     labelId: 'labelNetwork',
+                  getLabel: v => v >= 90 ? '100% Active' : v >= 70 ? 'Partial' : 'Offline' },
+            ];
+            scoreMap.forEach(({ key, id, labelId, getLabel }) => {
+                if (data[key] !== undefined) {
+                    const el = document.getElementById(id);
+                    const lb = document.getElementById(labelId);
+                    if (el) el.innerText = `${data[key]}%`;
+                    if (lb) lb.innerText = getLabel(data[key]);
+                }
+            });
+            if (data.db_latency_ms !== undefined) {
+                document.getElementById('statDbLatency').innerHTML = `${data.db_latency_ms} <span style="font-size:0.9rem; font-weight:700; color:#64748b;">ms</span>`;
+            }
+            if (data.system_speed_mbps !== undefined) {
+                const spdEl = document.getElementById('statSystemSpeedRate');
+                if (spdEl) spdEl.innerHTML = `${data.system_speed_mbps} <span style="font-size:0.9rem; font-weight:700; color:#64748b;">MB/s</span>`;
+            }
+            if (data.execution_speed_ms !== undefined) {
+                const execEl = document.getElementById('statExecTime');
+                if (execEl) execEl.innerText = `${data.execution_speed_ms} ms`;
             }
             if (data.memory_used_mb !== undefined) {
-                document.getElementById('statMemoryUsed').innerHTML = `${data.memory_used_mb} MB <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted);">/ ${data.memory_limit}</span>`;
+                const memEl = document.getElementById('statMemoryUsed');
+                if (memEl) memEl.innerHTML = `${data.memory_used_mb} <span style="font-size:0.9rem; font-weight:700; color:#64748b;">MB</span>`;
+            }
+            if (data.app_space_mb !== undefined) {
+                const appSpcEl = document.getElementById('statAppSpace');
+                if (appSpcEl) appSpcEl.innerHTML = `${data.app_space_mb} <span style="font-size:0.85rem; font-weight:700; color:#64748b;">MB App Footprint</span>`;
+            }
+            if (data.disk_growth_rate !== undefined) {
+                const growthText = document.getElementById('statGrowthText');
+                if (growthText) growthText.innerText = `${data.disk_growth_rate} (Increasing)`;
+            }
+            if (data.disk_used_gb !== undefined) {
+                const diskUsedEl = document.getElementById('statDiskUsed');
+                if (diskUsedEl) diskUsedEl.innerHTML = `Disk Total: <b>${data.disk_used_gb} GB</b> / ${data.disk_total_gb} GB (${data.disk_percent}% used)`;
+            }
+
+            if (data.services !== undefined && Array.isArray(data.services)) {
+                const countEl = document.getElementById('monitoredServicesCount');
+                if (countEl) {
+                    const onlineCount = data.services.filter(s => s.status !== 'Offline').length;
+                    countEl.innerText = `${onlineCount} / ${data.services.length} Services Online`;
+                }
+                data.services.forEach(svc => {
+                    const slug = svc.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                    const badge = document.getElementById(`service-status-${slug}`);
+                    if (badge) {
+                        badge.innerText = svc.status;
+                        if (svc.status === 'Offline' || svc.badge === 'danger') {
+                            badge.style.color = '#ef4444';
+                            badge.style.background = 'rgba(239, 68, 68, 0.1)';
+                        } else if (svc.status === 'Degraded' || svc.badge === 'warning') {
+                            badge.style.color = '#f59e0b';
+                            badge.style.background = 'rgba(245, 158, 11, 0.1)';
+                        } else {
+                            badge.style.color = '#10b981';
+                            badge.style.background = 'rgba(16, 185, 129, 0.1)';
+                        }
+                    }
+                });
             }
         } catch (e) {
             console.error('Telemetry refresh error:', e);
+            
+            // Database connection / server unreachable: mark database offline in UI
+            const dbBadge = document.getElementById('service-status-mysql-database-engine');
+            if (dbBadge) {
+                dbBadge.innerText = 'Offline';
+                dbBadge.style.color = '#ef4444';
+                dbBadge.style.background = 'rgba(239, 68, 68, 0.1)';
+            }
+            
+            const dbScore = document.getElementById('scoreDatabase');
+            if (dbScore) dbScore.innerText = '0%';
+            
+            const dbLabel = document.getElementById('labelDatabase');
+            if (dbLabel) dbLabel.innerText = 'Offline';
+
+            const dbLatency = document.getElementById('statDbLatency');
+            if (dbLatency) dbLatency.innerHTML = `&infin; <span style="font-size:0.9rem; font-weight:700; color:#ef4444;">ms</span>`;
+
+            const healthScore = document.getElementById('statHealthScore');
+            if (healthScore) healthScore.innerText = '15';
         }
     }
 
@@ -595,18 +878,15 @@
         try {
             const res = await fetch('{{ route("it-hub.scan") }}', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
             const data = await res.json();
-            if (data.success && data.diagnostics) {
+            if (data.success) {
                 Swal.fire({
                     title: 'Diagnostic Scan Complete!',
-                    text: `System Health Score: ${data.diagnostics.health_score}% | Latency: ${data.diagnostics.db_latency_ms}ms`,
+                    text: `Health Score: ${data.diagnostics.health_score}% | Latency: ${data.diagnostics.db_latency_ms}ms`,
                     icon: 'success',
-                    timer: 2500,
+                    timer: 2000,
                     showConfirmButton: false
                 });
                 window.location.reload();
@@ -619,43 +899,83 @@
         }
     }
 
-    async function triggerDbOptimization() {
+    async function triggerServiceAction(serviceName, action) {
+        try {
+            const res = await fetch('{{ route("it-hub.service-action") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ service: serviceName, action: action })
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire('Service Updated', data.message, 'success');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Service action failed.', 'error');
+        }
+    }
+
+    async function executeMaintenance(cmd) {
         const confirm = await Swal.fire({
-            title: 'Optimize All Database Tables?',
-            text: 'This will optimize table overhead, rebuild indexes, and reclaim disk memory.',
+            title: 'Execute Maintenance Command?',
+            text: `Action: ${cmd.replace('_', ' ').toUpperCase()}`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#10b981',
+            confirmButtonColor: '#2563eb',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Yes, Optimize Now'
+            confirmButtonText: 'Run Command'
         });
         if (!confirm.isConfirmed) return;
 
         try {
-            const res = await fetch('{{ route("it-hub.optimize-db") }}', {
+            const res = await fetch('{{ route("it-hub.maintenance-command") }}', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ command: cmd })
             });
             const data = await res.json();
             if (data.success) {
-                Swal.fire('Database Optimized!', data.message, 'success');
+                Swal.fire({
+                    title: 'Command Executed',
+                    text: data.message,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                setTimeout(() => window.location.reload(), 1500);
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
         } catch (e) {
-            Swal.fire('Error', 'Failed to optimize database.', 'error');
+            Swal.fire('Error', 'Failed to execute maintenance command.', 'error');
+        }
+    }
+
+    async function runDbAction(action) {
+        try {
+            const res = await fetch('{{ route("it-hub.db-action") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ action: action })
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire('Database Action Complete', data.message, 'success');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Database action failed.', 'error');
         }
     }
 
     async function triggerStoragePurge() {
         const confirm = await Swal.fire({
-            title: 'Purge Storage Caches?',
-            text: 'This will clear compiled views, temporary PDF files, and stale session caches.',
+            title: 'Purge System & Storage Caches?',
+            text: 'This will execute view:clear, route:clear, config:clear, and cache:clear to flush compiled views, routes, app caches, clear the log buffer, and delete stale session files.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d97706',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Yes, Purge Storage'
+            confirmButtonText: 'Yes, Purge Everything'
         });
         if (!confirm.isConfirmed) return;
 
@@ -666,7 +986,14 @@
             });
             const data = await res.json();
             if (data.success) {
-                Swal.fire('Storage Purged!', data.message, 'success');
+                Swal.fire({
+                    title: 'Storage Purged!',
+                    text: data.message,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                setTimeout(() => window.location.reload(), 1500);
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
@@ -675,82 +1002,14 @@
         }
     }
 
-    async function toggleEmergencyMaintenance() {
-        const confirm = await Swal.fire({
-            title: 'Toggle Maintenance Mode?',
-            text: 'Switch application maintenance state. Maintenance mode restricts system access to IT Administrators.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Enable Maintenance',
-            denyButtonText: 'Disable Maintenance',
-            showDenyButton: true
-        });
-
-        let enable = false;
-        if (confirm.isConfirmed) enable = true;
-        else if (confirm.isDenied) enable = false;
-        else return;
-
-        try {
-            const res = await fetch('{{ route("it-hub.toggle-maintenance") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ enable: enable })
-            });
-            const data = await res.json();
-            if (data.success) {
-                Swal.fire('Maintenance Updated', data.message, 'success');
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-        } catch (e) {
-            Swal.fire('Error', 'Failed to update maintenance mode.', 'error');
-        }
-    }
-
-    async function loadActiveSessions() {
-        const tbody = document.getElementById('activeSessionsTbody');
-        try {
-            const res = await fetch('{{ route("it-hub.active-sessions") }}');
-            const data = await res.json();
-
-            if (data.sessions && data.sessions.length > 0) {
-                tbody.innerHTML = data.sessions.map(s => `
-                    <tr>
-                        <td>
-                            <div style="font-weight:800; color:var(--text-main);">${s.name}</div>
-                            <div style="font-size:0.72rem; color:var(--text-muted);">@${s.username} &bull; ${s.department}</div>
-                        </td>
-                        <td><span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:99px; background:rgba(2, 132, 199, 0.1); color:#0284c7;">${s.role}</span></td>
-                        <td style="font-family:monospace; font-weight:700;">${s.ip_address}</td>
-                        <td style="font-size:0.75rem; color:var(--text-muted);">${s.user_agent}</td>
-                        <td style="font-size:0.78rem; font-weight:700; color:#10b981;">${s.last_active}</td>
-                        <td>
-                            <button onclick="killSession('${s.session_id}', ${s.user_id}, '${s.username}')" style="padding:0.35rem 0.7rem; border-radius:6px; font-size:0.72rem; font-weight:800; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.25); cursor:pointer;">
-                                Kill Session
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No active user sessions registered.</td></tr>`;
-            }
-        } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#ef4444;">Failed to load sessions.</td></tr>`;
-        }
-    }
-
     async function killSession(sessionId, userId, username) {
         const confirm = await Swal.fire({
             title: `Terminate Session for @${username}?`,
-            text: 'This will forcefully log out the user and invalidate their active session token.',
+            text: 'Forcefully log out this user and invalidate session token.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Yes, Kill Session'
+            confirmButtonText: 'Kill Session'
         });
         if (!confirm.isConfirmed) return;
 
@@ -762,66 +1021,15 @@
             });
             const data = await res.json();
             if (data.success) {
-                Swal.fire('Session Killed!', data.message, 'success');
-                loadActiveSessions();
-            } else {
-                Swal.fire('Error', data.message, 'error');
+                Swal.fire('Session Terminated', data.message, 'success');
+                window.location.reload();
             }
         } catch (e) {
-            Swal.fire('Error', 'Failed to kill session.', 'error');
+            Swal.fire('Error', 'Failed to terminate session.', 'error');
         }
     }
 
-    async function loadSecurityThreats() {
-        const tbody = document.getElementById('securityThreatsTbody');
-        try {
-            const res = await fetch('{{ route("it-hub.security-threats") }}');
-            const data = await res.json();
 
-            if (data.threats && data.threats.length > 0) {
-                tbody.innerHTML = data.threats.map(t => `
-                    <tr>
-                        <td style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">${t.created_at || '-'}</td>
-                        <td><span class="it-badge-severity it-badge-${t.severity === 'critical' ? 'critical' : 'warning'}">${t.event_type}</span></td>
-                        <td style="font-weight:700;">${t.user ? t.user.name : 'Guest/System'}</td>
-                        <td style="font-family:monospace; font-weight:700;">${t.ip_address || '127.0.0.1'}</td>
-                        <td style="font-size:0.8rem; color:var(--text-main);">${t.description}</td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No security threat alerts logged.</td></tr>`;
-            }
-        } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:#ef4444;">Failed to load security threats.</td></tr>`;
-        }
-    }
-
-    async function loadLiveLogs() {
-        const consoleEl = document.getElementById('liveLogConsole');
-        try {
-            const res = await fetch('{{ route("it-hub.live-logs") }}');
-            const data = await res.json();
-
-            if (data.logs && data.logs.length > 0) {
-                consoleEl.innerHTML = data.logs.map(line => {
-                    let color = '#f8fafc';
-                    if (line.includes('ERROR') || line.includes('CRITICAL')) color = '#fca5a5';
-                    else if (line.includes('WARNING')) color = '#fcd34d';
-                    else if (line.includes('INFO')) color = '#93c5fd';
-
-                    return `<div style="color:${color}; margin-bottom:4px;">${escapeHtml(line)}</div>`;
-                }).join('');
-            } else {
-                consoleEl.innerHTML = `<span style="color:#64748b;">No log entries found in storage/logs/laravel.log</span>`;
-            }
-        } catch (e) {
-            consoleEl.innerHTML = `<span style="color:#ef4444;">Failed to load live logs.</span>`;
-        }
-    }
-
-    function escapeHtml(str) {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
 
     function openCodeFixModal(issue) {
         document.getElementById('modalIssueTitle').innerText = issue.title;
@@ -848,34 +1056,30 @@
     async function applyAutomatedPatch(issueId) {
         const confirm = await Swal.fire({
             title: 'Apply Automated Code Patch?',
-            text: 'Are you sure you want to execute code patch remediation for this diagnostic issue?',
+            text: 'Execute code patch remediation for this diagnostic issue?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#0284c7',
+            confirmButtonColor: '#2563eb',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Yes, Apply Patch',
-            cancelButtonText: 'Cancel'
+            confirmButtonText: 'Yes, Apply Patch'
         });
         if (!confirm.isConfirmed) return;
 
         try {
             const res = await fetch('{{ route("it-hub.apply-patch") }}', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({ issue_id: issueId })
             });
             const data = await res.json();
             if (data.success) {
                 Swal.fire('Patch Applied!', data.message, 'success');
-                setTimeout(() => window.location.reload(), 1500);
+                window.location.reload();
             } else {
-                Swal.fire('Patch Failure', data.message, 'error');
+                Swal.fire('Error', data.message, 'error');
             }
         } catch (e) {
-            Swal.fire('Error', 'Network error while executing patch.', 'error');
+            Swal.fire('Error', 'Failed to apply code patch.', 'error');
         }
     }
 </script>

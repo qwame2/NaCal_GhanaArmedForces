@@ -167,12 +167,6 @@
                         <span>IT Health &amp; Diagnostics</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="System Reports">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
-                        <span>System Reports</span>
-                    </a>
-                </li>
             @elseif(auth()->user()->role === 'External Auditor')
                 <li class="nav-item">
                     <a href="{{ route('external-auditor.dashboard') }}" class="nav-link {{ request()->routeIs('external-auditor.dashboard') ? 'active' : '' }}" data-tooltip="External Audit Portal">
@@ -547,7 +541,7 @@
 
         <div class="nav-section-title">Operations</div>
         <ul class="nav-menu">
-            @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Auditor', 'External Auditor', 'Director General']))
+            @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Auditor', 'External Auditor', 'Director General']) && !auth()->user()->isItHeadOrStaff())
                 <li class="nav-item">
                     <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>

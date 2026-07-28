@@ -812,6 +812,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/it-hub/active-sessions', [\App\Http\Controllers\ITController::class, 'getActiveUserSessions'])->name('it-hub.active-sessions');
     Route::get('/it-hub/security-threats', [\App\Http\Controllers\ITController::class, 'getSecurityThreats'])->name('it-hub.security-threats');
     Route::get('/it-hub/live-logs', [\App\Http\Controllers\ITController::class, 'getLiveLogs'])->name('it-hub.live-logs');
+    Route::post('/it-hub/service-action', [\App\Http\Controllers\ITController::class, 'runServiceAction'])->name('it-hub.service-action');
+    Route::post('/it-hub/maintenance-command', [\App\Http\Controllers\ITController::class, 'runMaintenanceCommand'])->name('it-hub.maintenance-command');
+    Route::post('/it-hub/ai-query', [\App\Http\Controllers\ITController::class, 'handleAiAssistantQuery'])->name('it-hub.ai-query');
+    Route::post('/it-hub/db-action', [\App\Http\Controllers\ITController::class, 'runDatabaseAction'])->name('it-hub.db-action');
+    Route::post('/it-hub/queue-action', [\App\Http\Controllers\ITController::class, 'runQueueAction'])->name('it-hub.queue-action');
 
     Route::get('/api/inventory/check-duplicate', [InventoryController::class, 'checkDuplicate'])->name('api.inventory.check-duplicate');
 
@@ -2083,3 +2088,4 @@ Route::get('/test-auth', function () {
 
     dd($authenticated);
 });
+
