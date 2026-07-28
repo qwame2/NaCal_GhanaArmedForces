@@ -74,15 +74,17 @@
                     @csrf
                     <div class="reg-select-wrapper">
                         <select name="role" required class="reg-select">
-                            <option value="">-- Assign Role --</option>
-                            <option value="Main Admin" {{ $req->role === 'Main Admin' ? 'selected' : '' }}>Head of Admin(Authorizer)</option>
-                            <option value="Sub Main Admin" {{ $req->role === 'Sub Main Admin' ? 'selected' : '' }}>Delegator(Authorizer)</option>
-                            <option value="Officer" {{ $req->role === 'Officer' ? 'selected' : '' }}>Store Officer</option>
-                            <option value="Department Head" {{ $req->role === 'Department Head' ? 'selected' : '' }}>Departmental Head</option>
-                            <option value="Auditor" {{ $req->role === 'Auditor' ? 'selected' : '' }}>Auditor</option>
-                            <option value="External Auditor" {{ $req->role === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
-                            <option value="Director General" {{ $req->role === 'Director General' ? 'selected' : '' }}>Director General</option>
-                            <option value="Requisitioner" {{ $req->role === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
+                            @php
+                                $currentRole = $req->role ?? 'Requisitioner';
+                            @endphp
+                            <option value="Requisitioner" {{ $currentRole === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
+                            <option value="Officer" {{ $currentRole === 'Officer' ? 'selected' : '' }}>Store Officer</option>
+                            <option value="Department Head" {{ in_array($currentRole, ['Department Head', 'Dept Head HR', 'Head of Welfare']) ? 'selected' : '' }}>Departmental Head</option>
+                            <option value="Main Admin" {{ $currentRole === 'Main Admin' ? 'selected' : '' }}>Head of Admin(Authorizer)</option>
+                            <option value="Sub Main Admin" {{ $currentRole === 'Sub Main Admin' ? 'selected' : '' }}>Delegator(Authorizer)</option>
+                            <option value="Auditor" {{ $currentRole === 'Auditor' ? 'selected' : '' }}>Auditor</option>
+                            <option value="External Auditor" {{ $currentRole === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
+                            <option value="Director General" {{ $currentRole === 'Director General' ? 'selected' : '' }}>Director General</option>
                         </select>
                         <div class="reg-select-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>

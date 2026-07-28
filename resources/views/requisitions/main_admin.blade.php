@@ -21,33 +21,121 @@
 @endphp
 <style>
     :root {
-        --store-orange: #059669;
-        --store-orange-hover: #065f46;
-        --store-orange-light: rgba(5, 150, 105, 0.08);
-        --store-indigo: #059669;
-        --store-indigo-hover: #059669;
-        --store-indigo-light: rgba(5, 150, 105, 0.08);
-        --success-color: #059669;
-        --warning-color: #059669;
-        --danger-color: #ef4444;
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.12);
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f3f4f6;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-nav: rgba(255, 255, 255, 0.8);
+        --text-main: #0f172a;
         --text-muted: #64748b;
-        --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
-        --shadow-hover: 0 30px 60px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.05);
+        --border-color: #f1f5f9;
+        --sidebar-width: 320px;
+        --sidebar-mini-width: 88px;
+        --header-height: 80px;
+        --radius-xl: 1.5rem;
+        --radius-lg: 1rem;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+        --store-orange: var(--primary);
+        --store-orange-hover: var(--primary-dark);
+        --store-orange-light: var(--primary-glow);
+        --store-indigo: var(--primary);
+        --store-indigo-hover: var(--primary-dark);
+        --store-indigo-light: var(--primary-glow);
+        --success-color: var(--secondary);
+        --warning-color: var(--accent);
+        --danger-color: var(--danger);
+        --shadow-premium: var(--card-shadow);
+        --shadow-hover: var(--card-shadow-hover);
+    }
+
+    /* Keyframe Animations & Fading */
+    @keyframes mainAdminFadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(22px) scale(0.985);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes mainAdminRowFade {
+        0% {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Hero Banner */
+    .main-admin-hero-banner {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(15, 23, 42, 0.02) 50%, rgba(16, 185, 129, 0.04) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem 2.25rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-premium);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        backdrop-filter: blur(10px);
+        animation: mainAdminFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.02s;
+    }
+
+    .main-admin-hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 99px;
+        background: var(--primary-glow);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        color: var(--primary);
+        font-size: 0.68rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
     }
 
     .req-stat-card {
         background: var(--bg-card);
-        border-radius: 16px;
+        border-radius: var(--radius-xl);
         border: 1px solid var(--border-color);
-        padding: 1.5rem;
+        padding: 1.6rem 1.75rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        transition: transform 0.2s;
+        gap: 1.25rem;
+        box-shadow: var(--shadow-premium);
+        transition: var(--transition);
+        animation: mainAdminFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
+    .req-stat-card:nth-child(1) { animation-delay: 0.08s; }
+    .req-stat-card:nth-child(2) { animation-delay: 0.16s; }
+    .req-stat-card:nth-child(3) { animation-delay: 0.24s; }
+
     .req-stat-card:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+        border-color: rgba(99, 102, 241, 0.2);
     }
 
     .req-table-row {
@@ -148,7 +236,7 @@
 
     /* Priority-specific visual accents */
     .modal-box.urgent-priority { border-top: 6px solid #dc2626; }
-    .modal-box.normal-priority { border-top: 6px solid #059669; }
+    .modal-box.normal-priority { border-top: 6px solid var(--primary); }
     .modal-box.low-priority { border-top: 6px solid #64748b; }
 
     /* Profile Panel & Grid */
@@ -164,8 +252,8 @@
     }
 
     .profile-card:hover {
-        border-color: rgba(5, 150, 105, 0.25);
-        background: rgba(5, 150, 105, 0.02);
+        border-color: rgba(99, 102, 241, 0.25);
+        background: rgba(99, 102, 241, 0.02);
         transform: translateY(-1px);
     }
 
@@ -180,7 +268,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(5, 150, 105, 0.15);
+        border: 1.5px solid rgba(99, 102, 241, 0.15);
     }
 
     .stat-pill {
@@ -211,7 +299,7 @@
     .purpose-quote:before {
         content: '“';
         font-size: 3.5rem;
-        color: rgba(5, 150, 105, 0.08);
+        color: rgba(99, 102, 241, 0.08);
         position: absolute;
         top: -0.8rem;
         left: 0.5rem;
@@ -267,13 +355,15 @@
     .filter-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 1.25rem;
         margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04);
+        box-shadow: var(--shadow-premium);
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
+        animation: mainAdminFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.32s;
     }
 
     .filter-header {
@@ -334,9 +424,9 @@
     }
 
     .filter-control:focus {
-        border-color: #0ea5e9;
+        border-color: var(--primary);
         background: var(--bg-card);
-        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
     }
 
     .filter-clear-btn {
@@ -392,12 +482,12 @@
 
     .decision-text-area:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
     }
 
     /* --- CARD REQUISITION LIST VIEW --- */
     .history-item-box {
-        border: 2px solid #fdba74;
+        border: 2px solid rgba(99, 102, 241, 0.3);
         border-radius: 24px;
         padding: 1.75rem;
         margin-bottom: 1.5rem;
@@ -409,7 +499,7 @@
 
     .history-item-box:hover {
         box-shadow: var(--shadow-hover);
-        border-color: var(--store-orange);
+        border-color: var(--primary);
     }
 
     .history-item-top {
@@ -424,8 +514,8 @@
     .history-ref {
         font-size: 0.82rem;
         font-weight: 800;
-        color: #065f46;
-        background: rgba(234, 88, 12, 0.08);
+        color: var(--primary);
+        background: var(--primary-glow);
         padding: 5px 12px;
         border-radius: 99px;
         display: inline-block;
@@ -519,42 +609,42 @@
 
     /* Timeline Step States */
     .tracker-step.completed .tracker-dot {
-        background: #059669;
-        border-color: var(--success-color);
+        background: var(--secondary);
+        border-color: var(--secondary);
         color: white;
-        box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
     }
 
     .tracker-step.completed .tracker-label {
-        color: var(--success-color);
+        color: var(--secondary);
     }
 
     .tracker-step.active .tracker-dot {
-        background: #059669;
-        border-color: var(--store-orange);
+        background: var(--primary);
+        border-color: var(--primary);
         color: white;
         animation: pulse-orange-stepper 2s infinite;
     }
 
     .tracker-step.active .tracker-label {
-        color: var(--store-orange);
+        color: var(--primary);
     }
 
     .tracker-step.declined .tracker-dot {
-        background: var(--danger-color);
-        border-color: var(--danger-color);
+        background: var(--danger);
+        border-color: var(--danger);
         color: white;
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
     }
 
     .tracker-step.declined .tracker-label {
-        color: var(--danger-color);
+        color: var(--danger);
     }
 
     @keyframes pulse-orange-stepper {
-        0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
     }
     @keyframes alertPulse {
         0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
@@ -571,6 +661,8 @@
         border-radius: 20px;
         box-shadow: var(--shadow-premium);
         margin-bottom: 2rem;
+        animation: mainAdminFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 0.40s;
     }
 
     .oversight-table {
@@ -584,12 +676,12 @@
     .oversight-table th {
         padding: 1.25rem 1.5rem;
         font-size: 0.72rem;
-        font-weight: 800;
+        font-weight: 850;
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.08em;
         background: #ffffff !important;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1.5px solid var(--border-color);
     }
 
     .oversight-table td {
@@ -606,11 +698,11 @@
     }
 
     .oversight-row {
-        transition: all 0.2s ease;
+        transition: background 0.2s ease;
     }
 
     .oversight-row:hover {
-        background: rgba(5, 150, 105, 0.02);
+        background: rgba(99, 102, 241, 0.02);
     }
 
     /* Table Stepper/Tracker */
@@ -646,21 +738,21 @@
     }
 
     .mini-step.completed .mini-dot {
-        background: var(--success-color);
-        border-color: var(--success-color);
+        background: var(--secondary);
+        border-color: var(--secondary);
         color: white;
     }
 
     .mini-step.active .mini-dot {
-        background: var(--store-orange);
-        border-color: var(--store-orange);
+        background: var(--primary);
+        border-color: var(--primary);
         color: white;
-        box-shadow: 0 0 8px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 0 8px rgba(99, 102, 241, 0.35);
     }
 
     .mini-step.declined .mini-dot {
-        background: var(--danger-color);
-        border-color: var(--danger-color);
+        background: var(--danger);
+        border-color: var(--danger);
         color: white;
     }
 
@@ -673,7 +765,7 @@
     }
 
     .mini-line.completed {
-        background: var(--success-color);
+        background: var(--secondary);
     }
 
     .mini-label {
@@ -685,15 +777,15 @@
     }
 
     .mini-step.completed .mini-label {
-        color: var(--success-color);
+        color: var(--secondary);
     }
 
     .mini-step.active .mini-label {
-        color: var(--store-orange);
+        color: var(--primary);
     }
 
     .mini-step.declined .mini-label {
-        color: var(--danger-color);
+        color: var(--danger);
     }
 
     /* Inline Items styling */
@@ -712,12 +804,12 @@
     }
 
     .table-item-qty {
-        color: var(--store-orange);
+        color: var(--primary);
         font-weight: 800;
     }
 
     .table-item-approved {
-        color: var(--success-color);
+        color: var(--secondary);
         font-weight: 800;
     }
 
@@ -800,6 +892,9 @@
             text-align: left;
             gap: 1rem;
         }
+        .tracker-label {
+            text-align: left;
+        }
     }
 
     @media(max-width: 1024px) {
@@ -813,7 +908,7 @@
         background: white;
         border-radius: 28px;
         border: 1.5px solid var(--border-color);
-        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.03);
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.03);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         margin-bottom: 2rem;
@@ -821,7 +916,7 @@
 
     .workflow-card-modern:hover {
         border-color: #c7d2fe;
-        box-shadow: 0 16px 40px rgba(5, 150, 105, 0.06);
+        box-shadow: 0 16px 40px rgba(99, 102, 241, 0.06);
     }
 
     .workflow-cat-grid-modern {
@@ -854,13 +949,13 @@
 
     .workflow-cat-card-modern.active {
         background: #f5f7ff;
-        border-color: #0ea5e9;
-        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.06);
+        border-color: var(--primary);
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.06);
     }
 
     .workflow-cat-card-modern.active:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(5, 150, 105, 0.1);
+        box-shadow: 0 12px 28px rgba(99, 102, 241, 0.1);
     }
 
     .workflow-cat-card-modern .corner-glow {
@@ -869,7 +964,7 @@
         right: -20px;
         width: 50px;
         height: 50px;
-        background: radial-gradient(circle, rgba(5, 150, 105, 0.2) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
         opacity: 0;
         transition: opacity 0.25s ease;
         pointer-events: none;
@@ -884,7 +979,7 @@
         height: 38px;
         border-radius: 12px;
         background: #ffffff;
-        color: #059669;
+        color: var(--primary);
         font-weight: 900;
         font-size: 0.85rem;
         display: flex;
@@ -896,10 +991,10 @@
     }
 
     .workflow-cat-card-modern.active .cat-circle {
-        background: #059669;
+        background: var(--primary);
         color: #ffffff;
         border-color: transparent;
-        box-shadow: 0 4px 8px rgba(5, 150, 105, 0.18);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.18);
     }
 
     .workflow-cat-card-modern .status-label {
@@ -911,7 +1006,7 @@
     }
 
     .workflow-cat-card-modern.active .status-label {
-        color: #059669;
+        color: var(--primary);
     }
 
     .workflow-cat-card-modern .indicator-dot {
@@ -929,9 +1024,9 @@
     }
 
     .workflow-cat-card-modern.active .indicator-dot {
-        background: #059669;
-        border-color: #0ea5e9;
-        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+        background: var(--primary);
+        border-color: var(--primary-light);
+        box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
     }
 
     .flow-line {
@@ -943,8 +1038,8 @@
     }
 
     .flow-line.active {
-        background: #059669;
-        box-shadow: 0 0 8px rgba(5, 150, 105, 0.25);
+        background: var(--primary);
+        box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
     }
 
     .flow-line.dashed {
@@ -973,32 +1068,37 @@
 
 <div style="padding:2rem;">
 
-    {{-- Header --}}
-    <div style="margin-bottom:2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+    {{-- Executive Command Hero Banner --}}
+    <div class="main-admin-hero-banner">
         <div>
-            @if(auth()->user()->role === 'Sub Main Admin')
-                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }}</div>
-            @elseif(auth()->user()->role === 'Main Admin')
-                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Head of Administration</div>
-            @elseif(auth()->user()->role === 'Auditor')
-                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head</div>
-            @else
-                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head Hub</div>
-            @endif
-            <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Oversight & Approvals</h1>
+            <div class="main-admin-hero-pill">
+                @if(auth()->user()->role === 'Sub Main Admin')
+                    {{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · DELEGATORS AUTHORIZER
+                @elseif(auth()->user()->role === 'Main Admin')
+                    {{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · HEAD OF ADMINISTRATION
+                @else
+                    {{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · DEPARTMENT HEAD OVERSIGHT
+                @endif
+            </div>
+            <h1 style="font-size:1.85rem;font-weight:950;color:var(--text-main);letter-spacing:-.04em;margin:6px 0 4px 0;">Oversight &amp; Approvals Command Center</h1>
+            <p style="font-size:.88rem;color:var(--text-muted);font-weight:600;margin:0;">
+                Departmental requisition management, approval workflows, and transaction authorizations.
+            </p>
             @php
                 $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
             @endphp
             @if($isBackupActive)
-                <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 99px; background: rgba(5, 150, 105, 0.08); border: 1px solid rgba(5, 150, 105, 0.2); color: #059669; font-size: 0.75rem; font-weight: 800;">
+                <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 99px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); color: var(--primary); font-size: 0.75rem; font-weight: 800;">
                     <span>ACTING AS STORES DEPARTMENT HEAD (DELEGATED AUTHORITY)</span>
                 </div>
             @endif
         </div>
-        <button onclick="window.location.reload()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main); border-radius:12px; border: 1px solid var(--border-color);">
-            <i data-lucide="refresh-cw" style="width: 18px;"></i>
-            Refresh
-        </button>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button onclick="window.location.reload()" style="padding: 0.75rem 1.35rem; border-radius: var(--radius-lg); font-weight: 800; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: var(--transition); background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-color);" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">
+                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+                Refresh Hub
+            </button>
+        </div>
     </div>
 
     {{-- Stats Cards --}}

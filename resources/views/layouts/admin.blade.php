@@ -21,9 +21,32 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
     <style>
         :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.12);
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --bg-main: #f3f4f6;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-nav: rgba(255, 255, 255, 0.8);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #f1f5f9;
+            --sidebar-width: 320px;
+            --sidebar-mini-width: 88px;
+            --header-height: 80px;
+            --radius-xl: 1.5rem;
+            --radius-lg: 1rem;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
             --primary-hover: var(--primary-dark);
-            --text-heading: #000000;
-            --shadow-luxe: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --text-heading: #0f172a;
+            --shadow-luxe: var(--card-shadow);
             --radius-luxe: 16px;
         }
 

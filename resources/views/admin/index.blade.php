@@ -338,16 +338,61 @@
 <style>
     /* Custom Variables & Aesthetic Colors */
     :root {
-        --nococ-emerald: #059669;
-        --nococ-emerald-dark: #047857;
-        --nococ-emerald-light: #ecfdf5;
-        --nococ-emerald-glow: rgba(5, 150, 105, 0.08);
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.12);
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f3f4f6;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-nav: rgba(255, 255, 255, 0.8);
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #f1f5f9;
+        --sidebar-width: 320px;
+        --sidebar-mini-width: 88px;
+        --header-height: 80px;
+        --radius-xl: 1.5rem;
+        --radius-lg: 1rem;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+        --nococ-emerald: var(--primary);
+        --nococ-emerald-dark: var(--primary-dark);
+        --nococ-emerald-light: var(--primary-glow);
+        --nococ-emerald-glow: var(--primary-glow);
         --text-slate-dark: #0f172a;
         --text-slate-muted: #64748b;
-        --border-slate-light: #e2e8f0;
+        --border-slate-light: #f1f5f9;
         --radius-luxe: 24px;
         --radius-card: 16px;
-        --transition-swift: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-swift: var(--transition);
+    }
+
+    @keyframes adminFadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(22px) scale(0.985);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes adminRowFade {
+        0% {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .command-center {

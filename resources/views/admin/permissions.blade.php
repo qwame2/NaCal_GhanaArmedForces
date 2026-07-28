@@ -710,6 +710,26 @@
     .search-vault input::placeholder { color: #94a3b8; font-weight: 500; }
     .search-kicker { font-size: 0.7rem; font-weight: 800; color: #64748b; background: #f1f5f9; padding: 4px 8px; border-radius: 8px; white-space: nowrap; border: 1px solid #e2e8f0; }
 
+    :root {
+        --primary: #6366f1;
+        --primary-light: #818cf8;
+        --primary-dark: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.12);
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f3f4f6;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-nav: rgba(255, 255, 255, 0.8);
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #f1f5f9;
+        --radius-xl: 1.5rem;
+        --radius-lg: 1rem;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
     /* ── Pager Tabs ── */
     .pager-tabs-wrap {
         display: flex;
@@ -739,8 +759,8 @@
         position: relative;
     }
     .pager-tab svg { opacity: 0.7; flex-shrink: 0; }
-    .pager-tab:hover { background: #f8fafc; color: #0ea5e9; }
-    .pager-tab.active { background: #059669; color: white; box-shadow: 0 4px 14px rgba(5, 150, 105,0.25); }
+    .pager-tab:hover { background: #f8fafc; color: var(--primary); }
+    .pager-tab.active { background: var(--primary); color: white; box-shadow: 0 4px 14px var(--primary-glow); }
     .pager-tab.active svg { opacity: 1; }
     .tab-badge {
         background: #ef4444;
@@ -755,8 +775,13 @@
     .pager-tab.active .tab-badge { background: rgba(255,255,255,0.25); }
 
     /* ── Panel visibility ── */
-    .pager-panel { display: none; animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-    .pager-panel.active { display: block; }
+    .pager-panel { display: none; }
+    .pager-panel.active { display: block; animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes fadeUp {
+        0% { opacity: 0; transform: translateY(18px) scale(0.985); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
     /* ── Matrix Table ── */
     .permissions-matrix-wrapper {

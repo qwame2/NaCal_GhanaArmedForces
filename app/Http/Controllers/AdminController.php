@@ -84,7 +84,7 @@ class AdminController extends Controller
 
     public function approveRegistration(Request $request, $id)
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && !auth()->user()->isMainAdminOrSub()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -205,7 +205,7 @@ class AdminController extends Controller
 
     public function rejectRegistration(Request $request, $id)
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && !auth()->user()->isMainAdminOrSub()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
