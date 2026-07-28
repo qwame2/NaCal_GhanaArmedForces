@@ -1331,13 +1331,8 @@
 
         document.getElementById('modalSubtitle').textContent = `Requisition Ref: ${data.unique_id || ('REQ-' + String(data.id).padStart(5, '0'))}`;
 
-        const isStoresHeadUser = {{ (auth()->user()->role === 'Head of Stores' || auth()->user()->department === 'Stores & Logistics Department') ? 'true' : 'false' }};
-        let isPending = false;
-        if (isStoresHeadUser) {
-            isPending = (data.status === 'pending' && data.origin_admin_status !== 'pending');
-        } else {
-            isPending = (data.origin_admin_status === 'pending' && data.main_admin_status === 'pending' && data.status === 'pending');
-        }
+        const isStoresHeadUser = {{ (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) ? 'true' : 'false' }};
+        let isPending = (data.status === 'pending');
 
         const isAwaitingPriorApproval = isPending && (
             data.status_badge.label.includes('Awaiting Dept Head') ||

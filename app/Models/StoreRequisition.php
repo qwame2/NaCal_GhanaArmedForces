@@ -289,7 +289,10 @@ class StoreRequisition extends Model
                       ->orWhere('dg_status', 'approved');
                 })
                 ->where(function($q) {
-                    $q->where('main_admin_status', 'approved')
+                    // Include items awaiting Authorizer review (pending) AND items already
+                    // past Authorizer step (approved/null) awaiting Head of Stores final action.
+                    $q->where('main_admin_status', 'pending')
+                      ->orWhere('main_admin_status', 'approved')
                       ->orWhereNull('main_admin_status');
                 })
                 ->where(function($q) {

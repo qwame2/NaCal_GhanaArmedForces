@@ -534,6 +534,41 @@
         box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25) !important;
     }
 
+    @keyframes tab-alert-blink {
+        0%, 100% {
+            background: rgba(220, 38, 38, 0.12);
+            color: #dc2626;
+            border-color: rgba(220, 38, 38, 0.35);
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+        50% {
+            background: rgba(220, 38, 38, 0.22);
+            color: #b91c1c;
+            border-color: rgba(220, 38, 38, 0.7);
+            box-shadow: 0 0 10px 2px rgba(220, 38, 38, 0.3);
+        }
+    }
+
+    .dg-tab-btn.alert-blink {
+        background: rgba(220, 38, 38, 0.12) !important;
+        color: #dc2626 !important;
+        border: 1.5px solid rgba(220, 38, 38, 0.4) !important;
+        animation: tab-alert-blink 1.4s ease-in-out infinite !important;
+    }
+
+    .dg-tab-btn.alert-blink:hover {
+        background: rgba(220, 38, 38, 0.22) !important;
+        color: #b91c1c !important;
+    }
+
+    .dg-tab-btn.alert-blink.active {
+        background: rgba(220, 38, 38, 0.18) !important;
+        color: #dc2626 !important;
+        border-color: rgba(220, 38, 38, 0.5) !important;
+        animation: none !important;
+        box-shadow: 0 8px 20px rgba(220, 38, 38, 0.12) !important;
+    }
+
     @media(max-width: 1024px) {
         .workflow-info-grid {
             grid-template-columns: 1fr !important;
@@ -860,16 +895,16 @@
             <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
             Items Received
         </button>
-        <button id="tab-btn-staff-reqs" class="dg-tab-btn" onclick="switchDGTab('dg-staff-reqs-tab', this)">
+        @php
+            $dgPendingCount = \App\Models\StoreRequisition::get()->filter(function($r) {
+                return $r->is_ready_for_dg_approval;
+            })->count();
+        @endphp
+        <button id="tab-btn-staff-reqs" class="dg-tab-btn{{ $dgPendingCount > 0 ? ' alert-blink' : '' }}" onclick="switchDGTab('dg-staff-reqs-tab', this)">
             <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
             Staff Requisitions
-            @php
-                $dgPendingCount = \App\Models\StoreRequisition::get()->filter(function($r) {
-                    return $r->is_ready_for_dg_approval;
-                })->count();
-            @endphp
             @if($dgPendingCount > 0)
-                <span id="dg-staff-reqs-badge" style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 7px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; line-height: 1; margin-left: 4px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);">
+                <span id="dg-staff-reqs-badge" style="background: #dc2626; color: white; border-radius: 999px; padding: 2px 7px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; line-height: 1; margin-left: 4px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.5); animation: tab-alert-blink 1.4s ease-in-out infinite;">
                     {{ $dgPendingCount }}
                 </span>
             @endif
@@ -2871,11 +2906,17 @@
         const newBadge = doc.getElementById('dg-staff-reqs-badge');
         const btn = document.getElementById('tab-btn-staff-reqs');
         if (btn) {
+            // Remove old badge
             if (oldBadge) {
                 oldBadge.remove();
             }
             if (newBadge) {
+                // Still pending requests — keep/restore alert-blink and append badge
+                btn.classList.add('alert-blink');
                 btn.appendChild(newBadge.cloneNode(true));
+            } else {
+                // No pending requests — remove alert styling and restore normal tab appearance
+                btn.classList.remove('alert-blink');
             }
         }
     }

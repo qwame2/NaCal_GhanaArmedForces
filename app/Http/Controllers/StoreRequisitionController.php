@@ -1666,8 +1666,8 @@ class StoreRequisitionController extends Controller
         }
 
         // Get matching SRA batches if authorized
-        $sraCol = collect();
-        $serviceSraCol = collect();
+        $sraQuery = null;
+        $serviceQuery = null;
         if ($showSRAs) {
             $sraQuery = \App\Models\InventoryBatch::with(['items', 'recorder'])
                 ->where('supplier_status', '!=', 'System Draft');
@@ -1714,8 +1714,6 @@ class StoreRequisitionController extends Controller
                 });
             }
 
-            $sraCol = $sraQuery->get();
-
             // Query ServiceSra requests for authorizers
             $serviceQuery = \App\Models\ServiceSra::with('submitter');
             if ($statusFilter === 'pending') {
@@ -1747,33 +1745,34 @@ class StoreRequisitionController extends Controller
                       ->orWhere('details', 'LIKE', '%' . $search . '%');
                 });
             }
-
-            $serviceSraCol = $serviceQuery->get();
         }
 
-        $requisitionsCol = $query->get();
-        
         $typeFilter = $request->input('type', '');
-        if ($typeFilter === 'inventory_sra') {
-            $requisitionsCol = collect();
-            $serviceSraCol = collect();
-        } elseif ($typeFilter === 'service_sra') {
-            $requisitionsCol = collect();
-            $sraCol = collect();
-        } elseif ($typeFilter === 'requisition') {
-            $sraCol = collect();
-            $serviceSraCol = collect();
-        }
+        $includeReq = ($typeFilter === '' || $typeFilter === 'requisition');
+        $includeSra = ($typeFilter === '' || $typeFilter === 'inventory_sra') && $showSRAs;
+        $includeService = ($typeFilter === '' || $typeFilter === 'service_sra') && $showSRAs;
 
-        $merged = $requisitionsCol->concat($sraCol)->concat($serviceSraCol)->sortByDesc('created_at');
+        // Perform fast count queries in database
+        $reqCount = $includeReq ? $query->count() : 0;
+        $sraCount = $includeSra ? $sraQuery->count() : 0;
+        $serviceCount = $includeService ? $serviceQuery->count() : 0;
+        $totalCount = $reqCount + $sraCount + $serviceCount;
 
         $perPage = 15;
         $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $limit = $currentPage * $perPage;
+
+        // Fetch only the top records up to the current page's end index
+        $requisitionsCol = $includeReq ? $query->take($limit)->get() : collect();
+        $sraCol = $includeSra ? $sraQuery->take($limit)->get() : collect();
+        $serviceSraCol = $includeService ? $serviceQuery->take($limit)->get() : collect();
+
+        $merged = $requisitionsCol->concat($sraCol)->concat($serviceSraCol)->sortByDesc('created_at');
         $currentItems = $merged->slice(($currentPage - 1) * $perPage, $perPage)->values();
 
         $requisitions = new \Illuminate\Pagination\LengthAwarePaginator(
             $currentItems,
-            $merged->count(),
+            $totalCount,
             $perPage,
             $currentPage,
             ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(), 'query' => $request->query()]

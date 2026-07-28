@@ -2083,8 +2083,8 @@
         } else {
             // Render decision log status
             const statusVal = (isStoresHead && !isActingAsHOD) ? data.main_admin_status : data.origin_admin_status;
-            let decisionLabel = statusVal === 'approved' ? 'APPROVED & ESCALATED' : 'DECLINED';
-            let decisionColor = statusVal === 'approved' ? '#059669' : '#ef4444';
+            let decisionLabel = statusVal === 'approved' ? 'APPROVED & ESCALATED' : (statusVal === 'pending' ? 'PENDING PRIOR APPROVAL' : 'DECLINED');
+            let decisionColor = statusVal === 'approved' ? '#059669' : (statusVal === 'pending' ? '#f59e0b' : '#ef4444');
             
             if (data.alternative_status === 'agreed') {
                 decisionLabel = 'SUGGESTED QUANTITY AGREED';
@@ -2094,8 +2094,8 @@
                 decisionColor = '#ef4444';
             }
 
-            let decisionBg = decisionColor === '#059669' ? 'rgba(5, 150, 105, 0.05)' : 'rgba(239, 68, 68, 0.05)';
-            let decisionBorder = decisionColor === '#059669' ? 'rgba(5, 150, 105, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            let decisionBg = decisionColor === '#059669' ? 'rgba(5, 150, 105, 0.05)' : (decisionColor === '#f59e0b' ? 'rgba(245, 158, 11, 0.05)' : 'rgba(239, 68, 68, 0.05)');
+            let decisionBorder = decisionColor === '#059669' ? 'rgba(5, 150, 105, 0.2)' : (decisionColor === '#f59e0b' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)');
 
             let readOnlyBtnHtml = '';
             if (statusVal === 'approved' || data.alternative_status === 'agreed') {

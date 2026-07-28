@@ -322,47 +322,72 @@ class AppServiceProvider extends ServiceProvider
                 } catch (\Exception $e) {
                     $acknowledged = session()->get('acknowledged_notifications', []);
                 }
+                $acknowledgedClean = array_map('trim', $acknowledged);
 
-                // Fetch all unique items (excluding acknowledged)
-                $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                    ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                    ->where('inventory_batches.approval_status', '=', 'approved')
-                    ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-                    ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
-                    ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
-                    ->get();
+                // Fetch global low stock alerts from cache (lifetime: 10 minutes)
+                $lowStockAlerts = \Illuminate\Support\Facades\Cache::remember('global_low_stock_alerts', 600, function() {
+                    $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                        ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                        ->where('inventory_batches.approval_status', '=', 'approved')
+                        ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                        ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+                        ->get();
+
+                    $alerts = [];
+                    foreach ($items as $item) {
+                        $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                        $currentStock = (float)$item->total_stock;
+                        if ($threshold > 0 && $currentStock < $threshold) {
+                            $unit = \App\Models\Setting::getItemUnit($item->description);
+                            $alerts[] = [
+                                'description' => trim($item->description),
+                                'total_stock' => $currentStock,
+                                'threshold' => $threshold,
+                                'unit' => $unit
+                            ];
+                        }
+                    }
+                    return $alerts;
+                });
+
+                // Fetch global expired alerts from cache (lifetime: 10 minutes)
+                $expiredAlerts = \Illuminate\Support\Facades\Cache::remember('global_expired_alerts', 600, function() {
+                    return \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                        ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                        ->where('inventory_batches.approval_status', '=', 'approved')
+                        ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as total_qty')
+                        ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+                        ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) >= 1')
+                        ->get()
+                        ->map(fn($item) => ['description' => trim($item->description)])
+                        ->toArray();
+                });
 
                 $lowStockNotifications = [];
-                foreach ($allItems as $item) {
-                    $itemThreshold = \App\Models\Setting::getItemThreshold($item->description);
-                    if ($itemThreshold > 0 && (float)$item->total_stock < $itemThreshold) {
-                        $lowStockNotifications[] = [
-                            'type' => 'warning',
-                            'title' => 'Low Stock: ' . $item->description,
-                            'message' => "Critical balance detected: " . number_format($item->total_stock, 0) . " " . \App\Models\Setting::getItemUnit($item->description) . " remaining.",
-                            'icon' => 'alert-triangle',
-                            'route' => auth()->user()->is_admin ? 'admin.index' : 'dashboard'
-                        ];
-                    }
-                }
-
-                // Fetch expired items details
-                $expiredItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                    ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                    ->where('inventory_batches.approval_status', '=', 'approved')
-                    ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as total_qty')
-                    ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
-                    ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
-                    ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) >= 1')
-                    ->get();
-
-                $notifications = $lowStockNotifications;
                 $is_admin = auth()->user()->is_admin;
 
-                foreach ($expiredItems as $item) {
+                foreach ($lowStockAlerts as $alert) {
+                    if (in_array(trim($alert['description']), $acknowledgedClean)) {
+                        continue;
+                    }
+                    $lowStockNotifications[] = [
+                        'type' => 'warning',
+                        'title' => 'Low Stock: ' . $alert['description'],
+                        'message' => "Critical balance detected: " . number_format($alert['total_stock'], 0) . " " . $alert['unit'] . " remaining.",
+                        'icon' => 'alert-triangle',
+                        'route' => $is_admin ? 'admin.index' : 'dashboard'
+                    ];
+                }
+
+                $notifications = $lowStockNotifications;
+
+                foreach ($expiredAlerts as $alert) {
+                    if (in_array(trim($alert['description']), $acknowledgedClean)) {
+                        continue;
+                    }
                     $notifications[] = [
                         'type' => 'danger',
-                        'title' => 'Expired Record: ' . $item->description,
+                        'title' => 'Expired Record: ' . $alert['description'],
                         'message' => "Item registry indicates zero balance but exists in inventory records.",
                         'icon' => 'alert-octagon',
                         'route' => $is_admin ? 'admin.index' : 'dashboard'
