@@ -290,7 +290,7 @@ function pollPendingApprovalsSilently() {
     .catch(() => {});
 }
 
-setInterval(pollPendingApprovalsSilently, 15000);
+setInterval(pollPendingApprovalsSilently, 2000);
 
 </script>
 @endpush

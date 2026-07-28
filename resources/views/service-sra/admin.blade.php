@@ -1,4 +1,4 @@
-﻿@php
+@php
     $layout = auth()->user()->isMainAdminOrSub() ? 'layouts.dashboard' : 'layouts.admin';
 @endphp
 @extends($layout)
@@ -322,6 +322,76 @@ document.addEventListener('DOMContentLoaded', function() {
     if (reviewId) {
         window.openSraModal(parseInt(reviewId));
     }
+
+    // Silent background auto-refresh every 2 seconds
+    let _adminSilentRefreshPaused = document.hidden;
+    document.addEventListener('visibilitychange', () => {
+        _adminSilentRefreshPaused = document.hidden;
+    });
+
+    setInterval(async () => {
+        if (_adminSilentRefreshPaused) return;
+        if (document.getElementById('sraModalOverlay')?.style.display === 'flex') return;
+        if (typeof Swal !== 'undefined' && Swal.isVisible()) return;
+
+        try {
+            const res = await fetch(window.location.href);
+            if (!res.ok) return;
+            const html = await res.text();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            let updated = false;
+
+            // Update pending pane
+            const newPending = doc.getElementById('admin-pane-pending');
+            const curPending = document.getElementById('admin-pane-pending');
+            if (newPending && curPending) {
+                if (newPending.innerText.replace(/\s+/g, ' ').trim() !== curPending.innerText.replace(/\s+/g, ' ').trim()) {
+                    curPending.innerHTML = newPending.innerHTML;
+                    updated = true;
+                }
+            }
+
+            // Update history pane
+            const newHistory = doc.getElementById('admin-pane-history');
+            const curHistory = document.getElementById('admin-pane-history');
+            if (newHistory && curHistory) {
+                if (newHistory.innerText.replace(/\s+/g, ' ').trim() !== curHistory.innerText.replace(/\s+/g, ' ').trim()) {
+                    curHistory.innerHTML = newHistory.innerHTML;
+                    updated = true;
+                }
+            }
+
+            // Update tab badges
+            const pendingTabCount = doc.querySelector('#tab-btn-pending span');
+            const curPendingTabCount = document.querySelector('#tab-btn-pending span');
+            if (pendingTabCount && curPendingTabCount && pendingTabCount.textContent !== curPendingTabCount.textContent) {
+                curPendingTabCount.textContent = pendingTabCount.textContent;
+            }
+
+            const historyTabCount = doc.querySelector('#tab-btn-history span');
+            const curHistoryTabCount = document.querySelector('#tab-btn-history span');
+            if (historyTabCount && curHistoryTabCount && historyTabCount.textContent !== curHistoryTabCount.textContent) {
+                curHistoryTabCount.textContent = historyTabCount.textContent;
+            }
+
+            if (updated) {
+                // Update local srasData
+                const sraDataMatch = html.match(/window\.srasData\s*=\s*(\{.*?\});/s);
+                if (sraDataMatch) {
+                    try {
+                        window.srasData = JSON.parse(sraDataMatch[1]);
+                    } catch (e) {}
+                }
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        } catch (e) {
+            console.error('Admin SRA silent refresh failed:', e);
+        }
+    }, 2000);
 });
 </script>
 @endpush

@@ -2963,7 +2963,7 @@
         try {
             const response = await fetch(window.location.href, {
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'Accept': 'text/html'
                 }
             });
             if (!response.ok) return;
@@ -3027,7 +3027,7 @@
         }
     }
 
-    setInterval(pollMainAdminRequisitions, 8000);
+    setInterval(pollMainAdminRequisitions, 2000);
 
 
     function toggleWorkflowCategory(code, card) {

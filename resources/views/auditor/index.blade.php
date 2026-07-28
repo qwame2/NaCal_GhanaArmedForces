@@ -1977,9 +1977,9 @@
         }
     }
 
-    // Start after 2s, then every 5s
+    // Start after 2s, then every 2s
     setTimeout(_auditSilentRefresh, 2000);
-    setInterval(_auditSilentRefresh, 5000);
+    setInterval(_auditSilentRefresh, 2000);
 </script>
 @endsection
 

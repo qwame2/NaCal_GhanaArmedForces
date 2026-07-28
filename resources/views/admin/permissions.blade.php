@@ -1,4 +1,4 @@
-﻿
+
 @extends('layouts.admin')
 
 @section('title', 'Permissions & Registrations')
@@ -1686,8 +1686,8 @@
     // Start polling every 10 seconds
     let _permsPollPaused = document.hidden;
     document.addEventListener('visibilitychange', () => { _permsPollPaused = document.hidden; });
-    setInterval(() => { if (!_permsPollPaused) pollPendingRegistrations(); }, 20000);
-    setInterval(() => { if (!_permsPollPaused) pollStoreOfficers(); }, 20000);
+    setInterval(() => { if (!_permsPollPaused) pollPendingRegistrations(); }, 4000);
+    setInterval(() => { if (!_permsPollPaused) pollStoreOfficers(); }, 4000);
 
     document.addEventListener('DOMContentLoaded', () => {
         // General Pagination Helper for all Tabs

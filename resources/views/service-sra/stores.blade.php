@@ -469,7 +469,7 @@
                 const newPendingPane = doc.getElementById('stores-pane-pending');
                 const curPendingPane = document.getElementById('stores-pane-pending');
                 if (newPendingPane && curPendingPane) {
-                    if (getNormalizedHTML(newPendingPane) !== getNormalizedHTML(curPendingPane)) {
+                    if (newPendingPane.innerText.replace(/\s+/g, ' ').trim() !== curPendingPane.innerText.replace(/\s+/g, ' ').trim()) {
                         newPendingPane.querySelectorAll('.animate-slide-up').forEach(el => el.classList.remove('animate-slide-up'));
                         curPendingPane.innerHTML = newPendingPane.innerHTML;
                         updated = true;
@@ -480,7 +480,7 @@
                 const newHistoryPane = doc.getElementById('stores-pane-history');
                 const curHistoryPane = document.getElementById('stores-pane-history');
                 if (newHistoryPane && curHistoryPane) {
-                    if (getNormalizedHTML(newHistoryPane) !== getNormalizedHTML(curHistoryPane)) {
+                    if (newHistoryPane.innerText.replace(/\s+/g, ' ').trim() !== curHistoryPane.innerText.replace(/\s+/g, ' ').trim()) {
                         newHistoryPane.querySelectorAll('.animate-slide-up').forEach(el => el.classList.remove('animate-slide-up'));
                         curHistoryPane.innerHTML = newHistoryPane.innerHTML;
                         updated = true;
@@ -493,7 +493,7 @@
             } catch (e) {
                 console.error('Silent refresh failed:', e);
             }
-        }, 30000);
+        }, 2000);
     });
 </script>
 @endpush
