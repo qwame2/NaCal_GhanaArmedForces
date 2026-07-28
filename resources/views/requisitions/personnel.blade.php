@@ -1738,10 +1738,10 @@
             window.lucide.createIcons();
         }
 
-        // Start polling every 20 seconds (paused when tab is hidden)
+        // Start polling every 2 seconds (paused when tab is hidden)
         let _personnelPollPaused = document.hidden;
         document.addEventListener('visibilitychange', () => { _personnelPollPaused = document.hidden; });
-        setInterval(() => { if (!_personnelPollPaused) pollStoreRequisitions(); }, 20000);
+        setInterval(() => { if (!_personnelPollPaused) pollStoreRequisitions(); }, 2000);
     });
 
     // ════════════════════════════════════════════════════════

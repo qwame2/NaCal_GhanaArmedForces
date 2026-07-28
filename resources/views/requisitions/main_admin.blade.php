@@ -3041,7 +3041,7 @@
         return clone.innerHTML.replace(/\s+/g, ' ').trim();
     }
 
-    // Auto silent refresh every 8 seconds (zero-blink update)
+    // Auto silent refresh every 2 seconds (zero-blink update)
     async function pollMainAdminRequisitions() {
         if (document.hidden) return;
 
@@ -3052,11 +3052,6 @@
         const isSwalOpen = typeof Swal !== 'undefined' && Swal.isVisible();
         
         if (isReqModalOpen || isSraModalOpen || isSwalOpen) {
-            return;
-        }
-
-        // Skip refresh if user is actively interacting with an input/select/textarea
-        if (document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
             return;
         }
         
@@ -3084,9 +3079,9 @@
                 }
             });
             
-            // 2. Table row signature diffing — update ONLY tbody if table text content actually changed
-            const currentTbody = document.querySelector('#oversight-table-wrapper .oversight-table tbody');
-            const newTbody = doc.querySelector('#oversight-table-wrapper .oversight-table tbody');
+            // 2. Table row signature diffing — update ONLY changed rows or tbody if content actually changed
+            const currentTbody = document.getElementById('req-tbody') || document.querySelector('#oversight-table-wrapper table tbody');
+            const newTbody = doc.getElementById('req-tbody') || doc.querySelector('#oversight-table-wrapper table tbody');
 
             if (currentTbody && newTbody) {
                 const currentRows = Array.from(currentTbody.querySelectorAll('tr'));
@@ -3096,15 +3091,26 @@
                 const newSig = newRows.map(r => r.innerText.replace(/\s+/g, ' ').trim()).join('||');
 
                 if (currentSig !== newSig) {
-                    newTbody.querySelectorAll('.animate-slide-up').forEach(el => {
-                        el.classList.remove('animate-slide-up');
-                    });
-                    currentTbody.innerHTML = newTbody.innerHTML;
+                    if (currentRows.length === newRows.length && currentRows.length > 0) {
+                        // Fine-grained row update to prevent any flickering/blinking
+                        for (let i = 0; i < currentRows.length; i++) {
+                            const cRowSig = currentRows[i].innerText.replace(/\s+/g, ' ').trim();
+                            const nRowSig = newRows[i].innerText.replace(/\s+/g, ' ').trim();
+                            if (cRowSig !== nRowSig) {
+                                currentRows[i].innerHTML = newRows[i].innerHTML;
+                                currentRows[i].className = newRows[i].className;
+                            }
+                        }
+                    } else {
+                        currentTbody.innerHTML = newTbody.innerHTML;
+                    }
                     
-                    sentFollowUps.forEach(id => {
-                        const btn = currentTbody.querySelector(`button[onclick*="sendFollowUp(${id},"]`);
-                        if (btn) applyFollowUpSentStyle(btn);
-                    });
+                    if (typeof sentFollowUps !== 'undefined' && Array.isArray(sentFollowUps)) {
+                        sentFollowUps.forEach(id => {
+                            const btn = currentTbody.querySelector(`button[onclick*="sendFollowUp(${id},"]`);
+                            if (btn) applyFollowUpSentStyle(btn);
+                        });
+                    }
 
                     if (typeof lucide !== 'undefined') {
                         lucide.createIcons();
@@ -3113,15 +3119,17 @@
             }
 
             // 3. Update pagination if changed
-            const currentPag = document.querySelector('#oversight-table-wrapper .pagination-container');
-            const newPag = doc.querySelector('#oversight-table-wrapper .pagination-container');
+            const currentPag = document.getElementById('req-pagination-wrap') || document.querySelector('#oversight-table-wrapper .pagination-container');
+            const newPag = doc.getElementById('req-pagination-wrap') || doc.querySelector('#oversight-table-wrapper .pagination-container');
             if (currentPag && newPag) {
                 if (currentPag.innerText.replace(/\s+/g, ' ').trim() !== newPag.innerText.replace(/\s+/g, ' ').trim()) {
                     currentPag.innerHTML = newPag.innerHTML;
                 }
             }
 
-            await loadProvisioningData(true);
+            if (typeof loadProvisioningData === 'function') {
+                await loadProvisioningData(true);
+            }
         } catch (e) {
             console.error('Silent refresh failed:', e);
         }

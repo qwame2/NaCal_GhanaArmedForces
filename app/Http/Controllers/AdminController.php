@@ -84,7 +84,10 @@ class AdminController extends Controller
 
     public function approveRegistration(Request $request, $id)
     {
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && !auth()->user()->isMainAdminOrSub()) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -205,7 +208,10 @@ class AdminController extends Controller
 
     public function rejectRegistration(Request $request, $id)
     {
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && !auth()->user()->isMainAdminOrSub()) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -468,7 +474,10 @@ class AdminController extends Controller
 
     public function permissions()
     {
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -590,7 +599,10 @@ class AdminController extends Controller
 
     public function getPendingRegistrations()
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
