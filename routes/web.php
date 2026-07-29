@@ -265,6 +265,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return redirect()->route('stores.dashboard');
         }
 
+        // Redirect Department Heads to their designated Requisitions Review page
+        if (auth()->user()->isDepartmentHead() || auth()->user()->role === 'Department Head') {
+            return redirect()->route('main-admin.requisitions');
+        }
+
         // STRICT ROLE ENFORCEMENT: Admins are not allowed in the Personnel Dashboard
         if (auth()->user()->is_admin) {
             return redirect()->route('admin.index')->with('warning', 'Strategic Oversight required. Redirecting to Command Center.');

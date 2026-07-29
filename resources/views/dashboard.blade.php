@@ -8,7 +8,7 @@
 
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: var(--bg-main); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">STORE OFFICER</span>
+                <span style="background: var(--bg-main); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">{{ strtoupper(auth()->user()->role === 'Officer' ? 'STORE OFFICER' : (auth()->user()->getRoleDisplayLabel() ?: auth()->user()->role)) }}</span>
                 <span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
                     <i data-lucide="calendar" style="width: 14px;"></i>
                     {{ date('d/m/y') }}

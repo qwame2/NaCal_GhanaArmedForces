@@ -99,9 +99,9 @@
                         <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined
                     </button>
                 @else
-                    <a href="{{ $reviewUrl }}" target="_blank" style="background: var(--primary-glow); color: var(--primary); border: 1.5px solid var(--primary-glow); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)'; this.style.borderColor='var(--primary-glow)';">
+                    <button type="button" onclick="openInventorySraOversightModal({{ $req->id }})" style="background: var(--primary-glow); color: var(--primary); border: 1.5px solid var(--primary-glow); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)'; this.style.borderColor='var(--primary-glow)';">
                         <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
-                    </a>
+                    </button>
                 @endif
             </td>
         </tr>
@@ -377,11 +377,11 @@
                     <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined
                 </button>
             @elseif($isReqProcessed)
-                <button onclick="openRequisitionModal({{ $req->id }})" style="background: var(--primary-glow); color: var(--primary); border: 1.5px solid var(--primary-glow); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)'; this.style.borderColor='var(--primary-glow)';">
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: var(--primary-glow); color: var(--primary); border: 1.5px solid var(--primary-glow); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="if(window.prefetchRequisitionModal)prefetchRequisitionModal({{ $req->id }}); this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)'; this.style.borderColor='var(--primary-glow)';">
                     <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
                 </button>
             @else
-                <button onclick="openRequisitionModal({{ $req->id }})" style="background: var(--primary-glow); color: var(--primary); border: 1.5px solid var(--primary-glow); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)'; this.style.borderColor='var(--primary-glow)';">
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: var(--primary-glow); color: var(--primary); border: 1.5px solid var(--primary-glow); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="if(window.prefetchRequisitionModal)prefetchRequisitionModal({{ $req->id }}); this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--primary-glow)'; this.style.color='var(--primary)'; this.style.borderColor='var(--primary-glow)';">
                     <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                 </button>
             @endif
