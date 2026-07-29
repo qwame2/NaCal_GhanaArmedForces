@@ -2154,9 +2154,13 @@
         }
     }
 
-    // Start after 2s, then every 2s
-    setTimeout(_auditSilentRefresh, 2000);
-    setInterval(_auditSilentRefresh, 2000);
+    // Start after 5s, then every 12s
+    setTimeout(_auditSilentRefresh, 5000);
+    setInterval(() => {
+        if (!document.hidden) {
+            _auditSilentRefresh();
+        }
+    }, 12000);
 </script>
 @endsection
 

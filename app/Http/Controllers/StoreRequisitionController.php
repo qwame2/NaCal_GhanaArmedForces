@@ -488,106 +488,119 @@ class StoreRequisitionController extends Controller
             return response()->json(['success' => false, 'message' => 'This requisition has already been marked as collected.'], 400);
         }
 
-        $req->collected_at = now();
-        $req->collected_by = auth()->id();
-        $req->collector_name = $request->collector_name;
-        $req->collector_contact = $request->collector_contact;
-        $req->collector_location = $request->collector_location;
-        $req->collector_staff_id = $request->collector_staff_id;
-        $req->save();
-
-        // Create an Issuance and IssuedItems to represent this given out/collected asset
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
-            try {
-                \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->unsignedBigInteger('requisition_id')->nullable();
-                });
-            } catch (\Exception $e) {
-                // Ignore if already created
-            }
-        }
-
-        $issuance = \App\Models\Issuance::create([
-            'issuance_date' => $req->collected_at->format('Y-m-d'),
-            'beneficiary' => $req->department . ' (' . $req->requester_name . ')',
-            'authority' => $req->processor?->name ?? 'Requisition Approved',
-            'issuance_type' => $req->usage_type === 'temporary' ? 'Temporary' : 'Permanent',
-            'requisition_id' => $req->id,
-        ]);
-
-        foreach ($req->items as $item) {
-            if ($item->quantity_approved > 0) {
-                \App\Models\IssuedItem::create([
-                    'issuance_id' => $issuance->id,
-                    'description' => $item->description,
-                    'ledge_category' => $item->category ?? 'A',
-                    'quantity' => $item->quantity_approved,
-                    'unit' => $item->unit,
-                ]);
-            }
-            if ($item->alternative_quantity_approved > 0 && !empty($item->alternative_description)) {
-                \App\Models\IssuedItem::create([
-                    'issuance_id' => $issuance->id,
-                    'description' => $item->alternative_description,
-                    'ledge_category' => $item->category ?? 'A',
-                    'quantity' => $item->alternative_quantity_approved,
-                    'unit' => $item->unit,
-                ]);
-            }
-        }
-
-        SystemLog::create([
-            'user_id'    => auth()->id(),
-            'event_type' => 'REQUISITION',
-            'action'     => 'COLLECT_REQUISITION',
-            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->collector_name} (Staff ID: {$req->collector_staff_id}, Contact: {$req->collector_contact}) to location {$req->collector_location}.",
-            'severity'   => 'info',
-            'metadata'   => ['requisition_id' => $req->id],
-            'ip_address' => $request->ip(),
-        ]);
-
-        // Generate Receipts record
         try {
-            $receiptCount = \App\Models\Receipt::count() + 1;
-            $receiptNumber = 'RCP-' . date('Y') . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
+            DB::beginTransaction();
 
-            $itemsSnapshot = $req->items->map(function($item) {
-                return [
-                    'description' => $item->description,
-                    'unit' => $item->unit,
-                    'quantity_requested' => (float)$item->quantity_requested,
-                    'quantity_approved' => (float)$item->quantity_approved,
-                    'alternative_description' => $item->alternative_description,
-                    'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
-                    'category' => $item->category,
-                    'remarks' => $item->remarks,
-                ];
-            })->toArray();
+            $req->collected_at = now();
+            $req->collected_by = auth()->id();
+            $req->collector_name = $request->collector_name;
+            $req->collector_contact = $request->collector_contact;
+            $req->collector_location = $request->collector_location;
+            $req->collector_staff_id = $request->collector_staff_id;
+            $req->save();
 
-            $receipt = \App\Models\Receipt::create([
+            // Create an Issuance and IssuedItems to represent this given out/collected asset
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
+                try {
+                    \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->unsignedBigInteger('requisition_id')->nullable();
+                    });
+                } catch (\Exception $e) {}
+            }
+
+            $issuance = \App\Models\Issuance::create([
+                'issuance_date' => $req->collected_at->format('Y-m-d'),
+                'beneficiary' => $req->department . ' (' . $req->requester_name . ')',
+                'authority' => $req->processor?->name ?? 'Requisition Approved',
+                'issuance_type' => $req->usage_type === 'temporary' ? 'Temporary' : 'Permanent',
                 'requisition_id' => $req->id,
-                'receipt_number' => $receiptNumber,
-                'collector_name' => $req->collector_name,
-                'collector_contact' => $req->collector_contact,
-                'collector_location' => $req->collector_location,
-                'collector_staff_id' => $req->collector_staff_id,
-                'collected_at' => $req->collected_at,
-                'issued_by' => auth()->id(),
-                'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
-                'approved_by_stores_head' => $req->processor?->name ?? 'Head of Stores',
-                'items_json' => json_encode($itemsSnapshot),
             ]);
 
-            $receiptId = $receipt->id;
-        } catch (\Exception $e) {
-            $receiptId = null;
-        }
+            foreach ($req->items as $item) {
+                $qtyApproved = (float)($item->quantity_approved ?? 0);
+                $altQtyApproved = (float)($item->alternative_quantity_approved ?? 0);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Physical collection confirmed successfully.',
-            'receipt_id' => $receiptId,
-        ]);
+                if ($qtyApproved > 0) {
+                    \App\Models\IssuedItem::create([
+                        'issuance_id' => $issuance->id,
+                        'description' => $item->description ?? 'Requested Item',
+                        'ledge_category' => $item->category ?? 'A',
+                        'quantity' => $qtyApproved,
+                        'unit' => $item->unit ?? 'units',
+                    ]);
+                }
+                if ($altQtyApproved > 0 && !empty($item->alternative_description)) {
+                    \App\Models\IssuedItem::create([
+                        'issuance_id' => $issuance->id,
+                        'description' => $item->alternative_description,
+                        'ledge_category' => $item->category ?? 'A',
+                        'quantity' => $altQtyApproved,
+                        'unit' => $item->unit ?? 'units',
+                    ]);
+                }
+            }
+
+            SystemLog::create([
+                'user_id'    => auth()->id(),
+                'event_type' => 'REQUISITION',
+                'action'     => 'COLLECT_REQUISITION',
+                'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->collector_name} (Staff ID: {$req->collector_staff_id}, Contact: {$req->collector_contact}) to location {$req->collector_location}.",
+                'severity'   => 'info',
+                'metadata'   => ['requisition_id' => $req->id],
+                'ip_address' => $request->ip(),
+            ]);
+
+            $receiptId = null;
+            try {
+                $receiptCount = \App\Models\Receipt::count() + 1;
+                $receiptNumber = 'RCP-' . date('Y') . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
+
+                $itemsSnapshot = $req->items->map(function($item) {
+                    return [
+                        'description' => $item->description ?? '',
+                        'unit' => $item->unit ?? 'units',
+                        'quantity_requested' => (float)($item->quantity_requested ?? 0),
+                        'quantity_approved' => (float)($item->quantity_approved ?? 0),
+                        'alternative_description' => $item->alternative_description,
+                        'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
+                        'category' => $item->category ?? 'A',
+                        'remarks' => $item->remarks,
+                    ];
+                })->toArray();
+
+                $receipt = \App\Models\Receipt::create([
+                    'requisition_id' => $req->id,
+                    'receipt_number' => $receiptNumber,
+                    'collector_name' => $req->collector_name,
+                    'collector_contact' => $req->collector_contact,
+                    'collector_location' => $req->collector_location,
+                    'collector_staff_id' => $req->collector_staff_id,
+                    'collected_at' => $req->collected_at,
+                    'issued_by' => auth()->id(),
+                    'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
+                    'approved_by_stores_head' => $req->processor?->name ?? 'Head of Stores',
+                    'items_json' => json_encode($itemsSnapshot),
+                ]);
+
+                $receiptId = $receipt->id;
+            } catch (\Exception $e) {
+                // Receipt synthesis fallback in printReceipt
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Physical collection confirmed successfully.',
+                'receipt_id' => $receiptId,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Physical collection failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

@@ -1454,15 +1454,18 @@
     }
 
     async function executeCollectionFetch(id, btn, collector_name, collector_contact, collector_location, collector_staff_id) {
-        const originalHTML = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Processing...';
+        const originalHTML = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Processing...';
+        }
 
         try {
             const response = await fetch(`{{ request()->getBasePath() }}/requisitions/${id}/collect`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
@@ -1473,13 +1476,13 @@
                 })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => null);
 
-            if (data.success) {
+            if (response.ok && data && data.success) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Collection Confirmed',
-                    text: data.message + ' Would you like to view or print the official physical collection receipt now?',
+                    text: (data.message || 'Physical collection confirmed successfully.') + ' Would you like to view or print the official physical collection receipt now?',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Print Receipt',
                     cancelButtonText: 'Dismiss',
@@ -1492,24 +1495,30 @@
                     location.reload();
                 });
             } else {
+                const errorMsg = data?.message || (data?.errors ? Object.values(data.errors).flat().join(' ') : 'An error occurred while confirming physical collection.');
                 Swal.fire({
                     icon: 'error',
                     title: 'Confirmation Failed',
-                    text: data.message,
-                    confirmButtonColor: 'var(--primary)'
+                    text: errorMsg,
+                    confirmButtonColor: '#059669'
                 });
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
             }
         } catch (error) {
+            console.error('Collection fetch error:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Network Error',
-                text: 'An error occurred while confirming physical collection.',
-                confirmButtonColor: 'var(--primary)'
+                text: error?.message || 'An error occurred while confirming physical collection.',
+                confirmButtonColor: '#059669'
             });
-            btn.disabled = false;
-            btn.innerHTML = originalHTML;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
         }
     }
 
@@ -1738,10 +1747,16 @@
             window.lucide.createIcons();
         }
 
-        // Start polling every 2 seconds (paused when tab is hidden)
+        // Start polling every 12 seconds (paused when tab is hidden or modal is open)
         let _personnelPollPaused = document.hidden;
         document.addEventListener('visibilitychange', () => { _personnelPollPaused = document.hidden; });
-        setInterval(() => { if (!_personnelPollPaused) pollStoreRequisitions(); }, 2000);
+        setInterval(() => {
+            const modal = document.getElementById('reqModal');
+            const isModalOpen = modal && modal.classList.contains('open');
+            if (!_personnelPollPaused && !isModalOpen) {
+                pollStoreRequisitions();
+            }
+        }, 12000);
     });
 
     // ════════════════════════════════════════════════════════

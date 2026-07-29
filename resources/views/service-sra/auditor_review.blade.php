@@ -385,9 +385,7 @@
         }
 
         .sig-line {
-            border-bottom: 1px solid #000;
-            margin-bottom: 4px;
-            margin-top: 10px;
+            display: none !important;
         }
 
         .sig-label {
@@ -601,42 +599,60 @@
 
             <!-- Signatures -->
             @php
-                $adminUser = \App\Models\User::where('name', $sra->admin_approved_by)->first();
+                $adminUser = \App\Models\User::where('name', $sra->admin_approved_by)->first() ?: $sra->submitter;
                 $storesUser = \App\Models\User::where('name', $sra->stores_approved_by)->first();
+                $auditorUser = \App\Models\User::where('name', $sra->auditor_approved_by)->first();
             @endphp
             <div class="signatures-grid">
                 <div class="sig-cell">
-                    <div class="sig-top-label">I certify that the service has been performed according to order.</div>
+                    <div class="sig-top-label" style="margin-bottom: 5px;">I certify that the service has been performed according to order.</div>
                     <div>
-                        <div class="sig-line" style="text-align: center;">
-                        </div>
                         <div class="sig-label">Officer-in-Charge</div>
                         <div class="sig-name-date">
-                            <div><strong>Name:</strong> {{ $sra->admin_approved_by ?: '____________________' }}</div>
-                            <div><strong>Date:</strong> {{ $sra->admin_approved_at ? $sra->admin_approved_at->format('d/m/y') : '____________________' }}</div>
+                            <div><strong>Name:</strong> {{ $sra->admin_approved_by ?: ($adminUser ? $adminUser->name : '____________________') }}</div>
+                            <div><strong>Role:</strong> 
+                                @if($adminUser)
+                                    {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : ($adminUser->role ?? 'Officer-in-Charge') }}
+                                @else
+                                    {{ $sra->admin_approved_by ? 'Delegator Authorizer' : '____________________' }}
+                                @endif
+                            </div>
+                            <div><strong>Date:</strong> {{ $sra->admin_approved_at ? $sra->admin_approved_at->format('d/m/y') : ($sra->created_at ? $sra->created_at->format('d/m/y') : '____________________') }}</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="sig-cell">
-                    <div class="sig-top-label" style="text-align: center;">Taken on charge</div>
+                    <div class="sig-top-label" style="text-align: center; margin-bottom: 5px;">Taken on charge</div>
                     <div>
-                        <div class="sig-line" style="text-align: center;"></div>
                         <div class="sig-label">Storekeeper/Officer-in-Charge</div>
                         <div class="sig-name-date">
                             <div><strong>Name:</strong> {{ $sra->stores_approved_by ?: '____________________' }}</div>
+                            <div><strong>Role:</strong> 
+                                @if($storesUser)
+                                    {{ ($storesUser->role === 'Sub Main Admin' || $storesUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($storesUser->department ?: 'Stores')) . ' (Delegator Authorizer)') : ($storesUser->role ?? 'Head of Stores') }}
+                                @else
+                                    {{ $sra->stores_approved_by ? 'Head of Stores' : '____________________' }}
+                                @endif
+                            </div>
                             <div><strong>Date:</strong> {{ $sra->stores_approved_at ? $sra->stores_approved_at->format('d/m/y') : '____________________' }}</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="sig-cell">
-                    <div class="sig-top-label" style="text-align: center;">Verified by</div>
+                    <div class="sig-top-label" style="text-align: center; margin-bottom: 5px;">Verified by</div>
                     <div>
-                        <div class="sig-line" style="text-align: center;"></div>
                         <div class="sig-label">Internal Audit/Stores Verifier</div>
                         <div class="sig-name-date">
                             <div><strong>Name:</strong> {{ $sra->auditor_approved_by ?: '____________________' }}</div>
+                            <div><strong>Role:</strong> 
+                                @if($auditorUser)
+                                    {{ ($auditorUser->role === 'Sub Main Admin' || $auditorUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($auditorUser->department ?: 'Internal Audit')) . ' (Delegator Authorizer)') : ($auditorUser->role ?? 'Auditor') }}
+                                @else
+                                    {{ $sra->auditor_approved_by ? 'Auditor' : '____________________' }}
+                                @endif
+                            </div>
                             <div><strong>Date:</strong> {{ $sra->auditor_approved_at ? $sra->auditor_approved_at->format('d/m/y') : '____________________' }}</div>
                         </div>
                     </div>

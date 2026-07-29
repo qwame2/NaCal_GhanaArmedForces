@@ -3182,7 +3182,16 @@
         }
     }
 
-    setInterval(pollMainAdminRequisitions, 2000);
+    let _mainAdminPollPaused = document.hidden;
+    document.addEventListener('visibilitychange', () => { _mainAdminPollPaused = document.hidden; });
+    setInterval(() => {
+        const reqModal = document.getElementById('reqModal');
+        const sraModal = document.getElementById('sraOversightModal');
+        const isModalOpen = (reqModal && reqModal.classList.contains('open')) || (sraModal && sraModal.classList.contains('open'));
+        if (!_mainAdminPollPaused && !isModalOpen) {
+            pollMainAdminRequisitions();
+        }
+    }, 12000);
 
 
     function toggleWorkflowCategory(code, card) {

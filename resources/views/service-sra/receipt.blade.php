@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -261,9 +261,7 @@
             margin-bottom: 12px;
         }
         .sig-line {
-            border-bottom: 1px solid #000;
-            margin-bottom: 4px;
-            margin-top: 10px;
+            display: none !important;
         }
         .sig-label {
             font-size: 11px;
@@ -500,7 +498,7 @@
         </table>
 
         @php
-            $adminUser = \App\Models\User::where('name', $sra->admin_approved_by)->first();
+            $adminUser = \App\Models\User::where('name', $sra->admin_approved_by)->first() ?: $sra->submitter;
             $storesUser = \App\Models\User::where('name', $sra->stores_approved_by)->first();
         @endphp
 
@@ -511,15 +509,15 @@
                 <div>
                     <div class="sig-label">Officer-in-Charge</div>
                     <div class="sig-name-date">
-                        <div><strong>Name:</strong> {{ $sra->admin_approved_by ?: '____________________' }}</div>
+                        <div><strong>Name:</strong> {{ $sra->admin_approved_by ?: ($adminUser ? $adminUser->name : '____________________') }}</div>
                         <div><strong>Role:</strong> 
                             @if($adminUser)
-                                {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : $adminUser->role }}
+                                {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : ($adminUser->role ?? 'Officer-in-Charge') }}
                             @else
                                 {{ $sra->admin_approved_by ? 'Delegator Authorizer' : '____________________' }}
                             @endif
                         </div>
-                        <div><strong>Date:</strong> {{ $sra->admin_approved_at ? $sra->admin_approved_at->format('d/m/y') : '____________________' }}</div>
+                        <div><strong>Date:</strong> {{ $sra->admin_approved_at ? $sra->admin_approved_at->format('d/m/y') : ($sra->created_at ? $sra->created_at->format('d/m/y') : '____________________') }}</div>
                     </div>
                 </div>
             </div>

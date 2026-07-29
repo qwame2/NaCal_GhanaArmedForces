@@ -205,12 +205,7 @@
             margin-bottom: 20px;
         }
         .sig-line {
-            border-bottom: 1px solid #000;
-            margin-bottom: 5px;
-            height: 40px;
-            text-align: center;
-            font-family: "Dancing Script", cursive;
-            font-size: 20px;
+            display: none !important;
         }
         .sig-label {
             font-size: 11px;
@@ -559,8 +554,8 @@
             $storesUser = $batch->storesApprover ?? $batch->approver ?? $batch->recorder;
             $storesDate = $batch->stores_approved_at ?: $batch->approved_at ?: $batch->created_at;
             
-            $adminUser = $batch->adminApprover;
-            $adminApproved = $batch->admin_status === 'approved' && $adminUser;
+            $adminUser = $batch->adminApprover ?: $batch->recorder;
+            $adminApproved = $batch->admin_status === 'approved' && $batch->adminApprover;
             
             $auditorUser = $batch->auditorApprover;
             $auditorApproved = $batch->auditor_status === 'approved' && $auditorUser;
@@ -570,15 +565,15 @@
                 <div class="sig-top-label" style="margin-bottom: 5px;">I certify that the service has been performed according to order.</div>
                 <div class="sig-label">Officer-in-Charge</div>
                 <div class="sig-name-date">
-                    <div><strong>Name:</strong> {{ $adminApproved ? $adminUser->name : '______________________' }}</div>
+                    <div><strong>Name:</strong> {{ $adminApproved ? $adminUser->name : ($adminUser ? $adminUser->name : '______________________') }}</div>
                     <div><strong>Role:</strong> 
-                        @if($adminApproved && $adminUser)
-                            {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : $adminUser->role }}
+                        @if($adminUser)
+                            {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : ($adminUser->role ?? 'Officer-in-Charge') }}
                         @else
                             {{ $batch->admin_status === 'approved' ? 'Delegator Authorizer' : '______________________' }}
                         @endif
                     </div>
-                    <div><strong>Date:</strong> {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : '______________________' }}</div>
+                    <div><strong>Date:</strong> {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : ($batch->created_at ? \Carbon\Carbon::parse($batch->created_at)->format('d/m/y') : '______________________') }}</div>
                 </div>
             </div>
             <div class="sig-cell">

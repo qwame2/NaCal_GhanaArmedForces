@@ -1708,11 +1708,11 @@
         .catch(() => {});
     }
 
-    // Start polling every 10 seconds
+    // Start polling every 15 seconds
     let _permsPollPaused = document.hidden;
     document.addEventListener('visibilitychange', () => { _permsPollPaused = document.hidden; });
-    setInterval(() => { if (!_permsPollPaused) pollPendingRegistrations(); }, 4000);
-    setInterval(() => { if (!_permsPollPaused) pollStoreOfficers(); }, 4000);
+    setInterval(() => { if (!_permsPollPaused) pollPendingRegistrations(); }, 15000);
+    setInterval(() => { if (!_permsPollPaused) pollStoreOfficers(); }, 15000);
 
     document.addEventListener('DOMContentLoaded', () => {
         // General Pagination Helper for all Tabs
