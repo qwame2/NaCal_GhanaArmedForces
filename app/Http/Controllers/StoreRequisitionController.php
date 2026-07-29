@@ -1464,7 +1464,7 @@ class StoreRequisitionController extends Controller
         }
 
         $requisitions = $query->paginate(5)->withQueryString();
-        $ledgeMap = Setting::getCategories();
+        $ledgeMap = Setting::getCategories() ?: [];
 
         $statsData = StoreRequisition::selectRaw("
             SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
@@ -1483,18 +1483,36 @@ class StoreRequisitionController extends Controller
         ];
 
         // Available inventory items for placing new requisitions from this page
-        $availableItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.approval_status', '=', 'approved')
-            ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+        $availableItems = InventoryItem::leftJoin('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where(function($q) {
+                $q->whereNull('inventory_batches.id')
+                  ->orWhere(function($sub) {
+                      $sub->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                          ->where('inventory_batches.approval_status', '=', 'approved');
+                  });
+            })
+            ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, COALESCE(inventory_batches.ledge_category, "") as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), \DB::raw('COALESCE(inventory_batches.ledge_category, "")'))
             ->orderByRaw('TRIM(inventory_items.description)')
             ->get()
             ->map(function ($item) {
                 $physicalStock = (float) $item->total_stock;
                 $item->total_stock = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category);
                 return $item;
-            });
+            })
+            ->values();
+
+        if ($availableItems->isEmpty()) {
+            $availableItems = InventoryItem::selectRaw('TRIM(description) as description, MAX(unit) as unit, "" as ledge_category, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                ->groupBy(\DB::raw('TRIM(description)'))
+                ->orderByRaw('TRIM(description)')
+                ->get()
+                ->map(function ($item) {
+                    $item->total_stock = (float) $item->total_stock;
+                    return $item;
+                })
+                ->values();
+        }
 
         return view('requisitions.personnel', compact('requisitions', 'ledgeMap', 'stats', 'availableItems'));
     }

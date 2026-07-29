@@ -869,7 +869,7 @@
                     </div>
                 </div>
                 <div style="margin-bottom:1.5rem;">
-                    <div style="font-size:.7rem;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Usage Type <span style="color:#ef4444;">*</span></label>
+                    <div style="font-size:.7rem;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Usage Type <span style="color:#ef4444;">*</span></div>
                     <div style="display:flex;gap:1rem;">
                         <label style="flex:1;display:flex;align-items:center;gap:.75rem;padding:1rem;border:1.5px solid var(--primary);background:var(--primary-glow);border-radius:12px;cursor:pointer;transition:.2s;" id="nr-usage-perm-label" onclick="selectNrUsage('permanent')">
                             <input type="radio" name="nr_usage" id="nr-usage-permanent" value="permanent" checked style="accent-color:var(--primary);width:16px;height:16px;">
@@ -898,10 +898,10 @@
                 <div style="font-size:.7rem;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">Select Items to Request</div>
 
                 {{-- Layout: Catalog (left) | Cart (right) --}}
-                <div style="display:grid;grid-template-columns:1fr 420px;gap:1.25rem;height:calc(100vh - 320px);min-height:420px;">
+                <div style="display:grid;grid-template-columns:1fr 340px;gap:1.25rem;align-items:start;">
 
                     {{-- LEFT: Item Catalog --}}
-                    <div style="display:flex;flex-direction:column;gap:.75rem;overflow:hidden;">
+                    <div style="display:flex;flex-direction:column;gap:.75rem;">
                         {{-- Search + Category Filter --}}
                         <div style="display:flex;gap:.5rem;align-items:center;">
                             <div style="position:relative;flex:1;">
@@ -915,24 +915,24 @@
                         </div>
 
                         {{-- Category Tabs --}}
-                        <div id="nr-cat-tabs" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
+                        <div id="nr-cat-tabs" style="display:flex;gap:.4rem;flex-wrap:wrap;min-height:30px;"></div>
 
                         {{-- Items Grid (scrollable) --}}
-                        <div id="nr-catalog-grid" style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;align-content:start;padding-right:6px;"></div>
+                        <div id="nr-catalog-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:.75rem;align-content:start;padding-right:6px;min-height:260px;max-height:480px;overflow-y:auto;"></div>
                         <div id="nr-catalog-empty" style="display:none;text-align:center;padding:2rem;color:var(--text-muted);">
                             <i data-lucide="search-x" style="width:24px;opacity:.3;display:block;margin:0 auto .5rem;"></i>
-                            <p style="margin:0;font-size:.82rem;font-weight:600;">No items match your search.</p>
+                            <p style="margin:0;font-size:.82rem;font-weight:600;" id="nr-empty-msg">No items match your search.</p>
                         </div>
                     </div>
 
                     {{-- RIGHT: Selected Cart --}}
-                    <div style="display:flex;flex-direction:column;gap:.5rem;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:14px;padding:.85rem;overflow:hidden;">
+                    <div style="display:flex;flex-direction:column;gap:.5rem;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:14px;padding:.85rem;min-height:340px;max-height:520px;">
                         <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;">
                             <span>Selected Items</span>
                             <span id="nr-cart-count" style="background:var(--primary);color:white;font-size:.65rem;font-weight:900;padding:2px 7px;border-radius:8px;">0</span>
                         </div>
-                        <div id="nr-items-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;"></div>
-                        <div id="nr-items-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-muted);padding:1rem;">
+                        <div id="nr-items-list" style="overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;max-height:400px;"></div>
+                        <div id="nr-items-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-muted);padding:2rem 1rem;margin:auto 0;">
                             <i data-lucide="shopping-cart" style="width:22px;opacity:.25;margin-bottom:.5rem;"></i>
                             <p style="margin:0;font-size:.75rem;font-weight:600;line-height:1.5;">Click any item<br>on the left to add it</p>
                         </div>
@@ -1762,12 +1762,14 @@
     // ════════════════════════════════════════════════════════
     // NEW REQUISITION SLIDE-OVER LOGIC
     // ════════════════════════════════════════════════════════
-    const nrAvailableItems = @json($availableItems);
-    const nrLedgeMap = @json($ledgeMap);
+    const nrAvailableItems = @json($availableItems ?? []);
+    const nrLedgeMap = @json($ledgeMap ?? new \stdClass()) || {};
     let nrCurrentStep = 1;
     let nrCartItems = [];
     let nrSelectedPriority = 'normal';
     let nrSelectedUsage = 'permanent';
+    let nrActiveCat = 'all';
+    let nrCatalogSearch = '';
 
     function openNewReqPanel() {
         nrCurrentStep = 1;
@@ -1814,43 +1816,56 @@
 
     function nrUpdateStep() {
         [1,2,3].forEach(s => {
-            document.getElementById(`nr-step-${s}`).style.display = (s === nrCurrentStep) ? 'block' : 'none';
+            const stepEl = document.getElementById(`nr-step-${s}`);
+            if (stepEl) stepEl.style.display = (s === nrCurrentStep) ? 'block' : 'none';
             const bubble = document.getElementById(`nr-bubble-${s}`);
             const label  = document.getElementById(`nr-label-${s}`);
-            if (s < nrCurrentStep) {
-                bubble.className = 'nr-step-bubble done';
-                bubble.innerHTML = '✓';
-                label.className = 'nr-step-label done';
-            } else if (s === nrCurrentStep) {
-                bubble.className = 'nr-step-bubble active';
-                bubble.innerHTML = s;
-                label.className = 'nr-step-label active';
-            } else {
-                bubble.className = 'nr-step-bubble';
-                bubble.innerHTML = s;
-                label.className = 'nr-step-label';
+            if (bubble && label) {
+                if (s < nrCurrentStep) {
+                    bubble.className = 'nr-step-bubble done';
+                    bubble.innerHTML = '✓';
+                    label.className = 'nr-step-label done';
+                } else if (s === nrCurrentStep) {
+                    bubble.className = 'nr-step-bubble active';
+                    bubble.innerHTML = s;
+                    label.className = 'nr-step-label active';
+                } else {
+                    bubble.className = 'nr-step-bubble';
+                    bubble.innerHTML = s;
+                    label.className = 'nr-step-label';
+                }
             }
         });
 
-        document.getElementById('nr-progress-1').style.width = (nrCurrentStep > 1 ? '100%' : '0');
-        document.getElementById('nr-progress-2').style.width = (nrCurrentStep > 2 ? '100%' : '0');
+        if (nrCurrentStep === 2) {
+            nrBuildCatalogTabs();
+            nrRenderCatalog();
+            nrRenderCartPanel();
+        }
+
+        const prg1 = document.getElementById('nr-progress-1');
+        const prg2 = document.getElementById('nr-progress-2');
+        if (prg1) prg1.style.width = (nrCurrentStep > 1 ? '100%' : '0');
+        if (prg2) prg2.style.width = (nrCurrentStep > 2 ? '100%' : '0');
 
         const btnBack   = document.getElementById('nr-btn-back');
         const btnNext   = document.getElementById('nr-btn-next');
         const btnSubmit = document.getElementById('nr-btn-submit');
 
-        if (nrCurrentStep === 1) {
-            btnBack.style.display   = 'none';
-            btnNext.style.display   = 'inline-flex';
-            btnSubmit.style.display = 'none';
-        } else if (nrCurrentStep === 2) {
-            btnBack.style.display   = 'inline-flex';
-            btnNext.style.display   = 'inline-flex';
-            btnSubmit.style.display = 'none';
-        } else {
-            btnBack.style.display   = 'inline-flex';
-            btnNext.style.display   = 'none';
-            btnSubmit.style.display = 'inline-flex';
+        if (btnBack && btnNext && btnSubmit) {
+            if (nrCurrentStep === 1) {
+                btnBack.style.display   = 'none';
+                btnNext.style.display   = 'inline-flex';
+                btnSubmit.style.display = 'none';
+            } else if (nrCurrentStep === 2) {
+                btnBack.style.display   = 'inline-flex';
+                btnNext.style.display   = 'inline-flex';
+                btnSubmit.style.display = 'none';
+            } else {
+                btnBack.style.display   = 'inline-flex';
+                btnNext.style.display   = 'none';
+                btnSubmit.style.display = 'inline-flex';
+            }
         }
 
         if (window.lucide) lucide.createIcons();
@@ -1888,7 +1903,8 @@
 
     function selectNrPriority(val) {
         nrSelectedPriority = val;
-        document.getElementById('nr-priority').value = val;
+        const prioInput = document.getElementById('nr-priority');
+        if (prioInput) prioInput.value = val;
         document.querySelectorAll('.nr-priority-btn').forEach(btn => {
             const v = btn.dataset.val;
             if (v === val) {
@@ -1903,40 +1919,42 @@
 
     function selectNrUsage(val) {
         nrSelectedUsage = val;
-        document.getElementById('nr-usage-permanent').checked = (val === 'permanent');
-        document.getElementById('nr-usage-temporary').checked = (val === 'temporary');
+        const permRadio = document.getElementById('nr-usage-permanent');
+        const tempRadio = document.getElementById('nr-usage-temporary');
+        if (permRadio) permRadio.checked = (val === 'permanent');
+        if (tempRadio) tempRadio.checked = (val === 'temporary');
         const permLabel = document.getElementById('nr-usage-perm-label');
         const tempLabel = document.getElementById('nr-usage-temp-label');
         if (val === 'permanent') {
-            permLabel.style.borderColor = 'var(--primary)'; permLabel.style.background = 'var(--primary-glow)';
-            tempLabel.style.borderColor = 'var(--border-color)'; tempLabel.style.background = '';
+            if (permLabel) { permLabel.style.borderColor = 'var(--primary)'; permLabel.style.background = 'var(--primary-glow)'; }
+            if (tempLabel) { tempLabel.style.borderColor = 'var(--border-color)'; tempLabel.style.background = ''; }
         } else {
-            tempLabel.style.borderColor = 'var(--primary)'; tempLabel.style.background = 'var(--primary-glow)';
-            permLabel.style.borderColor = 'var(--border-color)'; permLabel.style.background = '';
+            if (tempLabel) { tempLabel.style.borderColor = 'var(--primary)'; tempLabel.style.background = 'var(--primary-glow)'; }
+            if (permLabel) { permLabel.style.borderColor = 'var(--border-color)'; permLabel.style.background = ''; }
         }
     }
 
     // ── Item Catalog (Step 2) ──────────────────────────────
-    let nrActiveCat = 'all';
-    let nrCatalogSearch = '';
 
     // Build category tabs from available items
     function nrBuildCatalogTabs() {
         const tabsEl = document.getElementById('nr-cat-tabs');
         if (!tabsEl) return;
+        const items = Array.isArray(nrAvailableItems) ? nrAvailableItems : [];
         const cats = {};
-        nrAvailableItems.forEach(i => {
+        items.forEach(i => {
             const key = i.ledge_category || '';
             cats[key] = (cats[key] || 0) + 1;
         });
-        const allCount = nrAvailableItems.length;
-        let html = `<button onclick="nrSetCat('all')" id="nr-tab-all"
+        const allCount = items.length;
+        let html = `<button onclick="nrSetCat('all')" id="nr-tab-all" data-cat="all" class="nr-cat-tab-btn"
             style="padding:.35rem .85rem;border-radius:999px;border:1.5px solid var(--primary);background:var(--primary-glow);color:var(--primary);font-weight:800;font-size:.7rem;cursor:pointer;transition:.2s;white-space:nowrap;">
             All <span style="opacity:.7;">(${allCount})</span>
         </button>`;
         Object.entries(cats).sort((a,b) => b[1]-a[1]).forEach(([cat, cnt]) => {
-            const label = (cat && nrLedgeMap[cat]) ? nrLedgeMap[cat] : (cat || 'Uncategorised');
-            html += `<button onclick="nrSetCat('${cat}')" id="nr-tab-${cat}"
+            const label = (cat && nrLedgeMap && nrLedgeMap[cat]) ? nrLedgeMap[cat] : (cat || 'Uncategorised');
+            const safeCat = cat.replace(/'/g, "\\'");
+            html += `<button onclick="nrSetCat('${safeCat}')" data-cat="${safeCat}" class="nr-cat-tab-btn"
                 style="padding:.35rem .85rem;border-radius:999px;border:1.5px solid var(--border-color);background:var(--bg-card);color:var(--text-muted);font-weight:800;font-size:.7rem;cursor:pointer;transition:.2s;white-space:nowrap;">
                 ${label} <span style="opacity:.7;">(${cnt})</span>
             </button>`;
@@ -1947,8 +1965,8 @@
     function nrSetCat(cat) {
         nrActiveCat = cat;
         // Update tab styles
-        document.querySelectorAll('[id^="nr-tab-"]').forEach(btn => {
-            const isSel = btn.id === `nr-tab-${cat}`;
+        document.querySelectorAll('.nr-cat-tab-btn').forEach(btn => {
+            const isSel = (btn.dataset && btn.dataset.cat === cat);
             btn.style.borderColor  = isSel ? 'var(--primary)' : 'var(--border-color)';
             btn.style.background   = isSel ? 'var(--primary-glow)' : 'var(--bg-card)';
             btn.style.color        = isSel ? 'var(--primary)' : 'var(--text-muted)';
@@ -1969,25 +1987,25 @@
         const empty = document.getElementById('nr-catalog-empty');
         if (!grid) return;
 
-        let items = nrAvailableItems;
+        let items = Array.isArray(nrAvailableItems) ? nrAvailableItems : [];
         if (nrActiveCat !== 'all') {
             items = items.filter(i => (i.ledge_category || '') === nrActiveCat);
         }
         if (nrCatalogSearch) {
-            items = items.filter(i => i.description.toLowerCase().includes(nrCatalogSearch));
+            items = items.filter(i => i.description && i.description.toLowerCase().includes(nrCatalogSearch));
         }
         nrFilteredItems = items; // save so click handler can look up by index
 
         if (items.length === 0) {
             grid.style.display  = 'none';
-            empty.style.display = 'block';
+            if (empty) empty.style.display = 'block';
             return;
         }
         grid.style.display  = 'grid';
-        empty.style.display = 'none';
+        if (empty) empty.style.display = 'none';
 
         grid.innerHTML = items.map((item, idx) => {
-            const catName    = (item.ledge_category && nrLedgeMap[item.ledge_category]) ? nrLedgeMap[item.ledge_category] : (item.ledge_category || '');
+            const catName    = (item.ledge_category && nrLedgeMap && nrLedgeMap[item.ledge_category]) ? nrLedgeMap[item.ledge_category] : (item.ledge_category || '');
             const stock      = parseFloat(item.total_stock) || 0;
             const stockColor = stock > 10 ? 'var(--primary)' : stock > 0 ? 'var(--primary)' : '#ef4444';
             const stockLabel = stock > 10 ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
@@ -2143,7 +2161,7 @@
                 <div style="font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items Requested (${nrCartItems.length})</div>
             </div>
             ${nrCartItems.map(item => {
-                const catName = (item.category && nrLedgeMap[item.category]) ? nrLedgeMap[item.category] : (item.category || '');
+                const catName = (item.category && nrLedgeMap && nrLedgeMap[item.category]) ? nrLedgeMap[item.category] : (item.category || '');
                 return `<div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
                     <div>
                         <div style="font-size:.88rem;font-weight:800;color:var(--text-main);">${item.description}</div>

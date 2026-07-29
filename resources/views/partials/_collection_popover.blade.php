@@ -1,4 +1,4 @@
-﻿@auth
+@auth
 {{-- Approved Requisition Collection Pop-over Container (Burgundy, Black & White Theme) --}}
 <div id="approvedCollectionPopoverOverlay" style="display: none; position: fixed; inset: 0; z-index: 999999; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 1.5rem;">
     <div style="background: var(--bg-card, #ffffff); border-radius: 28px; width: 100%; max-width: 520px; padding: 2.25rem; border: 1px solid var(--border-color, rgba(0,0,0,0.1)); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4); text-align: center; position: relative; animation: popoverSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
@@ -40,6 +40,7 @@
     let popoverKeysToAcknowledge = [];
 
     async function checkApprovedCollectionPopover() {
+        if (document.hidden) return;
         try {
             const res = await fetch("{{ route('api.collection-popover-data', [], false) }}?_t=" + Date.now(), {
                 headers: {
@@ -78,7 +79,9 @@
                 }
             }
         } catch (e) {
-            console.error('Error loading collection popover data:', e);
+            // Silently ignore transient network & page navigation abort errors during background polling
+            if (e && (e.name === 'AbortError' || e.name === 'TypeError' || !navigator.onLine)) return;
+            console.warn('Collection popover polling:', e);
         }
     }
 
