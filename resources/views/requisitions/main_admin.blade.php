@@ -1093,13 +1093,40 @@
                 </div>
             @endif
         </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <button onclick="window.location.reload()" style="padding: 0.75rem 1.35rem; border-radius: var(--radius-lg); font-weight: 800; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: var(--transition); background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-color);" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">
-                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 0.55rem 1rem; border-radius: var(--radius-lg);">
+                <span id="liveSyncDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: oversightsyncpulse 1.8s infinite; display: inline-block;"></span>
+                <span style="font-size: 0.75rem; font-weight: 800; color: #047857; text-transform: uppercase; letter-spacing: 0.04em;">Live Auto-Sync</span>
+            </div>
+            <button onclick="window.pollOversightQueueSilently(true)" style="padding: 0.75rem 1.35rem; border-radius: var(--radius-lg); font-weight: 800; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: var(--transition); background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-color);" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">
+                <i id="refreshBtnIcon" data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
                 Refresh Hub
             </button>
         </div>
     </div>
+
+    <style>
+    @keyframes oversightsyncpulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    @keyframes oversightFlashSync {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 1; }
+    }
+    .oversight-flash-sync {
+        animation: oversightFlashSync 0.6s ease-in-out;
+    }
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    </style>
 
     {{-- Stats Cards --}}
     @if(auth()->user()->role !== 'External Auditor')
@@ -3820,6 +3847,78 @@
             confirmButtonColor: 'var(--primary)'
         });
     };
+
+    // Silent Background Auto-Refresh for Oversight Command Center
+    let isPollingOversight = false;
+
+    window.pollOversightQueueSilently = function(manual = false) {
+        if (isPollingOversight) return;
+
+        const isModalOpen = document.querySelector('.modal-overlay.open') || (typeof Swal !== 'undefined' && Swal.isVisible());
+        const isAnyInputFocused = document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+        if (!manual && (document.hidden || isModalOpen || isAnyInputFocused)) return;
+
+        isPollingOversight = true;
+
+        const refreshIcon = document.getElementById('refreshBtnIcon');
+        if (manual && refreshIcon) {
+            refreshIcon.classList.add('animate-spin');
+        }
+
+        fetch(window.location.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        })
+        .then(response => response.text())
+        .then(htmlText => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+
+            // 1. Update Stats Cards Container
+            const newStats = doc.getElementById('oversight-stats-container');
+            const currentStats = document.getElementById('oversight-stats-container');
+            if (newStats && currentStats) {
+                if (newStats.innerText.replace(/\s+/g, ' ').trim() !== currentStats.innerText.replace(/\s+/g, ' ').trim()) {
+                    currentStats.innerHTML = newStats.innerHTML;
+                }
+            }
+
+            // 2. Update Oversight Table
+            const newWrapper = doc.getElementById('oversight-table-wrapper');
+            const currentWrapper = document.getElementById('oversight-table-wrapper');
+            if (newWrapper && currentWrapper) {
+                const newSig = newWrapper.innerText.replace(/\s+/g, ' ').trim();
+                const curSig = currentWrapper.innerText.replace(/\s+/g, ' ').trim();
+
+                if (newSig !== curSig) {
+                    currentWrapper.innerHTML = newWrapper.innerHTML;
+
+                    currentWrapper.classList.remove('oversight-flash-sync');
+                    void currentWrapper.offsetWidth; // Reflow
+                    currentWrapper.classList.add('oversight-flash-sync');
+                }
+            }
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        })
+        .catch(err => {
+            console.error("Silent oversight poll error:", err);
+        })
+        .finally(() => {
+            isPollingOversight = false;
+            if (manual && refreshIcon) {
+                refreshIcon.classList.remove('animate-spin');
+            }
+        });
+    };
+
+    // Auto-Poll every 8 seconds
+    setInterval(function() {
+        pollOversightQueueSilently(false);
+    }, 8000);
 
     document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('stores_dept_head_approval_categories') || document.getElementById('dg_approval_categories')) {
