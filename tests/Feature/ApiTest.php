@@ -1302,5 +1302,131 @@ class ApiTest extends TestCase
         $response3->assertStatus(200)
                   ->assertJson(['success' => true]);
     }
+
+    public function test_audit_department_requisition_shows_in_pending_sra_approvals_for_auditor(): void
+    {
+        $auditor = User::factory()->create([
+            'role' => 'Auditor',
+            'department' => 'Audit Department',
+            'is_active' => true,
+        ]);
+
+        $requisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'Audit Department',
+            'is_active' => true,
+        ]);
+
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => $requisitioner->name,
+            'department' => 'Audit Department',
+            'requested_by' => $requisitioner->id,
+            'purpose' => 'Audit stationery supply',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($auditor)->get('/auditor?format=json', ['X-Requested-With' => 'XMLHttpRequest']);
+        $response->assertStatus(200);
+        $json = $response->json();
+
+        $this->assertGreaterThanOrEqual(1, $json['pending_count']);
+        $this->assertStringContainsString('REQ-' . str_pad($requisition->id, 6, '0', STR_PAD_LEFT), $json['tabs']['pending_sra']['tbody']);
+
+        // Auditor approves the requisition
+        $approveResponse = $this->actingAs($auditor)->postJson(route('main-admin.requisitions.process', $requisition->id), [
+            'status' => 'approved'
+        ]);
+
+        $approveResponse->assertStatus(200)
+                        ->assertJson(['success' => true]);
+
+        $requisition->refresh();
+        $this->assertEquals('approved', $requisition->origin_admin_status);
+    }
+
+    public function test_store_officer_can_view_rollback_requests()
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+        ]);
+
+        $editReq = \App\Models\EditRequest::create([
+            'user_id' => $officer->id,
+            'item_type' => 'batch_creation',
+            'item_id' => 9999,
+            'request_type' => 'edit',
+            'reason' => 'Initial submission',
+            'status' => 'rollback',
+            'rollback_fields' => json_encode([
+                'flagged' => ['supplier_name' => 'Incorrect supplier name specified'],
+                'note' => 'Please fix the supplier name and re-submit.',
+                'items' => []
+            ]),
+        ]);
+
+        $response = $this->actingAs($officer)->get(route('stores.rollback-requests'));
+        $response->assertStatus(200);
+        $response->assertSee('Rollback Requests');
+        $response->assertSee('RB-' . str_pad($editReq->id, 5, '0', STR_PAD_LEFT));
+        $response->assertSee('Incorrect supplier name specified');
+    }
+
+    public function test_resubmitted_rollback_request_disables_button()
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'can_add_inventory' => 1,
+        ]);
+
+        $editReq = \App\Models\EditRequest::create([
+            'user_id' => $officer->id,
+            'item_type' => 'batch_creation',
+            'item_id' => 9998,
+            'request_type' => 'sra_creation',
+            'reason' => 'Initial submission',
+            'status' => 'rollback',
+            'rollback_fields' => json_encode([
+                'flagged' => ['supplier_name' => 'Supplier name needs correction'],
+                'note' => 'Fix supplier name',
+            ]),
+        ]);
+
+        $postData = [
+            'rollback_id' => $editReq->id,
+            'ledge_category' => 'A',
+            'supplier_name' => 'Corrected Supplier Ltd',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => now()->format('Y-m-d'),
+            'items' => [
+                [
+                    'ledge_category' => 'A',
+                    'description' => 'Test Item Paper A4',
+                    'unit' => 'REAM',
+                    'stock_balance' => '10',
+                    'qty' => '10',
+                    'variance' => '0',
+                ]
+            ]
+        ];
+
+        $postResp = $this->actingAs($officer)->post(route('inventory.store'), $postData);
+        $postResp->assertStatus(200);
+
+        $this->assertEquals('resubmitted', $editReq->fresh()->status);
+
+        $viewResp = $this->actingAs($officer)->get(route('stores.rollback-requests'));
+        $viewResp->assertStatus(200);
+        $viewResp->assertSee('Correction Submitted');
+        $viewResp->assertSee('disabled');
+    }
 }
 

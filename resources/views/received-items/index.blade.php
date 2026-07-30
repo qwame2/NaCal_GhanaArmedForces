@@ -468,23 +468,21 @@
                             $displayStatus = 'ISSUED OUT';
                             $statusColor = '#059669';
                         } else {
-                            $displayStatus = $dbStatus;
-                            $statusColor = '#94a3b8';
-                            if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
-                                $statusColor = '#047857';
-                                $displayStatus = 'DONOR';
-                            } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
-                                $statusColor = '#059669';
-                                $displayStatus = 'FULL DELIVERY';
-                            } elseif ($displayStatus === 'PARTIAL DELIVERY' || str_contains($displayStatus, 'PARTIAL')) {
+                            if ($isDbPartialDelivery) {
                                 $statusColor = '#ef4444';
                                 $displayStatus = 'PARTIAL DELIVERY';
+                            } else {
+                                $statusColor = '#059669';
+                                $displayStatus = 'FULL DELIVERY';
                             }
                         }
                         @endphp
                         <td data-label="Supplier / Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main);">
-                            @if($acquisitionType === 'Donor')
-                                <div style="font-weight: 800; color: #047857;">{{ $donorName }}</div>
+                            @if($acquisitionType === 'Donor' || !empty($item->donor_name))
+                                <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span style="font-weight: 800; color: #047857;">{{ $donorName !== '-' ? $donorName : ($cleanSupplier ?: '-') }}</span>
+                                    <span style="font-size: 0.65rem; font-weight: 850; background: rgba(4, 120, 87, 0.1); color: #047857; border: 1px solid rgba(4, 120, 87, 0.25); padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em;">DONOR</span>
+                                </div>
                             @else
                                 <div>{{ $cleanSupplier ?: '-' }}</div>
                             @endif
@@ -3993,9 +3991,14 @@ async function submitEditBatch() {
 
                         const supplierDonorTd = r.querySelector('td[data-label="Supplier / Donor"]');
                         if (supplierDonorTd) {
-                            if (payload.acquisition_type === 'Donor') {
+                            if (payload.acquisition_type === 'Donor' || payload.donor_name) {
+                                let dName = payload.donor_name || payload.supplier_name || '-';
+                                dName = dName.replace(/\s*\[.*\]\s*$/, '');
                                 supplierDonorTd.innerHTML = `
-                                    <div style="font-weight: 800; color: #047857;">${payload.donor_name || '-'}</div>
+                                    <div style="display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <span style="font-weight: 800; color: #047857;">${dName}</span>
+                                        <span style="font-size: 0.65rem; font-weight: 850; background: rgba(4, 120, 87, 0.1); color: #047857; border: 1px solid rgba(4, 120, 87, 0.25); padding: 2px 7px; border-radius: 6px; text-transform: uppercase;">DONOR</span>
+                                    </div>
                                 `;
                             } else {
                                 let cleanSupplier = payload.supplier_name || '-';
@@ -4008,14 +4011,12 @@ async function submitEditBatch() {
 
                         const statusTd = r.querySelector('td[data-label="Delivery Status"] span');
                         if (statusTd) {
+                            let rawStat = String(payload.supplier_status || '').toUpperCase();
                             let status = 'FULL DELIVERY';
                             let color = '#059669';
-                            if (payload.supplier_name.toLowerCase().includes('partial')) {
+                            if (rawStat.includes('PARTIAL') || (payload.supplier_name || '').toLowerCase().includes('partial')) {
                                 status = 'PARTIAL DELIVERY';
                                 color = '#ef4444';
-                            } else if (payload.acquisition_type === 'Donor') {
-                                status = 'DONOR';
-                                color = '#047857';
                             }
                             statusTd.innerText = status;
                             statusTd.style.background = color;

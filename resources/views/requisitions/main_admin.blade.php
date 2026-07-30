@@ -2800,9 +2800,8 @@
                                         <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
                                     </div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(5, 150, 105,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#059669' : '#64748b'};">
-                                        ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
+                                        ${acc.is_online ? '&#9679; ONLINE' : '&#9675; OFFLINE'}
                                     </span>
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
                                         ${badgeText}

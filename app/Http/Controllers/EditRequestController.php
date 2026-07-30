@@ -1497,4 +1497,37 @@ class EditRequestController extends Controller
 
         return view('edit-requests.item_entry_approval', compact('pending', 'history', 'ledgeMap', 'pendingServiceSras'));
     }
+
+    public function rollbackRequestsIndex(Request $request)
+    {
+        $user = auth()->user();
+        $isStores = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || $user->role === 'Main Admin'
+            || $user->role === 'Head of Stores'
+            || $user->role === 'Officer'
+            || $user->role === 'Store Officer'
+            || strcasecmp($user->department ?? '', 'Stores') === 0
+            || strcasecmp($user->department ?? '', 'Store') === 0;
+
+        if (!$isStores) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $query = EditRequest::with(['user', 'batch.items'])
+            ->whereIn('status', ['rollback', 'resubmitted']);
+
+        if (!auth()->user()->isMainAdminOrSub() && auth()->user()->role !== 'Head of Stores') {
+            $query->where(function($q) {
+                $q->where('user_id', auth()->id())
+                  ->orWhereHas('user', function($uq) {
+                      $uq->where('department', auth()->user()->department);
+                  });
+            });
+        }
+
+        $rollbacks = $query->orderBy('updated_at', 'desc')->paginate(15);
+
+        return view('edit-requests.rollback_requests', compact('rollbacks'));
+    }
 }

@@ -1949,7 +1949,7 @@ class StoreRequisitionController extends Controller
         if ($request->status === 'approved') {
             $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $req->origin_admin_status === 'pending' && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
             $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-                || (auth()->user()->isDepartmentHead() && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
+                || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department' || ($req->requester && $req->requester->sponsored_by === auth()->id())) && $req->origin_admin_status === 'pending')
                 || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
                 || $isFallbackHOD;
 

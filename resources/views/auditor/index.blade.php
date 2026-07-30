@@ -38,6 +38,43 @@
         --shadow-hover: var(--card-shadow-hover);
     }
 
+    .audit-modal-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.45) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        z-index: 1000000 !important;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .audit-modal-overlay.open {
+        display: flex;
+    }
+
+    .audit-modal-box {
+        background: var(--bg-card);
+        border-radius: 24px;
+        width: 95%;
+        max-width: 820px;
+        max-height: 95vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+        animation: auditFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid var(--border-color);
+    }
+
     /* Executive Keyframe Animations & Fading */
     @keyframes auditFadeInUp {
         0% {
@@ -758,11 +795,14 @@
             <i data-lucide="file-text" style="width: 16px;"></i>
             Requisitions Log
         </button>
-        <button class="audit-tab-btn @if($pendingSras->count() + $pendingServiceSras->count() > 0) pending-sras-active @endif" onclick="switchAuditTab('pending-sra-tab', this)" style="position: relative;">
+        @php
+            $totalPendingSrasCount = $pendingSras->count() + $pendingServiceSras->count() + ($pendingDeptRequisitions->count() ?? 0);
+        @endphp
+        <button class="audit-tab-btn @if($totalPendingSrasCount > 0) pending-sras-active @endif" onclick="switchAuditTab('pending-sra-tab', this)" style="position: relative;">
             <i data-lucide="file-check" style="width: 16px;"></i>
             Pending SRA Approvals
-            @if($pendingSras->count() + $pendingServiceSras->count() > 0)
-                <span class="badge blinking-danger-badge" style="position: absolute; top: -8px; right: -8px; padding: 2.5px 6.5px; border-radius: 99px; font-size: 0.65rem; font-weight: 900; z-index: 10;">{{ $pendingSras->count() + $pendingServiceSras->count() }}</span>
+            @if($totalPendingSrasCount > 0)
+                <span class="badge blinking-danger-badge" style="position: absolute; top: -8px; right: -8px; padding: 2.5px 6.5px; border-radius: 99px; font-size: 0.65rem; font-weight: 900; z-index: 10;">{{ $totalPendingSrasCount }}</span>
             @endif
         </button>
 
@@ -1837,12 +1877,12 @@
                                     </div>
                                     <div>
                                         <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
-                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} Â· @${acc.username}</div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(5, 150, 105,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#059669' : '#64748b'};">
-                                        ${acc.is_online ? 'â— ONLINE' : 'â—‹ OFFLINE'}
+                                        ${acc.is_online ? '&#9679; ONLINE' : '&#9675; OFFLINE'}
                                     </span>
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
                                         ${badgeText}
@@ -2005,7 +2045,141 @@
         }
     }
 
-    // â”€â”€ Silent Background Refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    window.closeAuditReqModal = function() {
+        const overlay = document.getElementById('auditReqModal');
+        if (overlay) {
+            overlay.classList.remove('open');
+        }
+    };
+
+    window.reviewAuditDeptRequisition = function(req) {
+        document.getElementById('audit-modal-number').innerText = req.req_number;
+        document.getElementById('audit-modal-requester').innerText = req.requester_name;
+        document.getElementById('audit-modal-rank').innerText = req.rank_or_title || '';
+        document.getElementById('audit-modal-contact').innerText = 
+            `Phone: ${req.requester_phone || '—'} | Service: ${req.requester_service || '—'}`;
+        document.getElementById('audit-modal-department').innerText = req.department;
+        document.getElementById('audit-modal-priority-badge').innerText = `${req.priority} Priority`;
+        document.getElementById('audit-modal-usage-badge').innerText = req.usage_type;
+        document.getElementById('audit-modal-purpose').innerText = req.purpose;
+
+        let itemsRowsHtml = (req.items || []).map((item, idx) => `
+            <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                <td style="padding: 10px 14px; font-weight: 700; color: var(--text-main); font-size: 0.82rem; line-height: 1.4;">${idx + 1}. ${item.description}</td>
+                <td style="padding: 10px 14px; font-weight: 800; color: var(--primary); font-size: 0.75rem;"><span style="background: var(--primary-glow); padding: 3px 8px; border-radius: 6px;">${item.category}</span></td>
+                <td style="padding: 10px 14px; font-weight: 850; color: var(--secondary); font-size: 0.85rem;">${item.quantity} ${item.unit}</td>
+                <td style="padding: 10px 14px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">${item.remarks || '—'}</td>
+            </tr>
+        `).join('');
+        document.getElementById('audit-modal-items-tbody').innerHTML = itemsRowsHtml;
+
+        // Rebind action buttons
+        const btnApprove = document.getElementById('audit-modal-btn-approve');
+        const btnDecline = document.getElementById('audit-modal-btn-decline');
+
+        btnApprove.onclick = () => {
+            closeAuditReqModal();
+            approveAuditDeptRequisition(req.id, req.requester_name);
+        };
+
+        btnDecline.onclick = () => {
+            closeAuditReqModal();
+            declineAuditDeptRequisition(req.id, req.requester_name);
+        };
+
+        // Redraw Lucide icons inside the modal
+        if (typeof lucide !== 'undefined') {
+            setTimeout(() => {
+                lucide.createIcons({
+                    attrs: {
+                        class: 'lucide'
+                    },
+                    nameAttr: 'data-lucide'
+                });
+            }, 50);
+        }
+
+        document.getElementById('auditReqModal').classList.add('open');
+    };
+
+    window.approveAuditDeptRequisition = function(reqId, requesterName) {
+        Swal.fire({
+            title: 'Approve Store Requisition?',
+            text: `Approve requisition request REQ-${String(reqId).padStart(6, '0')} for ${requesterName}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Approve Request',
+            confirmButtonColor: '#059669',
+            cancelButtonColor: '#64748b'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            fetch(`/main-admin/requisitions/${reqId}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: 'approved' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Approved!', data.message || 'Requisition approved successfully.', 'success');
+                    if (typeof _auditSilentRefresh === 'function') _auditSilentRefresh();
+                    else window.location.reload();
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to approve requisition.', 'error');
+                }
+            })
+            .catch(() => Swal.fire('Error', 'Network request failed.', 'error'));
+        });
+    };
+
+    window.declineAuditDeptRequisition = function(reqId, requesterName) {
+        Swal.fire({
+            title: 'Decline Store Requisition?',
+            text: `Please enter a reason for declining requisition REQ-${String(reqId).padStart(6, '0')}:`,
+            input: 'textarea',
+            inputPlaceholder: 'Enter decline reason...',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Decline Request',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) {
+                    return 'A reason for declining is required.';
+                }
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            fetch(`/main-admin/requisitions/${reqId}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: 'declined', decline_reason: result.value })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Declined', data.message || 'Requisition declined.', 'info');
+                    if (typeof _auditSilentRefresh === 'function') _auditSilentRefresh();
+                    else window.location.reload();
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to decline requisition.', 'error');
+                }
+            })
+            .catch(() => Swal.fire('Error', 'Network request failed.', 'error'));
+        });
+    };
+
+    // ————————————————————————————————————————————————————————————————————————————
     // Polls every 30s and patches only tbody + pagination HTML per tab.
     // Never runs if: a modal is open, a filter is active, or user is interacting.
 
@@ -2162,6 +2336,86 @@
         }
     }, 12000);
 </script>
+
+{{-- Custom Premium Requisition Review Modal --}}
+<div class="audit-modal-overlay" id="auditReqModal" onclick="if(event.target===this)closeAuditReqModal()">
+    <div class="audit-modal-box" style="background: var(--bg-card); border-radius: 24px; max-width: 820px; width: 95%; max-height: 95vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.25); position: relative; display: flex; flex-direction: column;">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 2rem 2.5rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
+            <div>
+                <div style="font-size: 0.72rem; font-weight: 850; text-transform: uppercase; color: var(--primary); letter-spacing: 0.08em; margin-bottom: 4px;">Department Requisition Review</div>
+                <h2 id="audit-modal-number" style="font-size: 1.4rem; font-weight: 900; margin: 0; color: var(--text-main); font-family: 'Inter', sans-serif;">REQ-000000</h2>
+            </div>
+            <button onclick="closeAuditReqModal()" style="background: var(--bg-main); border: 1px solid var(--border-color); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='var(--bg-main)'">
+                <i data-lucide="x" style="width: 18px; color: var(--text-muted);"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 2.25rem 2.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Requester & Metadata Details -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; background: var(--bg-main); border-radius: 16px; padding: 1.25rem;">
+                <div>
+                    <span style="font-size: 0.65rem; font-weight: 850; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; letter-spacing: 0.04em;">Requisitioner</span>
+                    <strong id="audit-modal-requester" style="font-size: 0.88rem; color: var(--text-main); display: block;">—</strong>
+                    <span id="audit-modal-rank" style="font-size: 0.75rem; color: var(--primary); font-weight: 700; display: block; margin-top: 2px;">—</span>
+                    <span id="audit-modal-contact" style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 4px;">—</span>
+                </div>
+                <div>
+                    <span style="font-size: 0.65rem; font-weight: 850; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; letter-spacing: 0.04em;">Origin Department</span>
+                    <strong id="audit-modal-department" style="font-size: 0.88rem; color: var(--text-main); display: block;">—</strong>
+                    <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                        <span id="audit-modal-priority-badge" style="font-size: 0.68rem; font-weight: 850; background: var(--audit-warning-glow); color: var(--accent); padding: 2px 8px; border-radius: 99px; text-transform: uppercase;">—</span>
+                        <span id="audit-modal-usage-badge" style="font-size: 0.68rem; font-weight: 850; background: var(--primary-glow); color: var(--primary); padding: 2px 8px; border-radius: 99px; text-transform: uppercase;">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purpose of Requisition -->
+            <div>
+                <span style="font-size: 0.65rem; font-weight: 850; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 6px; letter-spacing: 0.04em;">Purpose of Requisition</span>
+                <p id="audit-modal-purpose" style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-main); line-height: 1.5; background: var(--bg-card); border: 1.5px solid var(--border-color); padding: 12px; border-radius: 12px;">—</p>
+            </div>
+
+            <!-- Requested Items Table -->
+            <div>
+                <h4 style="margin: 0 0 10px 0; font-size: 0.78rem; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+                    <span style="background: var(--primary); width: 6px; height: 14px; border-radius: 99px; display: inline-block;"></span>
+                    Requested Items
+                </h4>
+                <div style="border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-premium);">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; background: white;">
+                        <thead>
+                            <tr style="background: var(--bg-main); border-bottom: 1px solid var(--border-color); text-align: left;">
+                                <th style="padding: 10px 14px; font-weight: 800; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">Item Description</th>
+                                <th style="padding: 10px 14px; font-weight: 800; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">Category</th>
+                                <th style="padding: 10px 14px; font-weight: 800; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">Qty</th>
+                                <th style="padding: 10px 14px; font-weight: 800; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-modal-items-tbody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 1.5rem 2.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; background: var(--bg-card);">
+            <button id="audit-modal-btn-decline" style="padding: 0.75rem 1.35rem; border-radius: 12px; background: var(--danger); color: white; border: none; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='var(--danger)'">
+                <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Decline
+            </button>
+            <button id="audit-modal-btn-approve" style="padding: 0.75rem 1.35rem; border-radius: 12px; background: var(--secondary); color: white; border: none; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='var(--secondary)'">
+                <i data-lucide="check-circle-2" style="width: 14px; height: 14px;"></i> Approve
+            </button>
+        </div>
+
+    </div>
+</div>
 @endsection
 
 

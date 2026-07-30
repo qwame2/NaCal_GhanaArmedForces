@@ -409,6 +409,9 @@ class AppServiceProvider extends ServiceProvider
                     ->where('status', 'pending')
                     ->count();
                 $view->with('pendingItemEntryApprovalsCount', $pendingItemEntryApprovalsCount);
+
+                $pendingRollbacksCount = \App\Models\EditRequest::where('status', 'rollback')->count();
+                $view->with('pendingRollbacksCount', $pendingRollbacksCount);
                 
                 // Fetch Pending Password Requests Count (for Admin)
                 if ((auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) && !auth()->user()->isMainAdminOrSub() && !in_array(auth()->user()->role, ['Head of Stores', 'Department Head', 'Auditor'])) {

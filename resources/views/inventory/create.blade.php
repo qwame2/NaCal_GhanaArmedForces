@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
 <style>
@@ -314,6 +314,8 @@
 
 <script>
 jQuery(document).ready(function($) {
+    const urlParams = new URLSearchParams(window.location.search);
+    window.urlParams = urlParams;
     window.originalRollbackPayload = null;
     const categoryOptionsHtml = `@foreach($ledgeMap as $code => $name)<option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>@endforeach`;
 
@@ -1503,7 +1505,9 @@ jQuery(document).ready(function($) {
 
     // Dynamic Supplier Details display
     const suppliersRegistry = @json(\App\Models\Setting::get('suppliers_registry', []));
+    window.isPrefillingRollback = false;
     $('#supplierNameSelect').on('change', function() {
+        if (window.isRestoringDraft || window.isPrefillingRollback) return;
         const name = $(this).val();
         const deliveryInput = $('#deliveryPersonInput');
         const deliveryPhoneInput = $('#deliveryPersonPhoneInput');
@@ -1523,17 +1527,11 @@ jQuery(document).ready(function($) {
         }
 
         if (name && details) {
-            deliveryInput.val(details.contact_person || details.delivery_person || '');
-            deliveryPhoneInput.val(details.contact_phone || details.delivery_phone || '');
-            supplierPhoneInput.val(details.phone || '');
-            supplierEmailInput.val(details.email || '');
-            supplierAddressInput.val(details.address || '');
-        } else {
-            deliveryInput.val('');
-            deliveryPhoneInput.val('');
-            supplierPhoneInput.val('');
-            supplierEmailInput.val('');
-            supplierAddressInput.val('');
+            if (details.contact_person || details.delivery_person) deliveryInput.val(details.contact_person || details.delivery_person);
+            if (details.contact_phone || details.delivery_phone) deliveryPhoneInput.val(details.contact_phone || details.delivery_phone);
+            if (details.phone) supplierPhoneInput.val(details.phone);
+            if (details.email) supplierEmailInput.val(details.email);
+            if (details.address) supplierAddressInput.val(details.address);
         }
     });
 
@@ -1739,7 +1737,6 @@ jQuery(document).ready(function($) {
     });
 
     // Check for continue_batch parameter
-    const urlParams = new URLSearchParams(window.location.search);
     const continueBatchId = urlParams.get('continue_batch');
 
     if (continueBatchId) {
@@ -1868,11 +1865,14 @@ jQuery(document).ready(function($) {
                     try { draftState = JSON.parse(rawDraft); } catch(e) {}
                 }
 
-                if (draftState) {
+                window.isPrefillingRollback = true;
+
+                if (draftState && draftState.items && draftState.items.length > 0) {
                     restoreFormState(draftState);
+                    window.isPrefillingRollback = false;
                     setTimeout(() => {
                         _applyRollbackHighlights(flaggedFields, flaggedItems);
-                    }, 500);
+                    }, 300);
                 } else {
                     // Set timestamp
                     const now = new Date();
@@ -1883,84 +1883,123 @@ jQuery(document).ready(function($) {
                         $('#arrivalDate').val(payload.arrival_date);
                     }
 
+                    // 1. Set Ledge Category first
                     if (payload.ledge_category) {
-                        ledgeSelect.val(payload.ledge_category).trigger('change');
+                        ledgeSelect.val(payload.ledge_category).trigger('change.select2').trigger('change');
                     }
 
-                    setTimeout(() => {
-                        const isDonor    = payload.acquisition_type === 'Donor';
-                        const supplierVal = isDonor ? (payload.donor_name || '') : (payload.supplier_name || '');
-                        const cleanVal   = supplierVal.replace(/\s\[.*\]$/, '');
+                    // 2. Set Supplier/Donor Acquisition and Details
+                    const isDonor    = payload.acquisition_type === 'Donor';
+                    const supplierVal = isDonor ? (payload.donor_name || '') : (payload.supplier_name || '');
+                    const cleanVal   = supplierVal.replace(/\s\[.*\]$/, '').trim();
 
-                        $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
+                    $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
 
-                        if (cleanVal && $('#supplierNameSelect option[value="' + cleanVal + '"]').length === 0) {
-                            $('#supplierNameSelect').append(new Option(cleanVal, cleanVal, true, true));
+                    if (cleanVal) {
+                        const $suppSel = $('#supplierNameSelect');
+                        if ($suppSel.find('option[value="' + cleanVal + '"]').length === 0) {
+                            $suppSel.append(new Option(cleanVal, cleanVal, true, true));
                         }
-                        $('#supplierNameSelect').val(cleanVal).trigger('change');
-                        if (payload.delivery_person) {
-                            $('#deliveryPersonInput').val(payload.delivery_person);
+                        $suppSel.val(cleanVal).trigger('change.select2').trigger('change');
+                    }
+
+                    if (payload.delivery_person) $('#deliveryPersonInput').val(payload.delivery_person);
+                    if (payload.delivery_phone) $('#deliveryPersonPhoneInput').val(payload.delivery_phone);
+                    if (payload.driver_name) $('#driverNameInput').val(payload.driver_name);
+                    if (payload.driver_phone) $('#driverPhoneInput').val(payload.driver_phone);
+                    if (payload.supplier_phone) $('#supplierPhoneInput').val(payload.supplier_phone);
+                    if (payload.supplier_email) $('#supplierEmailInput').val(payload.supplier_email);
+                    if (payload.supplier_address) $('#supplierAddressInput').val(payload.supplier_address);
+
+                    // Normalize & prefill Delivery Status
+                    let rawStatus = payload.supplier_status || 'Full Delivery';
+                    let statusVal = 'Full Delivery';
+                    if (String(rawStatus).toLowerCase().includes('partial')) {
+                        statusVal = 'Partial Delivery';
+                    } else if (String(rawStatus).toLowerCase().includes('full')) {
+                        statusVal = 'Full Delivery';
+                    } else if (rawStatus) {
+                        statusVal = rawStatus;
+                    }
+
+                    if (!isDonor) {
+                        const $statSel = $('#supplierStatusSelect');
+                        if ($statSel.find('option[value="' + statusVal + '"]').length === 0) {
+                            $statSel.append(new Option(statusVal, statusVal, true, true));
                         }
-                        if (payload.delivery_phone) {
-                            $('#deliveryPersonPhoneInput').val(payload.delivery_phone);
-                        }
+                        $statSel.val(statusVal).trigger('change.select2').trigger('change');
+                    }
 
-                        if (!isDonor && payload.supplier_status) {
-                            $('#supplierStatusSelect').val(payload.supplier_status).trigger('change');
-                        }
+                    // 3. Render and Populate Item Rows
+                    if (renderItems.length > 0) {
+                        $('#multiQty').val(renderItems.length);
+                        renderItemRows(renderItems.length);
 
-                        if (renderItems.length > 0) {
-                            $('#multiQty').val(renderItems.length);
-                            renderItemRows(renderItems.length);
+                        $('.item-entry-row').each(function(idx) {
+                            const itm  = renderItems[idx];
+                            const $row = $(this);
+                            if (!itm) return;
 
-                            setTimeout(() => {
-                                $('.item-entry-row').each(function(idx) {
-                                    const itm  = renderItems[idx];
-                                    const $row = $(this);
-                                    if (!itm) return;
+                            const itemCat = itm.ledge_category || payload.ledge_category;
+                            if (itemCat) {
+                                $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
+                            }
 
-                                    const itemCat = itm.ledge_category || payload.ledge_category;
-                                    $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
+                            if (itm.qty) {
+                                $row.find('.row-qty').val(itm.qty);
+                            }
 
-                                    const descSel = $row.find('.item-select-dynamic');
-                                    if (descSel.find('option[value="' + itm.description + '"]').length === 0) {
-                                        descSel.append(new Option(itm.description, itm.description, true, true));
+                            if (itm.description) {
+                                const descSel = $row.find('.item-select-dynamic');
+                                if (descSel.find('option[value="' + itm.description + '"]').length === 0) {
+                                    descSel.append(new Option(itm.description, itm.description, true, true));
+                                }
+                                descSel.val(itm.description).trigger('change.select2').trigger('change');
+                            }
+
+                            if (itm.unit) {
+                                const uSel = $row.find('.row-unit');
+                                if (uSel.find('option[value="' + itm.unit + '"]').length === 0) {
+                                    uSel.append(new Option(itm.unit, itm.unit, true, true));
+                                }
+                                uSel.val(itm.unit).trigger('change.select2').trigger('change');
+                            }
+
+                            const locVal = itm.store_location || itm.location;
+                            if (locVal) {
+                                const lSel = $row.find('.row-location');
+                                if (lSel.length) {
+                                    if (lSel.find('option[value="' + locVal + '"]').length === 0) {
+                                        lSel.append(new Option(locVal, locVal, true, true));
                                     }
-                                    descSel.val(itm.description).trigger('change');
-                                    $row.find('.row-qty').val(itm.qty || '');
-                                    if (itm.unit) {
-                                        const uSel = $row.find('.row-unit');
-                                        if (uSel.find('option[value="' + itm.unit + '"]').length === 0) {
-                                            uSel.append(new Option(itm.unit, itm.unit, true, true));
-                                        }
-                                        uSel.val(itm.unit).trigger('change');
-                                    }
-                                    if (itm.location) {
-                                        const lSel = $row.find('.row-location');
-                                        if (lSel.find('option[value="' + itm.location + '"]').length === 0) {
-                                            lSel.append(new Option(itm.location, itm.location, true, true));
-                                        }
-                                        lSel.val(itm.location).trigger('change');
-                                    }
-                                    $row.find('.row-stock-balance').val(itm.stock_balance || '');
-                                    $row.find('.row-variance').val(itm.variance || 0);
-                                    $row.find('.row-remarks').val(itm.remarks || '');
-                                    $row.find('.row-serial-number').val(itm.serial_number || '');
-                                    updateSerialInputs($row);
-                                });
+                                    lSel.val(locVal).trigger('change.select2').trigger('change');
+                                }
+                            }
 
-                                _applyRollbackHighlights(flaggedFields, flaggedItems);
-                            }, 300);
-                        } else {
-                            setTimeout(() => _applyRollbackHighlights(flaggedFields, flaggedItems), 300);
-                        }
+                            if (itm.stock_balance) {
+                                $row.find('.row-stock-balance').val(itm.stock_balance);
+                            }
+                            if (itm.variance !== undefined) {
+                                $row.find('.row-variance').val(itm.variance);
+                            }
+                            if (itm.remarks) {
+                                $row.find('.row-remarks').val(itm.remarks);
+                            }
+                            if (itm.serial_number) {
+                                $row.find('.row-serial-number').val(itm.serial_number);
+                                updateSerialInputs($row);
+                            }
+                        });
+                    }
 
-                    }, 500);
+                    window.isPrefillingRollback = false;
+                    _applyRollbackHighlights(flaggedFields, flaggedItems);
                 }
 
-                window.history.replaceState({}, '', window.location.protocol + '//' + window.location.host + window.location.pathname);
+                window.history.replaceState({}, '', window.location.protocol + '//' + window.location.host + window.location.pathname + '?rollback=' + rollbackId);
             })
             .catch(err => {
+                window.isPrefillingRollback = false;
                 console.error("Rollback fetch failed:", err);
             });
     }

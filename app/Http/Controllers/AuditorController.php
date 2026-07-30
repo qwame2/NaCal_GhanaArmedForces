@@ -185,7 +185,21 @@ class AuditorController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-         $pendingStaffRegistrationsCount = \App\Models\User::where(function($q) {
+        $pendingDeptRequisitions = \App\Models\StoreRequisition::with(['requester', 'items'])
+            ->where(function($q) {
+                $q->where('department', auth()->user()->department)
+                  ->orWhere('department', 'Audit Department')
+                  ->orWhere('department', 'Audit')
+                  ->orWhereHas('requester', function($sq) {
+                      $sq->where('sponsored_by', auth()->id());
+                  });
+            })
+            ->where('origin_admin_status', 'pending')
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pendingStaffRegistrationsCount = \App\Models\User::where(function($q) {
                 $q->where('department', auth()->user()->department)
                   ->orWhere('sponsored_by', auth()->id());
             })
@@ -205,7 +219,7 @@ class AuditorController extends Controller
 
         if ($request->input('format') === 'json' && $request->ajax()) {
             return response()->json([
-                'pending_count'     => $pendingSras->count() + $pendingServiceSras->count(),
+                'pending_count'     => $pendingSras->count() + $pendingServiceSras->count() + $pendingDeptRequisitions->count(),
                 'total_logs'        => number_format(SystemLog::count()),
                 'total_variance'    => number_format($totalVariance),
                 'active_loans'      => number_format($activeLoansCount),
@@ -236,8 +250,8 @@ class AuditorController extends Controller
                         'total' => $requisitions->total(),
                     ],
                     'pending_sra'    => [
-                        'tbody' => view('auditor._tab_pending_sra', compact('pendingSras', 'pendingServiceSras'))->render(),
-                        'total' => $pendingSras->count() + $pendingServiceSras->count(),
+                        'tbody' => view('auditor._tab_pending_sra', compact('pendingSras', 'pendingServiceSras', 'pendingDeptRequisitions'))->render(),
+                        'total' => $pendingSras->count() + $pendingServiceSras->count() + $pendingDeptRequisitions->count(),
                     ],
                 ],
             ]);
@@ -257,6 +271,7 @@ class AuditorController extends Controller
             'auditUsers',
             'pendingSras',
             'pendingServiceSras',
+            'pendingDeptRequisitions',
             'pendingStaffRegistrationsCount'
         ));
     }

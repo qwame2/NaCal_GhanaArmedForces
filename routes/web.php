@@ -778,6 +778,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/stores/service-sra/{id}/review', [ServiceSraController::class, 'storesReview'])->name('stores.service-sra.review');
     Route::post('/stores/service-sra/{id}/process', [ServiceSraController::class, 'storesProcess'])->name('stores.service-sra.process');
     Route::get('/stores/item-entry-approval', [\App\Http\Controllers\EditRequestController::class, 'itemEntryIndex'])->name('stores.item-entry-approval');
+    Route::get('/stores/rollback-requests', [\App\Http\Controllers\EditRequestController::class, 'rollbackRequestsIndex'])->name('stores.rollback-requests');
     // Auditor verification
     Route::get('/auditor/service-sra', [ServiceSraController::class, 'auditorIndex'])->name('auditor.service-sra.index');
     Route::get('/auditor/service-sra/{id}/review', [ServiceSraController::class, 'auditorReview'])->name('auditor.service-sra.review');
@@ -1627,12 +1628,40 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/received-items/{id}/process-sra-review', [\App\Http\Controllers\ReceivedItemsController::class, 'processSraReview'])->name('receiveditems.process-sra-review');
     Route::get('/api/sra-rollback/{id}', function ($id) {
         $editReq = \App\Models\EditRequest::findOrFail($id);
-        // Only the owner or an admin can access this
-        if (auth()->id() !== $editReq->user_id && !auth()->user()->is_admin) {
+        $user = auth()->user();
+        $isStoresUser = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || $user->role === 'Officer'
+            || $user->role === 'Store Officer'
+            || $user->role === 'Head of Stores'
+            || strcasecmp($user->department ?? '', 'Stores') === 0
+            || strcasecmp($user->department ?? '', 'Store') === 0;
+
+        if ($user->id !== $editReq->user_id && !$isStoresUser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
-        $rollbackData = json_decode($editReq->rollback_fields ?? '{}', true) ?? [];
-        $payload      = json_decode($editReq->payload ?? '{}', true) ?? [];
+        $payload = $editReq->payload;
+        while (is_string($payload)) {
+            $decoded = json_decode($payload, true);
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {
+                $payload = $decoded;
+            } else {
+                break;
+            }
+        }
+        if (!is_array($payload)) $payload = [];
+
+        $rollbackData = $editReq->rollback_fields;
+        while (is_string($rollbackData)) {
+            $decoded = json_decode($rollbackData, true);
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {
+                $rollbackData = $decoded;
+            } else {
+                break;
+            }
+        }
+        if (!is_array($rollbackData)) $rollbackData = [];
+
         return response()->json([
             'edit_request_id' => $editReq->id,
             'status'          => $editReq->status,

@@ -301,6 +301,13 @@ class InventoryController extends Controller
                 // Divert to staged approval process
                 $payloadData = $validated;
                 $payloadData['is_discrepancy'] = true;
+                if ($request->has('rollback_id') && !empty($request->rollback_id)) {
+                    $payloadData['rollback_id'] = $request->rollback_id;
+                    $origRollback = \App\Models\EditRequest::find($request->rollback_id);
+                    if ($origRollback) {
+                        $origRollback->update(['status' => 'resubmitted']);
+                    }
+                }
                 $editReq = \App\Models\EditRequest::create([
                     'user_id' => auth()->id(),
                     'item_id' => 0,
@@ -504,8 +511,12 @@ class InventoryController extends Controller
             if (!$is_admin) {
                 // Divert to staged approval process (Don't save items yet)
                 $payloadData = $validated;
-                if ($request->has('rollback_id')) {
+                if ($request->has('rollback_id') && !empty($request->rollback_id)) {
                     $payloadData['rollback_id'] = $request->rollback_id;
+                    $origRollback = \App\Models\EditRequest::find($request->rollback_id);
+                    if ($origRollback) {
+                        $origRollback->update(['status' => 'resubmitted']);
+                    }
                 }
 
                 $editReq = \App\Models\EditRequest::create([
@@ -580,6 +591,13 @@ class InventoryController extends Controller
                     'is_pending' => true,
                     'message' => 'Submission pending admin approval. The record will be saved once authorized.'
                 ]);
+            }
+
+            if ($request->has('rollback_id') && !empty($request->rollback_id)) {
+                $origRollback = \App\Models\EditRequest::find($request->rollback_id);
+                if ($origRollback) {
+                    $origRollback->update(['status' => 'resubmitted']);
+                }
             }
 
             // Group items by category

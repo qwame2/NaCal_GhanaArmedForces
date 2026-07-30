@@ -236,12 +236,6 @@
                     <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ request()->routeIs('main-admin.requisitions') ? 'active' : '' }}" data-tooltip="Approved Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         <span>Approved Requests</span>
-                        @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
-                        <span id="sidebar-badge-main-reqs"
-                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
-                              title="{{ $mainReqsCount }} requisition(s) awaiting your review">
-                            {{ $mainReqsCount }}
-                        </span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -342,6 +336,18 @@
                         <span>Returned Items</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('stores.rollback-requests') }}" class="nav-link {{ request()->routeIs('stores.rollback-requests') ? 'active' : '' }}" data-tooltip="Rollback Requests">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Rollback Request</span>
+                        @php $rbCount = $pendingRollbacksCount ?? 0; @endphp
+                        <span id="sidebar-badge-rollback-requests"
+                              style="background: #ef4444; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $rbCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
+                              title="{{ $rbCount }} rollback request(s) from Head of Stores">
+                            {{ $rbCount }}
+                        </span>
+                    </a>
+                </li>
                 @endif
                 @php
                     $isSraStoresHead = auth()->check() && !auth()->user()->isMainAdminOrSub() && (
@@ -426,6 +432,20 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
                         <span>Returns</span>
                     </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('stores.rollback-requests') }}" class="nav-link {{ request()->routeIs('stores.rollback-requests') ? 'active' : '' }}" data-tooltip="Rollback Requests">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Rollback Request</span>
+                        @php $rbCount = $pendingRollbacksCount ?? 0; @endphp
+                        <span id="sidebar-badge-rollback-requests-2"
+                              style="background: #ef4444; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $rbCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
+                              title="{{ $rbCount }} rollback request(s) from Head of Stores">
+                            {{ $rbCount }}
+                        </span>
+                    </a>
+                </li>
                 @endif
 
                 @if(auth()->user()->role === 'Requisitioner')

@@ -26,6 +26,7 @@ class EditRequest extends Model
         'status',
         'payload',
         'original_payload',
+        'rollback_fields',
         'approved_at',
     ];
 
