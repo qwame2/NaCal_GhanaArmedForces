@@ -1458,13 +1458,19 @@ class EditRequestController extends Controller
         }
 
         $pending = EditRequest::with('user')
-            ->where('item_type', 'batch_creation')
+            ->where(function($q) {
+                $q->where('item_type', 'batch_creation')
+                  ->orWhere('request_type', 'remainder_submission');
+            })
             ->where('status', 'pending')
             ->orderBy('created_at', 'desc')
             ->paginate(15, ['*'], 'pending_page');
 
         $history = EditRequest::with('user')
-            ->where('item_type', 'batch_creation')
+            ->where(function($q) {
+                $q->where('item_type', 'batch_creation')
+                  ->orWhere('request_type', 'remainder_submission');
+            })
             ->whereIn('status', ['approved', 'rejected', 'completed'])
             ->orderBy('updated_at', 'desc')
             ->paginate(15, ['*'], 'history_page');

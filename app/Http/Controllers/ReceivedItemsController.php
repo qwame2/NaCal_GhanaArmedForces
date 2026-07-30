@@ -77,6 +77,54 @@ class ReceivedItemsController extends Controller
             return response()->json($response);
         }
 
+        if ($req->request_type === 'remainder_submission') {
+            $updates = $data['updates'] ?? [];
+            $firstItem = isset($updates[0]['item_id']) ? \App\Models\InventoryItem::find($updates[0]['item_id']) : null;
+            $origBatch = $firstItem ? \App\Models\InventoryBatch::with('items')->find($firstItem->batch_id) : null;
+            
+            $itemsList = [];
+            foreach ($updates as $u) {
+                $invItem = \App\Models\InventoryItem::find($u['item_id']);
+                if (!$invItem) continue;
+                $incoming = floatval($u['incoming_qty']);
+                $itemsList[] = [
+                    'id' => $invItem->id,
+                    'description' => $invItem->description,
+                    'unit' => $invItem->unit,
+                    'qty' => $incoming,
+                    'stock_balance' => floatval($invItem->stock_balance) + $incoming,
+                    'variance' => floatval($invItem->variance) + $incoming,
+                    'remarks' => "Receiving pending remainder: {$incoming} units",
+                    'store_location' => $invItem->store_location ?? 'Store A',
+                ];
+            }
+
+            $formattedBatch = [
+                'id' => $origBatch->id ?? 0,
+                'ledge_category' => $origBatch->ledge_category ?? 'A',
+                'supplier_name' => $origBatch->supplier_name ?? 'N/A',
+                'supplier_status' => 'Full Delivery',
+                'donor_name' => $origBatch->donor_name ?? null,
+                'acquisition_type' => $origBatch->acquisition_type ?? 'Supplier',
+                'delivery_person' => $origBatch->delivery_person ?? null,
+                'delivery_phone' => $origBatch->delivery_phone ?? null,
+                'arrival_date' => $origBatch->arrival_date ?? now()->format('Y-m-d'),
+                'entry_date' => $req->created_at->format('Y-m-d H:i:s'),
+                'items' => $itemsList
+            ];
+
+            $response = [
+                'id' => $req->id,
+                'status' => $req->status,
+                'batch' => $formattedBatch,
+                'ledge_name' => $ledgeMap[$formattedBatch['ledge_category']] ?? $formattedBatch['ledge_category'],
+                'recorded_by_name' => $req->user->name ?? 'Personnel',
+                'created_at' => $req->created_at->format('d/m/y H:i'),
+                'request_type' => $req->request_type
+            ];
+            return response()->json($response);
+        }
+
         // Attach contact person and driver details to proposed batch
         $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', $data['supplier_name'] ?? ''));
         $deliveryPerson = $data['delivery_person'] ?? '';
@@ -234,7 +282,21 @@ class ReceivedItemsController extends Controller
                   ->where('status', 'pending');
             });
         } elseif ($request->has('status') && $request->status === 'baseline') {
-            $query->whereNotNull('inventory_items.book_qty');
+            $query->where(function($q) {
+                $q->whereNotNull('inventory_items.book_qty')
+                  ->orWhereNotNull('inventory_items.discrepancy_explanation')
+                  ->orWhereIn('inventory_batches.id', function($sub) {
+                      $sub->select('item_id')
+                          ->from('edit_requests')
+                          ->where(function($eq) {
+                              $eq->where('request_type', 'discrepancy_creation')
+                                ->orWhere('reason', 'LIKE', '%Discrepancy%')
+                                ->orWhere('reason', 'LIKE', '%Baseline%')
+                                ->orWhere('payload', 'LIKE', '%"is_discrepancy":true%')
+                                ->orWhere('payload', 'LIKE', '%"is_discrepancy": true%');
+                          });
+                  });
+            });
         }
 
         // Ledge Category filter

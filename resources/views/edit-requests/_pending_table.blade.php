@@ -1,4 +1,4 @@
-﻿<div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+<div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
     <i data-lucide="clock" style="color: #f59e0b; width: 20px;"></i>
     <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Awaiting Your Authorization ({{ $pending->total() }})</h3>
 </div>
@@ -26,13 +26,42 @@
                 @foreach($pending as $req)
                     @php
                         $payload = json_decode($req->payload, true) ?? [];
+                        $isRemainder = ($req->request_type === 'remainder_submission');
+                        
                         $supplier = !empty(trim($payload['supplier_name'] ?? '')) 
                             ? $payload['supplier_name'] 
                             : (!empty(trim($payload['donor_name'] ?? '')) ? $payload['donor_name'] : 'N/A');
-                        $itemsCount = count($payload['items'] ?? []);
+                        
+                        $itemsList = $payload['items'] ?? [];
+
+                        if ($isRemainder) {
+                            $firstUpdate = ($payload['updates'] ?? [])[0] ?? null;
+                            $firstInvItem = $firstUpdate ? \App\Models\InventoryItem::find($firstUpdate['item_id']) : null;
+                            $batchObj = $firstInvItem ? \App\Models\InventoryBatch::find($firstInvItem->batch_id) : null;
+                            
+                            if ($batchObj) {
+                                $supplier = !empty(trim($batchObj->supplier_name)) ? $batchObj->supplier_name : (!empty(trim($batchObj->donor_name)) ? $batchObj->donor_name : 'N/A');
+                                $payload['ledge_category'] = $batchObj->ledge_category;
+                            }
+
+                            if (empty($itemsList) && !empty($payload['updates'])) {
+                                $itemsList = collect($payload['updates'])->map(function($u) {
+                                    $invItem = \App\Models\InventoryItem::find($u['item_id']);
+                                    return [
+                                        'description' => ($invItem ? $invItem->description : 'Item') . ' (+' . floatval($u['incoming_qty']) . ')',
+                                        'store_location' => $invItem->store_location ?? 'Store A'
+                                    ];
+                                })->toArray();
+                            }
+                        }
                     @endphp
                     <tr class="sra-table-row" style="cursor: pointer;" onclick="window.location.href='{{ route('sra.preview', $req->id) }}'">
-                        <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: #059669;">REQ-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: #059669;">
+                            REQ-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
+                            @if($isRemainder)
+                                <span style="font-size: 0.65rem; background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 7px; border-radius: 6px; font-weight: 850; margin-left: 4px; text-transform: uppercase;">REMAINDER</span>
+                            @endif
+                        </td>
                         <td style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
                             {{ $req->created_at->format('d M Y, h:i A') }}
                         </td>
@@ -47,7 +76,7 @@
                         </td>
                         <td style="padding: 1.25rem 1.5rem; font-size: 0.82rem; font-weight: 800;">
                             @php
-                                $firstItem = ($payload['items'] ?? [])[0] ?? [];
+                                $firstItem = ($itemsList)[0] ?? [];
                                 $rawLocPending = $firstItem['store_location'] ?? ($firstItem['location'] ?? 'Store A');
                                 $stLocPending = str_replace('Stores', 'Store', $rawLocPending);
                                 $isPendingB = str_contains($stLocPending, 'B');
@@ -63,9 +92,6 @@
                             </div>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
-                            @php
-                                $itemsList = $payload['items'] ?? [];
-                            @endphp
                             @if(count($itemsList) === 1)
                                 {{ $itemsList[0]['description'] ?? 'N/A' }}
                             @else

@@ -1428,5 +1428,101 @@ class ApiTest extends TestCase
         $viewResp->assertSee('Correction Submitted');
         $viewResp->assertSee('disabled');
     }
+
+    public function test_baseline_filter_shows_discrepancy_and_baseline_items()
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+        ]);
+
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'A',
+            'supplier_name' => 'Discrepancy Baseline Supplier',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => now()->format('Y-m-d'),
+            'approval_status' => 'approved',
+        ]);
+
+        $item = $batch->items()->create([
+            'description' => 'Baseline Unique Paper Item 99',
+            'unit' => 'BOX',
+            'qty' => 50,
+            'stock_balance' => 50,
+            'variance' => 0,
+            'book_qty' => 50,
+            'discrepancy_explanation' => 'Initial stock count discrepancy',
+        ]);
+
+        \App\Models\EditRequest::create([
+            'user_id' => $officer->id,
+            'item_type' => 'batch_creation',
+            'item_id' => $batch->id,
+            'request_type' => 'discrepancy_creation',
+            'reason' => 'Discrepancy Entry Submission',
+            'status' => 'completed',
+            'payload' => json_encode(['is_discrepancy' => true]),
+        ]);
+
+        $resp = $this->actingAs($officer)->get(route('receiveditems', ['status' => 'baseline']));
+        $resp->assertStatus(200);
+        $resp->assertSee('Baseline Unique Paper Item 99');
+    }
+
+    public function test_remainder_submission_appears_in_item_entry_approval_panel()
+    {
+        $headOfStores = User::factory()->create([
+            'role' => 'Head of Stores',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_admin' => 1,
+        ]);
+
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+        ]);
+
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'B',
+            'supplier_name' => 'Partial Goods Supplier',
+            'supplier_status' => 'Partial Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => now()->format('Y-m-d'),
+            'approval_status' => 'approved',
+        ]);
+
+        $item = $batch->items()->create([
+            'description' => 'Cleaning Liquid Soap 5L',
+            'unit' => 'BOTTLE',
+            'qty' => 10,
+            'stock_balance' => 10,
+            'variance' => -5,
+        ]);
+
+        $remainderReq = \App\Models\EditRequest::create([
+            'user_id' => $officer->id,
+            'item_id' => $batch->id,
+            'item_type' => 'batch',
+            'request_type' => 'remainder_submission',
+            'reason' => 'Receiving Pending Remainder Items',
+            'status' => 'pending',
+            'payload' => json_encode([
+                'updates' => [
+                    ['item_id' => $item->id, 'incoming_qty' => 5]
+                ]
+            ]),
+        ]);
+
+        $resp = $this->actingAs($headOfStores)->get(route('stores.item-entry-approval'));
+        $resp->assertStatus(200);
+        $resp->assertSee('REMAINDER');
+        $resp->assertSee('Cleaning Liquid Soap 5L');
+    }
 }
 
