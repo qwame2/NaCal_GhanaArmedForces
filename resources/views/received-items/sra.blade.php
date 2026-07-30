@@ -481,21 +481,28 @@
                         $rawPrevNos = array_filter(array_map('trim', preg_split('/[\n,]+/', $batch->previous_sra_nos ?? '')));
                         $prevNos = array_values($rawPrevNos);
 
-                        if (empty($prevNos) && ($isPartial || str_contains(strtolower($batch->supplier_name ?? ''), 'partial'))) {
-                            $prevEditReqs = \App\Models\EditRequest::where('item_id', $batch->id)
-                                ->whereIn('request_type', ['sra_creation', 'remainder_submission'])
-                                ->whereIn('status', ['approved', 'completed', 'resubmitted'])
-                                ->orderBy('id', 'asc')
-                                ->pluck('id')
-                                ->toArray();
+                        // Only show previous SRA numbers if a remainder has been submitted or returned
+                        if (empty($prevNos)) {
+                            $hasRemainderEntry = \App\Models\EditRequest::where('item_id', $batch->id)
+                                ->where('request_type', 'remainder_submission')
+                                ->whereIn('status', ['approved', 'completed', 'resubmitted', 'pending'])
+                                ->exists();
 
-                            if (!empty($prevEditReqs)) {
-                                foreach ($prevEditReqs as $pId) {
-                                    $prevNos[] = 'SRA-' . str_pad($pId, 6, '0', STR_PAD_LEFT);
+                            if ($hasRemainderEntry) {
+                                $prevEditReqs = \App\Models\EditRequest::where('item_id', $batch->id)
+                                    ->whereIn('request_type', ['sra_creation', 'remainder_submission'])
+                                    ->whereIn('status', ['approved', 'completed', 'resubmitted'])
+                                    ->orderBy('id', 'asc')
+                                    ->pluck('id')
+                                    ->toArray();
+
+                                if (!empty($prevEditReqs)) {
+                                    foreach ($prevEditReqs as $pId) {
+                                        $prevNos[] = 'SRA-' . str_pad($pId, 6, '0', STR_PAD_LEFT);
+                                    }
+                                } else {
+                                    $prevNos[] = 'SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT);
                                 }
-                            }
-                            if (empty($prevNos)) {
-                                $prevNos[] = 'SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT);
                             }
                         }
                     @endphp
