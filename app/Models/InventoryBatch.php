@@ -94,9 +94,19 @@ class InventoryBatch extends Model
             }
         }
 
+        if (Schema::hasTable('inventory_batches') && !Schema::hasColumn('inventory_batches', 'previous_sra_nos')) {
+            try {
+                Schema::table('inventory_batches', function (Blueprint $table) {
+                    $table->text('previous_sra_nos')->nullable();
+                });
+            } catch (\Exception $e) {
+                $success = false;
+            }
+        }
+
         // Cache the successful validation for 7 days if all schema modifications succeeded
         if ($success) {
-            \Illuminate\Support\Facades\Cache::put($cacheKey, true, 604800);
+            \Illuminate\Support\Facades\Cache::put($cacheKey, true, 86400);
         }
     }
 
@@ -106,6 +116,7 @@ class InventoryBatch extends Model
         'donor_name',
         'acquisition_type',
         'supplier_status',
+        'previous_sra_nos',
         'entry_date',
         'arrival_date',
         'recorded_by',

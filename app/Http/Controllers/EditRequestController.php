@@ -463,14 +463,35 @@ class EditRequestController extends Controller
                             }
                         }
                     }
-                    // Set batch for later use in notifications
+                    // Set batch for later use in notifications & route to Auditor and Admin for SRA review
                     $batch = \App\Models\InventoryBatch::find($editReq->item_id);
+                    if ($batch) {
+                        $batch->approval_status = 'pending_auditor_admin';
+                        $batch->auditor_status = 'pending';
+                        $batch->admin_status = 'pending';
+
+                        $initialSraNo = 'SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT);
+                        $currentSraNo = 'SRA-' . str_pad($editReq->id, 6, '0', STR_PAD_LEFT);
+
+                        if (empty($batch->previous_sra_nos)) {
+                            $batch->previous_sra_nos = $initialSraNo;
+                        } elseif (!str_contains($batch->previous_sra_nos, $initialSraNo)) {
+                            $batch->previous_sra_nos = $initialSraNo . ', ' . $batch->previous_sra_nos;
+                        }
+
+                        if (!str_contains($batch->previous_sra_nos, $currentSraNo) && $currentSraNo !== $initialSraNo) {
+                            $batch->previous_sra_nos .= ', ' . $currentSraNo;
+                        }
+
+                        $batch->save();
+                        \App\Models\InventoryBatch::sendSraReviewNotifications($batch);
+                    }
 
                     \App\Models\SystemLog::create([
                         'user_id' => $editReq->user_id,
                         'event_type' => 'INVENTORY',
                         'action' => 'SUPPLEMENT_INVENTORY',
-                        'description' => "Personnel added remainder items (Approved by Admin).",
+                        'description' => "Personnel added remainder items (Approved by Head of Stores, pending Auditor & Admin approval).",
                         'severity' => 'info',
                         'metadata' => ['batch_id' => $editReq->item_id],
                         'ip_address' => request()->ip()

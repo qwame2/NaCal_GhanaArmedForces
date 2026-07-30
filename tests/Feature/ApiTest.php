@@ -1562,5 +1562,67 @@ class ApiTest extends TestCase
         $this->assertEquals('HP LaserJet Pro Toner 85A', $json['batch']['items'][0]['description']);
         $this->assertEquals(-5, $json['batch']['items'][0]['variance']);
     }
+
+    public function test_remainder_submission_approval_routes_to_auditor_admin_review_and_shows_previous_sra()
+    {
+        $headOfStores = User::factory()->create([
+            'role' => 'Head of Stores',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_admin' => 1,
+        ]);
+
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+        ]);
+
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'A',
+            'supplier_name' => 'Partial Office Depot Ltd [Partial Delivery]',
+            'supplier_status' => 'Partial Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => now()->format('Y-m-d'),
+            'approval_status' => 'approved',
+        ]);
+
+        $item = $batch->items()->create([
+            'description' => 'A4 Executive Printing Paper',
+            'unit' => 'BOX',
+            'qty' => 50,
+            'stock_balance' => 50,
+            'variance' => -20,
+        ]);
+
+        $editReq = \App\Models\EditRequest::create([
+            'user_id' => $officer->id,
+            'item_id' => $batch->id,
+            'item_type' => 'batch',
+            'request_type' => 'remainder_submission',
+            'reason' => 'Receiving Pending Remainder Items',
+            'status' => 'pending',
+            'payload' => json_encode([
+                'updates' => [
+                    ['item_id' => $item->id, 'incoming_qty' => 20]
+                ]
+            ]),
+        ]);
+
+        // Approve remainder submission
+        $approveResp = $this->actingAs($headOfStores)->post(route('sra-creation.process', $editReq->id), [
+            'status' => 'approved'
+        ]);
+        $approveResp->assertStatus(200);
+
+        $freshBatch = $batch->fresh();
+        $this->assertEquals('pending_auditor_admin', $freshBatch->approval_status);
+
+        // Verify printed SRA contains previous SRA number
+        $sraView = $this->actingAs($headOfStores)->get(route('receiveditems.sra', ['id' => $batch->id]));
+        $sraView->assertStatus(200);
+        $sraView->assertSee('SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT));
+    }
 }
 
