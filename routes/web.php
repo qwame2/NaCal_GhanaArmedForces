@@ -256,12 +256,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         }
 
         // Redirect Head of Stores to their designated page
-        $isStoresHeadUser = auth()->user()->role === 'Head of Stores'
-            || auth()->user()->role === 'Dept. Head (Stores)'
-            || (auth()->user()->isDepartmentHead() && in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']))
-            || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 && auth()->user()->role !== 'Officer' && auth()->user()->role !== 'Requisitioner');
-
-        if ($isStoresHeadUser) {
+        if (auth()->user()->isStoresHeadUser()) {
             return redirect()->route('stores.dashboard');
         }
 
@@ -739,6 +734,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/api/dept-head/pending-registrations', [\App\Http\Controllers\TempRequisitionerController::class, 'pendingRegistrations'])->name('dept-head.pending-registrations');
     Route::post('/dept-head/registration/{id}/approve', [\App\Http\Controllers\TempRequisitionerController::class, 'approveRegistration'])->name('dept-head.registration.approve');
     Route::post('/dept-head/registration/{id}/reject', [\App\Http\Controllers\TempRequisitionerController::class, 'rejectRegistration'])->name('dept-head.registration.reject');
+    Route::get('/admin/staff-approvals', [\App\Http\Controllers\AdminController::class, 'staffApprovals'])->name('admin.staff-approvals');
+    Route::get('/admin/pending-registrations', [\App\Http\Controllers\AdminController::class, 'getPendingRegistrations'])->name('admin.pending-registrations');
 
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');

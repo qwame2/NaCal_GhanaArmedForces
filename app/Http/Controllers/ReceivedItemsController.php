@@ -199,7 +199,7 @@ class ReceivedItemsController extends Controller
         // Shift to querying individual items for a more detailed "Received Items" report
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type');
+            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type', 'inventory_batches.approval_status as batch_approval_status');
 
         // Date filter
         if ($request->has('date_from') && $request->date_from) {
@@ -347,7 +347,7 @@ class ReceivedItemsController extends Controller
         // Fetch aggregate totals for item status display in the table
         $itemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.approval_status', '=', 'approved')
+            ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
             ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
             ->groupBy('inventory_items.description')
             ->get()

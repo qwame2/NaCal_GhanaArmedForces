@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -359,23 +359,27 @@
             $storesUser = $batch->storesApprover ?? $batch->approver ?? $batch->recorder;
             $storesDate = $batch->stores_approved_at ?: $batch->approved_at ?: $batch->created_at;
             
-            $adminUser = $batch->adminApprover;
-            $adminApproved = $batch->admin_status === 'approved' && $adminUser;
+            $adminUser = $batch->adminApprover ?: ($batch->admin_approved_by ? (is_numeric($batch->admin_approved_by) ? \App\Models\User::find($batch->admin_approved_by) : \App\Models\User::where('name', $batch->admin_approved_by)->first()) : null);
+            $adminApproved = $batch->admin_status === 'approved' && ($batch->admin_approved_by || $batch->adminApprover);
             
-            $auditorUser = $batch->auditorApprover;
-            $auditorApproved = $batch->auditor_status === 'approved' && $auditorUser;
+            $auditorUser = $batch->auditorApprover ?: ($batch->auditor_approved_by ? (is_numeric($batch->auditor_approved_by) ? \App\Models\User::find($batch->auditor_approved_by) : \App\Models\User::where('name', $batch->auditor_approved_by)->first()) : null);
+            $auditorApproved = $batch->auditor_status === 'approved' && ($batch->auditor_approved_by || $batch->auditorApprover);
         @endphp
         <div class="signatures">
             <div class="sig-block">
                 <div class="sig-label">OFFICER-IN-CHARGE</div>
                 <div class="sig-sub">(Acceptance Authority)</div>
                 <div style="margin-top: 10px; font-weight: bold; text-align: left; max-width: 220px; margin-left: auto; margin-right: auto; font-size: 13px;">
-                    <div><strong>Name:</strong> {{ $adminApproved ? $adminUser->name : '________________' }}</div>
+                    <div><strong>Name:</strong> {{ ($adminApproved && $adminUser) ? $adminUser->name : ($adminApproved && $batch->admin_approved_by && !is_numeric($batch->admin_approved_by) ? $batch->admin_approved_by : '________________') }}</div>
                     <div><strong>Role:</strong> 
                         @if($adminApproved && $adminUser)
-                            {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : $adminUser->role }}
+                            @if($adminUser->role === 'Main Admin' || $adminUser->role === 'Sub Main Admin')
+                                Head of Administration (Authorizer)
+                            @else
+                                {{ $adminUser->role }} (Authorizer)
+                            @endif
                         @else
-                            {{ $batch->admin_status === 'approved' ? 'Delegator Authorizer' : '________________' }}
+                            {{ $batch->admin_status === 'approved' ? 'Head of Administration (Authorizer)' : '________________' }}
                         @endif
                     </div>
                     <div><strong>Date:</strong> {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : '________________' }}</div>

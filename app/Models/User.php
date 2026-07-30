@@ -223,6 +223,25 @@ class User extends Authenticatable implements LdapAuthenticatable
     }
 
     /**
+     * Returns true if this user is Head of Stores (or designated Stores Head).
+     */
+    public function isStoresHeadUser(): bool
+    {
+        if ($this->isMainAdminOrSub()) {
+            return false;
+        }
+        $role = strtolower(trim($this->role ?? ''));
+        if (in_array($role, ['head of stores', 'dept. head (stores)', 'dept head (stores)'])) {
+            return true;
+        }
+        if (in_array(strtoupper(trim($this->department ?? '')), ['STORES', 'STORE'])) {
+            return !in_array($role, ['officer', 'requisitioner']);
+        }
+        return false;
+    }
+
+
+    /**
      * Returns true if this user is a department head.
      */
     public function isDepartmentHead(): bool

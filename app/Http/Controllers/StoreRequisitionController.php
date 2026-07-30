@@ -24,7 +24,7 @@ class StoreRequisitionController extends Controller
         // Fetch all available inventory items (grouped by description)
         $availableItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.approval_status', '=', 'approved')
+            ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
             ->orderByRaw('TRIM(inventory_items.description)')
@@ -151,7 +151,7 @@ class StoreRequisitionController extends Controller
             // Calculate physical stock
             $stockQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->where('inventory_batches.approval_status', '=', 'approved')
+                ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                 ->whereRaw('TRIM(inventory_items.description) = ?', [$description]);
             
             if (is_null($category)) {
@@ -1033,7 +1033,7 @@ class StoreRequisitionController extends Controller
         if (!empty($descriptions)) {
             $rows = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->where('inventory_batches.approval_status', '=', 'approved')
+                ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                 ->whereIn(\DB::raw('TRIM(inventory_items.description)'), $descriptions)
                 ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
@@ -1257,7 +1257,7 @@ class StoreRequisitionController extends Controller
                                     $origItemName = $reqItem->description;
                                     $totalStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                                         ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                                        ->where('inventory_batches.approval_status', '=', 'approved')
+                                        ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($origItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
@@ -1270,7 +1270,7 @@ class StoreRequisitionController extends Controller
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($origItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
                                             $q->where('supplier_status', '!=', 'System Draft')
-                                                ->where('approval_status', '=', 'approved');
+                                                ->whereIn('approval_status', ['approved', 'pending_auditor_admin']);
                                             if ($reqItem->category) {
                                                 $q->where('ledge_category', $reqItem->category);
                                             }
@@ -1305,7 +1305,7 @@ class StoreRequisitionController extends Controller
                                     $altItemName = $reqItem->alternative_description;
                                     $totalAltStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                                         ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                                        ->where('inventory_batches.approval_status', '=', 'approved')
+                                        ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($altItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
@@ -1318,7 +1318,7 @@ class StoreRequisitionController extends Controller
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($altItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
                                             $q->where('supplier_status', '!=', 'System Draft')
-                                                ->where('approval_status', '=', 'approved');
+                                                ->whereIn('approval_status', ['approved', 'pending_auditor_admin']);
                                             if ($reqItem->category) {
                                                 $q->where('ledge_category', $reqItem->category);
                                             }
@@ -1488,7 +1488,7 @@ class StoreRequisitionController extends Controller
                 $q->whereNull('inventory_batches.id')
                   ->orWhere(function($sub) {
                       $sub->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                          ->where('inventory_batches.approval_status', '=', 'approved');
+                          ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin']);
                   });
             })
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, COALESCE(inventory_batches.ledge_category, "") as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')

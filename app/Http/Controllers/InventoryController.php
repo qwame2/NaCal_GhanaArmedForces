@@ -295,7 +295,7 @@ class InventoryController extends Controller
 
             DB::beginTransaction();
 
-            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover();
+            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
             
             if (!$is_admin) {
                 // Divert to staged approval process
@@ -499,7 +499,7 @@ class InventoryController extends Controller
 
 
             // Create the Batch or Stage it for Approval
-            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover();
+            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
             
             if (!$is_admin) {
                 // Divert to staged approval process (Don't save items yet)
@@ -779,7 +779,7 @@ class InventoryController extends Controller
 
         $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.approval_status', '=', 'approved')
+            ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
             ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
             ->get();

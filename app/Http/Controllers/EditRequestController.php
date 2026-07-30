@@ -153,7 +153,8 @@ class EditRequestController extends Controller
         ]);
 
         $editReq = EditRequest::findOrFail($id);
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+        $isAuthorized = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -401,7 +402,8 @@ class EditRequestController extends Controller
             'reason' => 'nullable|string'
         ]);
 
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+        $isAuthorized = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -888,7 +890,8 @@ class EditRequestController extends Controller
             'reason' => 'nullable|string'
         ]);
 
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+        $isAuthorized = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 

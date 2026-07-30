@@ -597,6 +597,18 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'message' => "Department requisition access {$actionWord}."]);
     }
 
+    public function staffApprovals()
+    {
+        $user = auth()->user();
+        $isDelegator = ($user->role === 'Sub Main Admin' || $user->isDelegatedApprover());
+
+        if (!$isDelegator) {
+            abort(403, 'Unauthorized access: Staff Access & Approvals is restricted strictly to Delegators (Authorizers).');
+        }
+
+        return view('admin.staff_approvals');
+    }
+
     public function getPendingRegistrations()
     {
         $userRole = auth()->user()->role ?? '';
@@ -1440,7 +1452,7 @@ class AdminController extends Controller
 
     public function adminSuppliers()
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)') {
             abort(403, 'Unauthorized access.');
         }
 

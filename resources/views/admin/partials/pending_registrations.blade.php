@@ -1,3 +1,26 @@
+<style>
+    .reg-select-wrapper .select2-container--default .select2-selection--single {
+        height: 60px !important;
+        border-radius: 12px !important;
+        border: 1.5px solid var(--border-color, #cbd5e1) !important;
+        display: flex !important;
+        align-items: center !important;
+        padding-left: 12px !important;
+        font-size: 0.92rem !important;
+        font-weight: 700 !important;
+        background-color: var(--bg-card, #ffffff) !important;
+    }
+    .reg-select-wrapper .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 58px !important;
+        padding-left: 4px !important;
+        color: var(--text-main, #0f172a) !important;
+    }
+    .reg-select-wrapper .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 58px !important;
+        top: 1px !important;
+    }
+</style>
+
 @if($pendingUsers->count() === 0)
     <div class="reg-empty-state">
         <div class="reg-empty-icon">
@@ -51,7 +74,7 @@
                 @if($req->sponsor)
                 <div class="reg-pill sponsor" style="background: #f5f3ff; color: #6d28d9; border: 1px solid rgba(109, 40, 217, 0.1);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    Head of Department: {{ $req->sponsor->name }}
+                    HOD: {{ $req->sponsor->name }}
                 </div>
                 @endif
                 @if($req->service_number)
@@ -72,11 +95,12 @@
             <div class="reg-actions">
                 <form action="{{ route('admin.users.approve_registration', $req->id) }}" method="POST" style="display:inline-flex; align-items:center; gap:0.6rem;">
                     @csrf
-                    <div class="reg-select-wrapper">
-                        <select name="role" required class="reg-select">
+                    <div class="reg-select-wrapper" style="min-width: 280px;">
+                        <select name="role" required class="reg-select select2-assign-role" style="width: 100%;">
                             @php
-                                $currentRole = $req->role ?? 'Requisitioner';
+                                $currentRole = $req->role ?? '';
                             @endphp
+                            <option value="" disabled {{ empty($currentRole) ? 'selected' : '' }}>-- Assign Role --</option>
                             <option value="Requisitioner" {{ $currentRole === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
                             <option value="Officer" {{ $currentRole === 'Officer' ? 'selected' : '' }}>Store Officer</option>
                             <option value="Department Head" {{ in_array($currentRole, ['Department Head', 'Dept Head HR', 'Head of Welfare']) ? 'selected' : '' }}>Departmental Head</option>
@@ -86,9 +110,6 @@
                             <option value="External Auditor" {{ $currentRole === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
                             <option value="Director General" {{ $currentRole === 'Director General' ? 'selected' : '' }}>Director General</option>
                         </select>
-                        <div class="reg-select-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </div>
                     </div>
                     <button type="submit" class="reg-btn approve" title="Approve registration">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -107,4 +128,16 @@
         </div>
         @endforeach
     </div>
+    <script>
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            setTimeout(function() {
+                $('.select2-assign-role').select2({
+                    placeholder: '-- Assign Role --',
+                    allowClear: false,
+                    minimumResultsForSearch: 6,
+                    width: '280px'
+                });
+            }, 50);
+        }
+    </script>
 @endif

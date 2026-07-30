@@ -1219,9 +1219,6 @@
                     </label>
                     <textarea id="sra-modal-notes" rows="3" style="width: 100%; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; resize: vertical; box-sizing: border-box;" placeholder="Add notes..."></textarea>
                     <div style="display: flex; gap: 1rem; margin-top: 1.25rem; justify-content: flex-end; flex-wrap: wrap;">
-                        <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="x-circle" style="width: 16px;"></i> Decline
-                        </button>
                         <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #059669; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(5,150,105,0.4);">
                             <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                         </button>

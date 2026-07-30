@@ -467,25 +467,27 @@
                 <div class="checkbox-row">
                     <div class="checkbox-item">
                         <span class="info-label" style="margin: 0;">FULL</span>
-                        <div class="box">{{ !$isPartial ? '✓' : '' }}</div>
+                        <div class="box">{!! !$isPartial ? '&#10003;' : '' !!}</div>
                     </div>
                     <div class="checkbox-item">
                         <span class="info-label" style="margin: 0;">PART</span>
-                        <div class="box">{{ $isPartial ? '✓' : '' }}</div>
+                        <div class="box">{!! $isPartial ? '&#10003;' : '' !!}</div>
                     </div>
                 </div>
 
-                @if($isPartial)
                 <div style="margin-top: 15px; font-size: 11px;">
                     <span class="info-label">If part delivery/Performance, indicate previous SRA Nos.</span>
+                    @php
+                        $prevNos = array_filter(array_map('trim', preg_split('/[\n,]+/', $batch->previous_sra_nos ?? '')));
+                        $prevNos = array_values($prevNos);
+                    @endphp
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;">
-                        <span>1. __________</span>
-                        <span>3. __________</span>
-                        <span>2. __________</span>
-                        <span>4. __________</span>
+                        <span>1. <strong>{{ $prevNos[0] ?? '_______' }}</strong></span>
+                        <span>3. <strong>{{ $prevNos[2] ?? '_______' }}</strong></span>
+                        <span>2. <strong>{{ $prevNos[1] ?? '_______' }}</strong></span>
+                        <span>4. <strong>{{ $prevNos[3] ?? '_______' }}</strong></span>
                     </div>
                 </div>
-                @endif
             </div>
         </div>
 
@@ -554,26 +556,30 @@
             $storesUser = $batch->storesApprover ?? $batch->approver ?? $batch->recorder;
             $storesDate = $batch->stores_approved_at ?: $batch->approved_at ?: $batch->created_at;
             
-            $adminUser = $batch->adminApprover ?: $batch->recorder;
-            $adminApproved = $batch->admin_status === 'approved' && $batch->adminApprover;
+            $adminUser = $batch->adminApprover ?: ($batch->admin_approved_by ? (is_numeric($batch->admin_approved_by) ? \App\Models\User::find($batch->admin_approved_by) : \App\Models\User::where('name', $batch->admin_approved_by)->first()) : null);
+            $adminApproved = $batch->admin_status === 'approved' && ($batch->admin_approved_by || $batch->adminApprover);
             
-            $auditorUser = $batch->auditorApprover;
-            $auditorApproved = $batch->auditor_status === 'approved' && $auditorUser;
+            $auditorUser = $batch->auditorApprover ?: ($batch->auditor_approved_by ? (is_numeric($batch->auditor_approved_by) ? \App\Models\User::find($batch->auditor_approved_by) : \App\Models\User::where('name', $batch->auditor_approved_by)->first()) : null);
+            $auditorApproved = $batch->auditor_status === 'approved' && ($batch->auditor_approved_by || $batch->auditorApprover);
         @endphp
         <div class="signatures-grid">
             <div class="sig-cell">
                 <div class="sig-top-label" style="margin-bottom: 5px;">I certify that the service has been performed according to order.</div>
                 <div class="sig-label">Officer-in-Charge</div>
                 <div class="sig-name-date">
-                    <div><strong>Name:</strong> {{ $adminApproved ? $adminUser->name : ($adminUser ? $adminUser->name : '______________________') }}</div>
+                    <div><strong>Name:</strong> {{ ($adminApproved && $adminUser) ? $adminUser->name : ($adminApproved && $batch->admin_approved_by && !is_numeric($batch->admin_approved_by) ? $batch->admin_approved_by : '______________________') }}</div>
                     <div><strong>Role:</strong> 
-                        @if($adminUser)
-                            {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : ($adminUser->role ?? 'Officer-in-Charge') }}
+                        @if($adminApproved && $adminUser)
+                            @if($adminUser->role === 'Main Admin' || $adminUser->role === 'Sub Main Admin')
+                                Head of Administration (Authorizer)
+                            @else
+                                {{ $adminUser->role }} (Authorizer)
+                            @endif
                         @else
-                            {{ $batch->admin_status === 'approved' ? 'Delegator Authorizer' : '______________________' }}
+                            {{ $adminApproved ? 'Head of Administration (Authorizer)' : '______________________' }}
                         @endif
                     </div>
-                    <div><strong>Date:</strong> {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : ($batch->created_at ? \Carbon\Carbon::parse($batch->created_at)->format('d/m/y') : '______________________') }}</div>
+                    <div><strong>Date:</strong> {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : '______________________' }}</div>
                 </div>
             </div>
             <div class="sig-cell">

@@ -279,25 +279,39 @@ class StoreRequisition extends Model
         $user = auth()->user();
         $userDept = $user?->department;
 
-        $isStoresHead = ($user?->isMainAdminOrSub() || $user?->role === 'Head of Stores' || strcasecmp($userDept ?? '', 'Stores') === 0 || strcasecmp($userDept ?? '', 'Store') === 0);
+        $isStoresHead = ($user?->isMainAdminOrSub() || $user?->role === 'Head of Stores' || in_array($user?->role, ['Auditor', 'External Auditor']) || strcasecmp($userDept ?? '', 'Stores') === 0 || strcasecmp($userDept ?? '', 'Store') === 0);
+        if (!$isStoresHead && $user?->isDepartmentHead()) {
+            $isBackup = in_array($userDept, ['Human Resource Management Department', 'Welfare Department']);
+            if ($isBackup && !\App\Models\User::isPrimaryStoresHeadOnline()) {
+                $isStoresHead = true;
+            }
+        }
 
         if ($isStoresHead) {
             return $query->where('status', 'pending')
-                ->where('origin_admin_status', 'approved')
-                ->where(function($q) {
-                    $q->where('requires_dg_approval', false)
-                      ->orWhere('dg_status', 'approved');
-                })
-                ->where(function($q) {
-                    // Include items awaiting Authorizer review (pending) AND items already
-                    // past Authorizer step (approved/null) awaiting Head of Stores final action.
-                    $q->where('main_admin_status', 'pending')
-                      ->orWhere('main_admin_status', 'approved')
-                      ->orWhereNull('main_admin_status');
-                })
-                ->where(function($q) {
-                    $q->whereNull('alternative_status')
-                      ->orWhereNotIn('alternative_status', ['proposed', 'agreed']);
+                ->where(function($q) use ($userDept) {
+                    $q->where(function($sub) {
+                        $sub->where('origin_admin_status', 'approved')
+                           ->where(function($q2) {
+                               $q2->where('requires_dg_approval', false)
+                                  ->orWhere('dg_status', 'approved');
+                           })
+                           ->where(function($q2) {
+                               $q2->where('main_admin_status', 'pending')
+                                  ->orWhere('main_admin_status', 'approved')
+                                  ->orWhereNull('main_admin_status');
+                           })
+                           ->where(function($q2) {
+                               $q2->whereNull('alternative_status')
+                                  ->orWhereNotIn('alternative_status', ['proposed', 'agreed']);
+                           });
+                    });
+                    if ($userDept && !in_array(strtoupper(trim($userDept)), ['STORES', 'STORE'])) {
+                        $q->orWhere(function($sub) use ($userDept) {
+                            $sub->where('origin_admin_status', 'pending')
+                               ->where('department', $userDept);
+                        });
+                    }
                 });
         }
 

@@ -515,11 +515,11 @@
                         <div class="checkbox-row">
                             <div class="checkbox-item">
                                 <span class="info-label" style="margin: 0;">FULL</span>
-                                <div class="box">{{ $sra->delivery_type === 'full' ? 'âœ“' : '' }}</div>
+                                <div class="box">{!! $sra->delivery_type === 'full' ? '&#10003;' : '' !!}</div>
                             </div>
                             <div class="checkbox-item">
                                 <span class="info-label" style="margin: 0;">PART</span>
-                                <div class="box">{{ $sra->delivery_type === 'partial' ? 'âœ“' : '' }}</div>
+                                <div class="box">{!! $sra->delivery_type === 'partial' ? '&#10003;' : '' !!}</div>
                             </div>
                         </div>
                     </div>
@@ -599,9 +599,9 @@
 
             <!-- Signatures -->
             @php
-                $adminUser = \App\Models\User::where('name', $sra->admin_approved_by)->first() ?: $sra->submitter;
-                $storesUser = \App\Models\User::where('name', $sra->stores_approved_by)->first();
-                $auditorUser = \App\Models\User::where('name', $sra->auditor_approved_by)->first();
+                $adminUser = is_numeric($sra->admin_approved_by) ? \App\Models\User::find($sra->admin_approved_by) : \App\Models\User::where('name', $sra->admin_approved_by)->first();
+                $storesUser = is_numeric($sra->stores_approved_by) ? \App\Models\User::find($sra->stores_approved_by) : \App\Models\User::where('name', $sra->stores_approved_by)->first();
+                $auditorUser = is_numeric($sra->auditor_approved_by) ? \App\Models\User::find($sra->auditor_approved_by) : \App\Models\User::where('name', $sra->auditor_approved_by)->first();
             @endphp
             <div class="signatures-grid">
                 <div class="sig-cell">
@@ -609,15 +609,19 @@
                     <div>
                         <div class="sig-label">Officer-in-Charge</div>
                         <div class="sig-name-date">
-                            <div><strong>Name:</strong> {{ $sra->admin_approved_by ?: ($adminUser ? $adminUser->name : '____________________') }}</div>
+                            <div><strong>Name:</strong> {{ ($sra->admin_approved_by && $adminUser) ? $adminUser->name : ($sra->admin_approved_by && !is_numeric($sra->admin_approved_by) ? $sra->admin_approved_by : '____________________') }}</div>
                             <div><strong>Role:</strong> 
-                                @if($adminUser)
-                                    {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : ($adminUser->role ?? 'Officer-in-Charge') }}
+                                @if($sra->admin_approved_by && $adminUser)
+                                    @if($adminUser->role === 'Main Admin' || $adminUser->role === 'Sub Main Admin')
+                                        Head of Administration (Authorizer)
+                                    @else
+                                        {{ $adminUser->role }} (Authorizer)
+                                    @endif
                                 @else
-                                    {{ $sra->admin_approved_by ? 'Delegator Authorizer' : '____________________' }}
+                                    {{ $sra->admin_approved_by ? 'Head of Administration (Authorizer)' : '____________________' }}
                                 @endif
                             </div>
-                            <div><strong>Date:</strong> {{ $sra->admin_approved_at ? $sra->admin_approved_at->format('d/m/y') : ($sra->created_at ? $sra->created_at->format('d/m/y') : '____________________') }}</div>
+                            <div><strong>Date:</strong> {{ $sra->admin_approved_at ? $sra->admin_approved_at->format('d/m/y') : '____________________' }}</div>
                         </div>
                     </div>
                 </div>

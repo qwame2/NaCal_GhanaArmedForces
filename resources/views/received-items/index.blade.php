@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
 <div class="animate-slide-up">
@@ -41,7 +41,7 @@
             </div>
             <div>
                 <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Total Batches</div>
-                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $totalReceived }}</div>
+                <div class="stat-total-received" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $totalReceived }}</div>
             </div>
         </div>
         <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
@@ -50,7 +50,7 @@
             </div>
             <div>
                 <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Total Items Recorded</div>
-                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $totalItemsCount }}</div>
+                <div class="stat-total-items" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $totalItemsCount }}</div>
             </div>
         </div>
         <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
@@ -59,7 +59,7 @@
             </div>
             <div>
                 <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Recent Batches</div>
-                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $recentReceived }}</div>
+                <div class="stat-recent-received" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $recentReceived }}</div>
             </div>
         </div>
     </div>
@@ -413,6 +413,14 @@
                                     <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i>
                                     {{ str_replace('Stores', 'Store', $item->store_location ?? 'Store A') }}
                                 </span>
+                                @php
+                                    $batchStatus = $item->batch_approval_status ?? $item->batch?->approval_status ?? ($item->is_pending_creation ? 'pending_auditor_admin' : '');
+                                @endphp
+                                @if($batchStatus === 'pending_auditor_admin')
+                                    <span style="font-size: 0.65rem; font-weight: 800; color: #d97706; background: rgba(217, 119, 6, 0.1); padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; cursor: help;" title="Saved in database, pending SRA verification and signature approval by Authorizer and Auditor">
+                                        <i data-lucide="clock" style="width: 10px; height: 10px;"></i> Pending SRA Approval
+                                    </span>
+                                @endif
                             </div>
                             @if(!empty($item->serial_number))
                                 @php
@@ -4106,6 +4114,95 @@ async function submitEditBatch() {
                 }, 100);
             }
         }
+})();
+
+// Silent Auto-Refresh for Received Items Table (Zero-Blink DOM Diffing)
+(function() {
+    async function pollReceivedItemsTable() {
+        if (document.hidden) return;
+
+        // Check if any modal or alert is open or if user is interacting with filters
+        const isSwalOpen = typeof Swal !== 'undefined' && Swal.isVisible();
+        const editModal = document.getElementById('editBatchModal');
+        const detailsModal = document.getElementById('itemDetailsModal');
+        const supplierModal = document.getElementById('suppliersRegistryModal');
+        const isEditModalOpen = editModal && (editModal.style.display === 'flex' || editModal.classList.contains('open'));
+        const isDetailsModalOpen = detailsModal && (detailsModal.style.display === 'flex' || detailsModal.classList.contains('open'));
+        const isSupplierModalOpen = supplierModal && supplierModal.style.display === 'flex';
+        const isAnyInputFocused = document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+        if (isSwalOpen || isEditModalOpen || isDetailsModalOpen || isSupplierModalOpen || isAnyInputFocused) {
+            return;
+        }
+
+        try {
+            const response = await fetch(window.location.href, {
+                headers: { 'Accept': 'text/html' }
+            });
+            if (!response.ok) return;
+            const html = await response.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // 1. Update Stat Numbers
+            ['stat-total-received', 'stat-total-items', 'stat-recent-received'].forEach(cls => {
+                const curEl = document.querySelector('.' + cls);
+                const newEl = doc.querySelector('.' + cls);
+                if (curEl && newEl && curEl.textContent.trim() !== newEl.textContent.trim()) {
+                    curEl.textContent = newEl.textContent.trim();
+                }
+            });
+
+            // 2. Table Row Signature Diffing (Zero-Blink Row Updates)
+            const currentTbody = document.querySelector('.table-scroll-wrapper table.activity-table tbody');
+            const newTbody = doc.querySelector('.table-scroll-wrapper table.activity-table tbody');
+
+            if (currentTbody && newTbody) {
+                const currentRows = Array.from(currentTbody.querySelectorAll('tr.activity-row'));
+                const newRows = Array.from(newTbody.querySelectorAll('tr.activity-row'));
+
+                const currentSig = currentRows.map(r => r.innerText.replace(/\s+/g, ' ').trim()).join('||');
+                const newSig = newRows.map(r => r.innerText.replace(/\s+/g, ' ').trim()).join('||');
+
+                if (currentSig !== newSig) {
+                    if (currentRows.length === newRows.length && currentRows.length > 0) {
+                        for (let i = 0; i < currentRows.length; i++) {
+                            const cSig = currentRows[i].innerText.replace(/\s+/g, ' ').trim();
+                            const nSig = newRows[i].innerText.replace(/\s+/g, ' ').trim();
+                            if (cSig !== nSig) {
+                                currentRows[i].innerHTML = newRows[i].innerHTML;
+                                currentRows[i].className = newRows[i].className;
+                                if (newRows[i].getAttribute('data-item-id')) {
+                                    currentRows[i].setAttribute('data-item-id', newRows[i].getAttribute('data-item-id'));
+                                }
+                                if (newRows[i].getAttribute('data-batch-id')) {
+                                    currentRows[i].setAttribute('data-batch-id', newRows[i].getAttribute('data-batch-id'));
+                                }
+                            }
+                        }
+                    } else {
+                        currentTbody.innerHTML = newTbody.innerHTML;
+                    }
+
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }
+            }
+
+            // 3. Update Pagination if present
+            const currentPag = document.querySelector('.pagination-container');
+            const newPag = doc.querySelector('.pagination-container');
+            if (currentPag && newPag && currentPag.innerText.replace(/\s+/g, ' ').trim() !== newPag.innerText.replace(/\s+/g, ' ').trim()) {
+                currentPag.innerHTML = newPag.innerHTML;
+            }
+        } catch (e) {
+            // Keep background polling resilient
+        }
+    }
+
+    setInterval(pollReceivedItemsTable, 4000);
 })();
 </script>
 @endsection

@@ -38,7 +38,7 @@ class StockCheckController extends Controller
         // Fetch aggregate totals for all items to show a master verification list
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.approval_status', '=', 'approved')
+            ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
             ->selectRaw('
                 inventory_items.description, 
                 inventory_batches.ledge_category,
@@ -102,7 +102,7 @@ class StockCheckController extends Controller
             $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_items.description', $description)
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->where('inventory_batches.approval_status', '=', 'approved')
+                ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                 ->select('inventory_items.*')
                 ->orderBy('inventory_batches.entry_date', 'desc')
                 ->get();
@@ -263,7 +263,7 @@ class StockCheckController extends Controller
                 $dbItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                     ->where('inventory_items.description', $description)
                     ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                    ->where('inventory_batches.approval_status', '=', 'approved')
+                    ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                     ->select('inventory_items.*')
                     ->orderBy('inventory_batches.entry_date', 'desc')
                     ->get();
@@ -377,7 +377,7 @@ class StockCheckController extends Controller
         // Fetch aggregate totals for selected items
         $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.approval_status', '=', 'approved')
+            ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
             ->whereIn('inventory_items.description', $descriptions)
             ->selectRaw('
                 inventory_items.description, 

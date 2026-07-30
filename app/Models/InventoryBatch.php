@@ -156,7 +156,7 @@ class InventoryBatch extends Model
 
     public static function sendSraReviewNotifications(InventoryBatch $batch)
     {
-        $reviewers = User::whereIn('role', ['Auditor', 'Main Admin'])->where('is_active', true)->get();
+        $reviewers = User::whereIn('role', ['Auditor', 'Main Admin', 'Sub Main Admin'])->where('is_active', true)->get();
         $supplierName = trim(preg_replace('/\[.*?\]/', '', ($batch->acquisition_type === 'Donor' ? ($batch->donor_name ?: $batch->supplier_name) : $batch->supplier_name) ?? 'N/A'));
         $reviewUrl = route('receiveditems.sra', ['id' => $batch->id]);
         
