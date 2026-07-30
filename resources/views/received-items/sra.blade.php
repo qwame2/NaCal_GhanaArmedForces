@@ -461,7 +461,18 @@
                 <span class="info-label">Is this a full or part delivery? (tick)</span>
                 
                 @php
-                    $isPartial = str_contains(strtolower($batch->supplier_status), 'partial');
+                    $statusStr = strtolower(($batch->supplier_status ?? '') . ' ' . ($batch->supplier_name ?? ''));
+                    $hasVariance = false;
+                    if (isset($batch->items) && count($batch->items) > 0) {
+                        foreach ($batch->items as $itm) {
+                            $varVal = is_array($itm) ? floatval($itm['variance'] ?? 0) : floatval($itm->variance ?? 0);
+                            if ($varVal != 0) {
+                                $hasVariance = true;
+                                break;
+                            }
+                        }
+                    }
+                    $isPartial = str_contains($statusStr, 'partial') || str_contains($statusStr, 'part') || $hasVariance;
                 @endphp
 
                 <div class="checkbox-row">
