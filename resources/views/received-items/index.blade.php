@@ -461,8 +461,7 @@
                         $donorName = $item->donor_name ?? '-';
 
                         $dbStatus = strtoupper($item->supplier_status ?: 'FULL DELIVERY');
-                        $hasNegativeVariance = is_numeric($item->variance) && (float)$item->variance < 0;
-                        $isDbPartialDelivery = ($dbStatus === 'PARTIAL DELIVERY' || str_contains($dbStatus, 'PARTIAL') || str_contains(strtoupper($item->supplier_name ?? ''), 'PARTIAL') || $hasNegativeVariance);
+                        $isDbPartialDelivery = ($dbStatus === 'PARTIAL DELIVERY' || str_contains($dbStatus, 'PARTIAL'));
 
                         $isIssuedOut = $item->hasActiveTemporaryLoan();
                         if ($isIssuedOut) {
@@ -573,40 +572,24 @@
                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                      </button>
 
-                                      @if(($isDbPartialDelivery || $hasNegativeVariance) && !$isPending)
-                                              @php
-                                                  $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
-                                                      ->where('item_type', 'batch')
-                                                      ->where('request_type', 'remainder_submission')
-                                                      ->where('status', 'pending')
-                                                      ->exists();
-
-                                                  $canReceiveRemainder = auth()->user()->is_admin 
-                                                      || auth()->user()->isMainAdminOrSub()
-                                                      || auth()->user()->can_add_inventory
-                                                      || in_array(auth()->user()->role, ['Store Officer', 'Officer', 'Head of Stores', 'Dept. Head (Stores)'])
-                                                      || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0
-                                                      || strcasecmp(auth()->user()->department ?? '', 'Store') === 0;
-                                              @endphp
-                                              @if($pendingRemainder)
-                                                  <div title="Remainder Submission Pending Approval" style="background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.45rem 0.85rem; border-radius: 8px; font-weight: 850; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px;">
-                                                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                                      <span>Remainder Pending</span>
-                                                  </div>
-                                              @else
-                                                  @if($canReceiveRemainder)
-                                                      <button type="button" onclick="continueDelivery('{{ $item->batch_id }}')" class="action-icon-btn" title="Receive Pending Remainder Items" style="background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.45rem 0.85rem; border-radius: 8px; font-weight: 850; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.15);">
-                                                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><circle cx="12" cy="12" r="3"/></svg>
-                                                          <span>Receive Remainder</span>
-                                                      </button>
-                                                  @else
-                                                      <button type="button" disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; padding: 0.45rem 0.85rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1); display: inline-flex; align-items: center; gap: 5px;">
-                                                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><circle cx="12" cy="12" r="3"/></svg>
-                                                          <span>Receive Remainder</span>
-                                                      </button>
-                                                  @endif
-                                              @endif
-                                          @endif
+                                     @if($isDbPartialDelivery && is_numeric($item->variance) && (float)$item->variance < 0)
+                                             @php
+                                                 $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
+                                                     ->where('item_type', 'batch')
+                                                     ->where('request_type', 'remainder_submission')
+                                                     ->where('status', 'pending')
+                                                     ->exists();
+                                             @endphp
+                                             @if($pendingRemainder)
+                                                 <div title="Awaiting Approval" style="width: 38px; height: 38px; background: rgba(5, 150, 105, 0.1); color: #059669; border-radius: 10px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                 </div>
+                                             @else
+                                                 <button @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']) || (!auth()->user()->is_admin && !auth()->user()->can_add_inventory)) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1);" @else onclick="continueDelivery('{{ $item->batch_id }}')" class="action-icon-btn" title="Continue Delivery" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1);" @endif>
+                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><circle cx="12" cy="12" r="3"/></svg>
+                                                 </button>
+                                             @endif
+                                         @endif
 
                                          @php
                                              $pendingEdit = \App\Models\EditRequest::where('item_id', $item->batch_id)

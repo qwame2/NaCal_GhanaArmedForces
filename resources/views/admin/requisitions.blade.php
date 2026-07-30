@@ -1101,7 +1101,7 @@
 
 {{-- SRA Review Modal (Admin & Stores unified/adapted) --}}
 <div class="modal-overlay" id="sraOversightModal" onclick="if(event.target===this)closeSraOversightModal()">
-    <div class="modal-box" style="background: var(--bg-card); border-radius: 24px; padding: 2.5rem; max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.2); margin: 30px auto; position: relative;">
+    <div class="modal-box" style="background: var(--bg-card); border-radius: 24px; padding: 2.5rem; max-width: 960px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.2); margin: 30px auto; position: relative;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
             <div>
                 <div style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--primary); letter-spacing: 0.06em; margin-bottom: 4px;" id="sra-modal-stage-title">Service SRA Review</div>
@@ -1112,7 +1112,7 @@
             </button>
         </div>
 
-        <div id="sra-modal-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; background: var(--bg-main); border-radius: 14px; padding: 1.25rem;"></div>
+        <div id="sra-modal-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; background: var(--bg-main); border-radius: 16px; padding: 1.25rem 1.5rem; border: 1px solid var(--border-color);"></div>
 
         <div id="sra-modal-details-text" style="margin-bottom: 1.5rem;"></div>
 

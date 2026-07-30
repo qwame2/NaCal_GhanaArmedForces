@@ -1525,10 +1525,10 @@ class ApiTest extends TestCase
         $resp->assertSee('Cleaning Liquid Soap 5L');
     }
 
-    public function test_sra_ticks_part_delivery_when_partial_status_or_variance_exists()
+    public function test_inventory_sra_oversight_json_endpoint_returns_partial_delivery_details()
     {
-        $headOfStores = User::factory()->create([
-            'role' => 'Head of Stores',
+        $admin = User::factory()->create([
+            'role' => 'Main Admin',
             'department' => 'Stores',
             'registration_status' => 'approved',
             'is_admin' => 1,
@@ -1536,27 +1536,31 @@ class ApiTest extends TestCase
 
         $batch = \App\Models\InventoryBatch::create([
             'ledge_category' => 'C',
-            'supplier_name' => 'Tech Supplies Ltd',
+            'supplier_name' => 'IT Logistics Ghana [Partial Delivery]',
             'supplier_status' => 'Partial Delivery',
             'acquisition_type' => 'Supplier',
             'entry_date' => now()->format('Y-m-d H:i:s'),
             'arrival_date' => now()->format('Y-m-d'),
-            'approval_status' => 'approved',
+            'approval_status' => 'pending_auditor_admin',
         ]);
 
         $batch->items()->create([
-            'description' => 'HP EliteBook 840 G8',
-            'unit' => 'PIECE',
-            'qty' => 5,
-            'stock_balance' => 5,
-            'variance' => -3,
+            'description' => 'HP LaserJet Pro Toner 85A',
+            'unit' => 'CART',
+            'qty' => 15,
+            'stock_balance' => 15,
+            'variance' => -5,
+            'remarks' => '5 Cartridges outstanding on backorder',
+            'store_location' => 'Store B'
         ]);
 
-        $resp = $this->actingAs($headOfStores)->get(route('receiveditems.sra', ['id' => $batch->id]));
+        $resp = $this->actingAs($admin)->get(route('receiveditems.show', ['id' => $batch->id, 'json' => 1]));
         $resp->assertStatus(200);
-        // Verify that PART box contains checkmark ✓
-        $resp->assertSee('PART');
-        $resp->assertSee('&#10003;', false);
+        $json = $resp->json();
+
+        $this->assertEquals('Partial Delivery', $json['batch']['supplier_status']);
+        $this->assertEquals('HP LaserJet Pro Toner 85A', $json['batch']['items'][0]['description']);
+        $this->assertEquals(-5, $json['batch']['items'][0]['variance']);
     }
 }
 

@@ -1674,7 +1674,7 @@
 
 {{-- SRA Review Modal (Admin & Stores unified/adapted) --}}
 <div class="modal-overlay" id="sraOversightModal" onclick="if(event.target===this)closeSraOversightModal()">
-    <div class="modal-box" style="background: var(--bg-card); border-radius: 24px; padding: 2.5rem; max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.2); margin: 30px auto; position: relative;">
+    <div class="modal-box" style="background: var(--bg-card); border-radius: 24px; padding: 2.5rem; max-width: 960px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.2); margin: 30px auto; position: relative;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
             <div>
                 <div style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--primary); letter-spacing: 0.06em; margin-bottom: 4px;" id="sra-modal-stage-title">Service SRA Oversight Review</div>
@@ -1685,7 +1685,7 @@
             </button>
         </div>
 
-        <div id="sra-modal-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; background: var(--bg-main); border-radius: 14px; padding: 1.25rem;"></div>
+        <div id="sra-modal-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; background: var(--bg-main); border-radius: 16px; padding: 1.25rem 1.5rem; border: 1px solid var(--border-color);"></div>
 
         <div id="sra-modal-details-text" style="margin-bottom: 1.5rem;"></div>
 
@@ -3531,29 +3531,136 @@
 
             document.getElementById('sra-modal-number').textContent = 'SRA-' + String(batch.id).padStart(5, '0');
 
-            const itemsHtml = (batch.items || []).map(i => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.65rem 0; border-bottom: 1px dashed var(--border-color);">
-                    <div>
-                        <div style="font-weight: 800; color: var(--text-main); font-size: 0.88rem;">${i.description}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight:600;">Unit: ${i.unit || 'Pkg'} ${i.serial_number ? '· Serial: ' + i.serial_number : ''}</div>
+            const isPartialDelivery = (batch.supplier_status || '').toLowerCase().includes('partial') || (batch.supplier_name || '').toLowerCase().includes('partial');
+            const isDonor = batch.acquisition_type === 'Donor';
+
+            let totalReceived = 0;
+            let totalShortfall = 0;
+            let totalExpected = 0;
+
+            const itemsHtml = (batch.items || []).map(i => {
+                const qtyReceived = Number(i.qty || 0);
+                const stockBal = Number(i.stock_balance || 0);
+                const variance = Number(i.variance || 0);
+                const shortfall = variance < 0 ? Math.abs(variance) : 0;
+                const expectedQty = qtyReceived + shortfall;
+
+                totalReceived += qtyReceived;
+                totalShortfall += shortfall;
+                totalExpected += expectedQty;
+
+                const hasShortfall = shortfall > 0;
+                const storeLocation = i.store_location || 'Store A';
+
+                return `
+                    <div style="background: var(--bg-card); border-radius: 14px; padding: 1.1rem 1.25rem; margin-bottom: 0.85rem; border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                                    <span style="font-weight: 900; color: var(--text-main); font-size: 0.95rem;">${i.description}</span>
+                                    <span style="font-size: 0.68rem; font-weight: 800; color: var(--primary); background: var(--primary-glow); padding: 2px 8px; border-radius: 6px;">Category ${i.ledge_category || batch.ledge_category}</span>
+                                    <span style="font-size: 0.68rem; font-weight: 800; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 3px;">
+                                        <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> ${storeLocation}
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">
+                                    Unit / Package: <strong style="color: var(--text-main);">${i.unit || 'Pkg'}</strong>
+                                    ${i.serial_number ? ` · <span style="font-family: monospace; background: var(--bg-main); padding: 2px 6px; border-radius: 4px; color: var(--text-main); font-weight: 700;">SN: ${i.serial_number}</span>` : ''}
+                                </div>
+                            </div>
+
+                            ${hasShortfall ? `
+                                <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.72rem; font-weight: 850; padding: 3px 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i> Shortfall: ${shortfall} ${i.unit || ''}
+                                </span>
+                            ` : `
+                                <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; font-weight: 850; padding: 3px 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Fully Received
+                                </span>
+                            `}
+                        </div>
+
+                        <!-- Quantities Metrics Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; background: var(--bg-main); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Received Qty</div>
+                                <div style="font-size: 1.1rem; font-weight: 900; color: #059669; margin-top: 2px;">${qtyReceived.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Expected Invoice Qty</div>
+                                <div style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin-top: 2px;">${expectedQty.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Outstanding Deficit</div>
+                                <div style="font-size: 1.1rem; font-weight: 900; color: ${hasShortfall ? '#ef4444' : '#059669'}; margin-top: 2px;">${hasShortfall ? '-' + shortfall.toLocaleString() : '0'} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Live Stock Balance</div>
+                                <div style="font-size: 1.1rem; font-weight: 900; color: var(--primary); margin-top: 2px;">${stockBal.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                            </div>
+                        </div>
+
+                        ${(i.remarks || i.discrepancy_explanation) ? `
+                            <div style="font-size: 0.78rem; color: #78350f; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 12px; margin-top: 0.75rem; display: flex; align-items: flex-start; gap: 6px;">
+                                <i data-lucide="message-square" style="width: 14px; height: 14px; color: #b45309; flex-shrink: 0; margin-top: 2px;"></i>
+                                <div><strong>Item Remarks:</strong> ${i.remarks || i.discrepancy_explanation}</div>
+                            </div>
+                        ` : ''}
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-weight: 900; color: var(--primary); font-size: 1rem;">${Number(i.qty).toLocaleString()}</div>
-                        <div style="font-size: 0.62rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">Qty Received</div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+
+            const supplierOrDonor = isDonor 
+                ? (batch.donor_name || batch.supplier_name || 'N/A') 
+                : (batch.supplier_name || 'N/A');
+
+            const statusBadgeHtml = isPartialDelivery 
+                ? `<span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.72rem; font-weight: 850; padding: 4px 12px; border-radius: 99px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;">
+                       <i data-lucide="alert-triangle" style="width: 13px; height: 13px;"></i> Partial Delivery SRA
+                   </span>`
+                : `<span style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; font-weight: 850; padding: 4px 12px; border-radius: 99px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;">
+                       <i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i> Full Delivery SRA
+                   </span>`;
 
             document.getElementById('sra-modal-details').innerHTML = `
                 <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Submitted By</div><div style="font-weight:700;color:var(--text-main);">${batch.recorder ? batch.recorder.name : 'Store Officer'}</div></div>
-                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Supplier / Donor</div><div style="font-weight:700;color:var(--text-main);">${batch.supplier_name || batch.donor_name || 'N/A'}</div></div>
-                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Category</div><div style="font-weight:700;color:var(--primary);">Category ${batch.ledge_category}</div></div>
-                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Entry Date</div><div style="font-weight:700;color:var(--text-main);">${batch.arrival_date ? new Date(batch.arrival_date).toLocaleDateString() : 'N/A'}</div></div>
+                <div>
+                    <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">${isDonor ? 'Donor Name' : 'Supplier Name'}</div>
+                    <div style="font-weight:800;color:var(--text-main);display:flex;align-items:center;gap:6px;">
+                        ${supplierOrDonor}
+                        ${isDonor ? '<span style="font-size: 0.65rem; background: rgba(4, 120, 87, 0.1); color: #047857; border: 1px solid rgba(4, 120, 87, 0.25); padding: 2px 6px; border-radius: 4px; font-weight: 850;">DONOR</span>' : ''}
+                    </div>
+                </div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Category Section</div><div style="font-weight:800;color:var(--primary);">Category ${batch.ledge_category}</div></div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Delivery Status</div><div>${statusBadgeHtml}</div></div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Received Date</div><div style="font-weight:700;color:var(--text-main);">${batch.arrival_date ? new Date(batch.arrival_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}</div></div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Logistics Contact</div><div style="font-weight:700;color:var(--text-main);">${batch.delivery_person ? batch.delivery_person + (batch.delivery_phone ? ' (' + batch.delivery_phone + ')' : '') : 'N/A'}</div></div>
             `;
 
+            let partialBannerHtml = '';
+            if (isPartialDelivery || totalShortfall > 0) {
+                partialBannerHtml = `
+                    <div style="background: rgba(245, 158, 11, 0.08); border: 1.5px solid rgba(245, 158, 11, 0.3); border-radius: 16px; padding: 1.1rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: flex-start; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: #f59e0b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);">
+                            <i data-lucide="alert-triangle" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 900; color: #b45309; font-size: 0.92rem; margin-bottom: 3px;">PARTIAL DELIVERY SRA — DEFICIT OVERSIGHT SUMMARY</div>
+                            <div style="font-size: 0.82rem; color: #78350f; font-weight: 600; line-height: 1.5;">
+                                This inventory submission contains partially delivered items. Total Received: <b style="color: #059669;">${totalReceived.toLocaleString()} units</b> out of Expected Total of <b>${totalExpected.toLocaleString()} units</b>. Outstanding Shortfall: <b style="color: #dc2626; font-size: 0.9rem;">${totalShortfall.toLocaleString()} units remaining to be fulfilled</b>.
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             document.getElementById('sra-modal-details-text').innerHTML = `
-                <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Batch Items Payload</div>
-                <div style="background:var(--bg-main);border-radius:14px;padding:1rem 1.25rem;border:1px solid var(--border-color);">${itemsHtml || '<div style="color:var(--text-muted);">No items recorded in batch</div>'}</div>
+                ${partialBannerHtml}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="font-size:0.75rem;font-weight:850;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Detailed Items Specification</div>
+                    <span style="font-size:0.72rem;font-weight:800;color:var(--primary);background:var(--primary-glow);padding:3px 10px;border-radius:99px;">${(batch.items || []).length} Item(s) in Batch</span>
+                </div>
+                <div style="background:var(--bg-main);border-radius:16px;padding:1rem;border:1px solid var(--border-color);">${itemsHtml || '<div style="color:var(--text-muted);text-align:center;padding:1rem;">No items recorded in batch</div>'}</div>
             `;
 
             const sraDecisionForm = document.getElementById('sra-modal-decision-form');
