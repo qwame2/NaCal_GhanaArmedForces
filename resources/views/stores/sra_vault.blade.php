@@ -469,28 +469,114 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- ── Pagination Bar ── --}}
+        <div id="vault-pagination" style="display:flex; align-items:center; justify-content:space-between; padding:.9rem 1.4rem; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:.7rem; background:rgba(248,250,252,.45);">
+            <div id="vault-page-info" style="font-size:.78rem; font-weight:700; color:var(--text-muted);"></div>
+            <div id="vault-page-btns" style="display:flex; gap:5px; flex-wrap:wrap;"></div>
+        </div>
+
     </div>
 
 </div>
 
 <script>
+    /* ── Vault Pagination + Filter + Search ───────────────── */
+    const ROWS_PER_PAGE = 10;
+    let currentPage = 1;
+    let activeType  = '{{ $type }}';
+
+    /* Collect all rows once */
+    const allRows = () => Array.from(document.querySelectorAll('#sraVaultTable .sra-row'));
+
+    /* Returns rows that are "visible" after type + search filter */
+    function visibleRows() {
+        const search = document.getElementById('sraSearchInput').value.toLowerCase().trim();
+        return allRows().filter(row => {
+            const typeOk = activeType === 'all' || row.classList.contains('sra-type-' + activeType);
+            const searchOk = !search || row.innerText.toLowerCase().includes(search);
+            return typeOk && searchOk;
+        });
+    }
+
+    /* Render: hide/show rows and draw page buttons */
+    function renderPage(page) {
+        currentPage = page;
+        const rows   = visibleRows();
+        const total  = rows.length;
+        const pages  = Math.max(1, Math.ceil(total / ROWS_PER_PAGE));
+        if (currentPage > pages) currentPage = pages;
+
+        /* Hide every row first */
+        allRows().forEach(r => r.style.display = 'none');
+
+        /* Show only the current page slice */
+        const start = (currentPage - 1) * ROWS_PER_PAGE;
+        rows.slice(start, start + ROWS_PER_PAGE).forEach(r => r.style.display = '');
+
+        /* Info label */
+        const from = total === 0 ? 0 : start + 1;
+        const to   = Math.min(start + ROWS_PER_PAGE, total);
+        document.getElementById('vault-page-info').textContent =
+            total === 0 ? 'No records found' : `Showing ${from}–${to} of ${total} record${total !== 1 ? 's' : ''}`;
+
+        /* Page buttons */
+        const btnContainer = document.getElementById('vault-page-btns');
+        btnContainer.innerHTML = '';
+
+        const btnStyle = (active) =>
+            `padding:5px 10px; border-radius:8px; border:1.5px solid ${ active ? 'var(--primary)' : 'var(--border-color)' };
+             background:${ active ? 'var(--primary)' : 'var(--bg-card)' };
+             color:${ active ? '#fff' : 'var(--text-main)' };
+             font-weight:800; font-size:.75rem; cursor:pointer; transition:all .15s; min-width:32px;`;
+
+        /* Prev */
+        const prev = document.createElement('button');
+        prev.innerHTML = '&lsaquo;';
+        prev.style.cssText = btnStyle(false);
+        prev.disabled = currentPage === 1;
+        prev.style.opacity = currentPage === 1 ? '.4' : '1';
+        prev.onclick = () => renderPage(currentPage - 1);
+        btnContainer.appendChild(prev);
+
+        /* Page numbers (show max 7 around current) */
+        let start_p = Math.max(1, currentPage - 3);
+        let end_p   = Math.min(pages, start_p + 6);
+        if (end_p - start_p < 6) start_p = Math.max(1, end_p - 6);
+
+        for (let p = start_p; p <= end_p; p++) {
+            const btn = document.createElement('button');
+            btn.textContent = p;
+            btn.style.cssText = btnStyle(p === currentPage);
+            btn.onclick = ((pg) => () => renderPage(pg))(p);
+            btnContainer.appendChild(btn);
+        }
+
+        /* Next */
+        const next = document.createElement('button');
+        next.innerHTML = '&rsaquo;';
+        next.style.cssText = btnStyle(false);
+        next.disabled = currentPage === pages;
+        next.style.opacity = currentPage === pages ? '.4' : '1';
+        next.onclick = () => renderPage(currentPage + 1);
+        btnContainer.appendChild(next);
+    }
+
     function filterSraType(type) {
+        activeType = type;
         document.querySelectorAll('.vault-tab').forEach(b => b.classList.remove('active'));
         const btn = document.getElementById('tab-' + type);
         if (btn) btn.classList.add('active');
-        document.querySelectorAll('.sra-row').forEach(row => {
-            if (type === 'all') { row.style.display = ''; }
-            else { row.style.display = row.classList.contains('sra-type-' + type) ? '' : 'none'; }
-        });
+        renderPage(1);
     }
+
     function handleSraSearch(e) {
-        const val = e.target.value.toLowerCase().trim();
-        document.querySelectorAll('.sra-row').forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
-        });
+        renderPage(1);
     }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
+        renderPage(1);
     });
 </script>
 @endsection
