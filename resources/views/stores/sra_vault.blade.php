@@ -72,16 +72,66 @@
         background: var(--primary); color: #fff; border-color: var(--primary);
         box-shadow: 0 4px 14px rgba(16,185,129,.28);
     }
-    .vault-search-wrap { position: relative; width: 100%; max-width: 300px; }
-    .vault-search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 15px; height: 15px; pointer-events: none; }
-    .vault-search-input {
-        width: 100%; padding: .6rem .9rem .6rem 2.15rem;
-        border-radius: 10px; border: 1.5px solid var(--border-color);
-        background: var(--bg-card); color: var(--text-main);
-        font-size: .82rem; font-weight: 600; outline: none;
-        transition: border-color .2s, box-shadow .2s; box-sizing: border-box;
+    /* ── Search input — premium redesign ─────────────── */
+    .vault-search-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 320px;
     }
-    .vault-search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16,185,129,.12); }
+    .vault-search-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px; height: 16px;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: color .25s;
+        z-index: 1;
+    }
+    .vault-search-clear {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: rgba(100,116,139,.18);
+        border: none;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: .75rem;
+        font-weight: 900;
+        transition: background .2s, color .2s;
+        line-height: 1;
+        padding: 0;
+    }
+    .vault-search-clear:hover { background: rgba(239,68,68,.15); color: #ef4444; }
+    .vault-search-clear.visible { display: flex; }
+    .vault-search-input {
+        width: 100%;
+        padding: .65rem 2.5rem .65rem 2.55rem;
+        border-radius: 50px;
+        border: 1.5px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-main);
+        font-size: .83rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color .25s, box-shadow .25s, background .25s;
+        box-sizing: border-box;
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .vault-search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(16,185,129,.13), 0 2px 8px rgba(16,185,129,.1);
+        background: var(--bg-card);
+    }
+    .vault-search-input:focus ~ .vault-search-icon,
+    .vault-search-wrap:focus-within .vault-search-icon { color: var(--primary); }
 
     /* ── Table ────────────────────────────────────────── */
     .vault-table-wrap { overflow-x: auto; }
@@ -289,10 +339,11 @@
                 </button>
             </div>
             <div class="vault-search-wrap">
-                <i data-lucide="search"></i>
+                <svg class="vault-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 <input type="text" id="sraSearchInput" class="vault-search-input"
                        value="{{ $search }}" placeholder="Search SRA #, supplier…"
-                       onkeyup="handleSraSearch(event)">
+                       oninput="handleSraSearch(this); toggleClear(this);">
+                <button class="vault-search-clear{{ $search ? ' visible' : '' }}" id="sraSearchClear" onclick="clearSearch()" title="Clear search">&times;</button>
             </div>
         </div>
 
@@ -553,6 +604,19 @@
     }
 
     function handleSraSearch() { renderPage(1); }
+
+    function toggleClear(input) {
+        const btn = document.getElementById('sraSearchClear');
+        if (btn) btn.classList.toggle('visible', input.value.length > 0);
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('sraSearchInput');
+        const btn   = document.getElementById('sraSearchClear');
+        if (input) { input.value = ''; input.focus(); }
+        if (btn)   btn.classList.remove('visible');
+        renderPage(1);
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
