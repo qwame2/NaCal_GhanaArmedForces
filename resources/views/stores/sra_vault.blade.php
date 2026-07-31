@@ -3,9 +3,9 @@
 @section('content')
 <style>
     .sra-vault-container {
-        padding: 1.5rem;
-        max-width: 1400px;
-        margin: 0 auto;
+        padding: 1.5rem 2rem;
+        max-width: 100%;
+        width: 100%;
     }
     .sra-stat-card {
         background: var(--bg-card);
