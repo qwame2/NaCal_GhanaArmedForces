@@ -64,14 +64,25 @@ class ServiceSra extends Model
 
     public function getStatusBadgeAttribute(): array
     {
-        return match ($this->status) {
-            'approved'        => ['label' => 'Fully Approved',              'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'],
-            'admin_approved'  => ['label' => 'Awaiting Stores Review',     'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'],
-            'auditor_pending' => ['label' => 'Awaiting Auditor Review',    'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'],
-            'declined'        => ['label' => 'Declined',                   'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'],
-            default           => ['label' => 'Awaiting Authorizer Review','color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'],
-        };
-     }
+        if ($this->status === 'approved') {
+            return ['label' => 'Fully Approved', 'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'];
+        }
+        if ($this->status === 'declined') {
+            return ['label' => 'Declined', 'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'];
+        }
+
+        if ($this->admin_status === 'pending') {
+            return ['label' => 'Awaiting Authorizer Review', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'];
+        }
+        if ($this->auditor_status === 'pending') {
+            return ['label' => 'Awaiting Auditor Review', 'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'];
+        }
+        if ($this->stores_status === 'pending') {
+            return ['label' => 'Awaiting Stores Review', 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'];
+        }
+
+        return ['label' => 'Pending Approval', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'];
+    }
  
      public function getApprovalPipelineAttribute(): array
      {
