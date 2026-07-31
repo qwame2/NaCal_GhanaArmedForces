@@ -1740,6 +1740,31 @@
     let currentReqId = null;
     window._reqDetailsCache = window._reqDetailsCache || {};
 
+    function departmentsMatch(dept1, dept2) {
+        if (!dept1 || !dept2) return false;
+        const d1 = dept1.toLowerCase().trim();
+        const d2 = dept2.toLowerCase().trim();
+        if (d1 === d2) return true;
+        
+        const hrTerms = ['hr', 'human resource', 'human resource management department', 'human resources'];
+        if (hrTerms.includes(d1) && hrTerms.includes(d2)) return true;
+        
+        const welfareTerms = ['welfare', 'welfare department'];
+        if (welfareTerms.includes(d1) && welfareTerms.includes(d2)) return true;
+        
+        const storesTerms = ['stores', 'store', 'stores department', 'store department'];
+        if (storesTerms.includes(d1) && storesTerms.includes(d2)) return true;
+
+        const clean = (str) => str.replace(/\b(department|dept\.?|section|management)\b/gi, '').trim();
+        const c1 = clean(d1);
+        const c2 = clean(d2);
+        if (c1 && c2 && (c1 === c2 || c1.includes(c2) || c2.includes(c1))) {
+            return true;
+        }
+        
+        return false;
+    }
+
     function prefetchRequisitionModal(id) {
         if (!id || window._reqDetailsCache[id]) return;
         fetch(`{{ url('/admin/requisitions') }}/${id}/show`)
@@ -2032,7 +2057,7 @@
         </div>`;
 
         // Check if processed already
-        const isActingAsHOD = isBackupActive && (data.department === "{{ auth()->user()->department }}");
+        const isActingAsHOD = isBackupActive && departmentsMatch(data.department, "{{ auth()->user()->department }}");
         let isProcessed = false;
         if (isStoresHead && !isActingAsHOD) {
             if (data.status !== 'pending') {
@@ -2382,7 +2407,7 @@
         // Close the underlying modal container so it disappears when the confirmation SweetAlert displays
         closeModal();
 
-        const isActingAsHOD = isBackupActive && (window.currentReqData && window.currentReqData.department === "{{ auth()->user()->department }}");
+        const isActingAsHOD = isBackupActive && (window.currentReqData && departmentsMatch(window.currentReqData.department, "{{ auth()->user()->department }}"));
 
         Swal.fire({
             title: decision === 'approved' ? 'Approve?' : 'Decline Requisition?',
