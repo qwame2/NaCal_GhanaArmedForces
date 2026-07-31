@@ -98,7 +98,7 @@
     .sra-table col.col-category { width: 12%; }
     .sra-table col.col-items    { width: 20%; }
     .sra-table col.col-date     { width: 10%; }
-    .sra-table col.col-sig      { width: 17%; }
+    .sra-table col.col-sig      { width: 12%; }
     .sra-table col.col-action   { width: 8%; }
 
     .sra-table th {
@@ -149,27 +149,18 @@
         flex-wrap: wrap;
         margin-top: 5px;
     }
-    .sig-badge {
-        display: flex;
+    .sig-pill {
+        display: inline-flex;
         align-items: center;
-        gap: 5px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.68rem;
-        font-weight: 800;
-        background: rgba(16, 185, 129, 0.08);
+        gap: 3px;
+        padding: 2px 7px;
+        border-radius: 99px;
+        font-size: 0.67rem;
+        font-weight: 900;
+        background: rgba(16, 185, 129, 0.1);
         color: #047857;
         border: 1px solid rgba(16, 185, 129, 0.2);
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .sig-name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 120px;
-        display: inline-block;
     }
     .badge-partial {
         font-size: 0.67rem;
@@ -364,10 +355,10 @@
                                 </td>
                                 {{-- Approved Signatories --}}
                                 <td>
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <span class="sig-badge"><i data-lucide="check" style="width: 11px; height: 11px; flex-shrink: 0;"></i> <span>Stores:</span> <span class="sig-name">{{ $batch->storesApprover->name ?? 'Verified' }}</span></span>
-                                        <span class="sig-badge"><i data-lucide="check" style="width: 11px; height: 11px; flex-shrink: 0;"></i> <span>Audit:</span> <span class="sig-name">{{ $batch->auditorApprover->name ?? 'Verified' }}</span></span>
-                                        <span class="sig-badge"><i data-lucide="check" style="width: 11px; height: 11px; flex-shrink: 0;"></i> <span>Admin:</span> <span class="sig-name">{{ $batch->adminApprover->name ?? 'Authorized' }}</span></span>
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
+                                        <span class="sig-pill">&#10003; Stores</span>
+                                        <span class="sig-pill">&#10003; Audit</span>
+                                        <span class="sig-pill">&#10003; Admin</span>
                                     </div>
                                 </td>
                                 {{-- Action --}}
@@ -414,10 +405,10 @@
                                 </td>
                                 {{-- Approved Signatories --}}
                                 <td>
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <span class="sig-badge"><i data-lucide="check" style="width: 11px; height: 11px; flex-shrink: 0;"></i> <span>Stores:</span> <span class="sig-name">{{ $serviceSra->stores_approved_by ?: 'Verified' }}</span></span>
-                                        <span class="sig-badge"><i data-lucide="check" style="width: 11px; height: 11px; flex-shrink: 0;"></i> <span>Audit:</span> <span class="sig-name">{{ $serviceSra->auditor_approved_by ?: 'Verified' }}</span></span>
-                                        <span class="sig-badge"><i data-lucide="check" style="width: 11px; height: 11px; flex-shrink: 0;"></i> <span>Admin:</span> <span class="sig-name">{{ $serviceSra->admin_approved_by ?: 'Authorized' }}</span></span>
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
+                                        <span class="sig-pill">&#10003; Stores</span>
+                                        <span class="sig-pill">&#10003; Audit</span>
+                                        <span class="sig-pill">&#10003; Admin</span>
                                     </div>
                                 </td>
                                 {{-- Action --}}
