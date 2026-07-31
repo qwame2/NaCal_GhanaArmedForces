@@ -352,7 +352,7 @@
                                 </td>
                                 {{-- Items --}}
                                 <td>
-                                    <div class="v-main" style="font-size:.83rem; font-weight:750;">{{ \Illuminate\Support\Str::limit($firstItemDesc, 38) }}</div>
+                                    <div class="v-main" style="font-size:.83rem; font-weight:750;">{{ \Illuminate\Support\Str::limit($firstItemDesc, 22) }}</div>
                                     <div class="v-sub">
                                         @if($itemsCount > 1) +{{ $itemsCount - 1 }} more item(s) @else 1 item line @endif
                                     </div>
@@ -417,7 +417,7 @@
                                 </td>
                                 {{-- Items --}}
                                 <td>
-                                    <div class="v-main" style="font-size:.83rem; font-weight:750;">{{ \Illuminate\Support\Str::limit($svc->details, 42) }}</div>
+                                    <div class="v-main" style="font-size:.83rem; font-weight:750;">{{ \Illuminate\Support\Str::limit($svc->details, 22) }}</div>
                                     <div class="v-sub">Service Order</div>
                                 </td>
                                 {{-- Date --}}
