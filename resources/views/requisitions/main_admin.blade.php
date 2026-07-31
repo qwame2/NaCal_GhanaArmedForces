@@ -1095,8 +1095,7 @@
         </div>
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 0.55rem 1rem; border-radius: var(--radius-lg);">
-                <span id="liveSyncDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: oversightsyncpulse 1.8s infinite; display: inline-block;"></span>
-                <span style="font-size: 0.75rem; font-weight: 800; color: #047857; text-transform: uppercase; letter-spacing: 0.04em;">Live Auto-Sync</span>
+                
             </div>
             <button onclick="window.pollOversightQueueSilently(true)" style="padding: 0.75rem 1.35rem; border-radius: var(--radius-lg); font-weight: 800; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: var(--transition); background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-color);" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">
                 <i id="refreshBtnIcon" data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>

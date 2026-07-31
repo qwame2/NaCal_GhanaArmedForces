@@ -1664,5 +1664,56 @@ class ApiTest extends TestCase
         $response->assertSee('Apex Cleaning Supplies Ghana Ltd');
         $response->assertSee('Industrial');
     }
+
+    public function test_sub_main_admin_acting_as_hod_can_approve_requisition_with_department_mismatch()
+    {
+        $subMainAdmin = User::factory()->create([
+            'role' => 'Sub Main Admin',
+            'department' => 'Human Resource Management Department',
+            'registration_status' => 'approved',
+        ]);
+
+        $requisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+        ]);
+
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => $requisitioner->name,
+            'department' => 'HR',
+            'requested_by' => $requisitioner->id,
+            'purpose' => 'Test wipes',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'pending',
+            'main_admin_status' => 'pending',
+        ]);
+
+        $requisition->items()->create([
+            'description' => 'Wipes',
+            'category' => 'B',
+            'unit' => 'PACK',
+            'quantity_requested' => 10,
+        ]);
+
+        // Access detail endpoint
+        $response = $this->actingAs($subMainAdmin)->get('/admin/requisitions/' . $requisition->id . '/show');
+        $response->assertStatus(200);
+        $response->assertJsonPath('origin_admin_status', 'pending');
+
+        // Approve requisition acting as HOD
+        $response = $this->actingAs($subMainAdmin)->post('/main-admin/requisitions/' . $requisition->id . '/process', [
+            'status' => 'approved',
+            'admin_notes' => 'Approved by HR Sub Main Admin HOD',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('success', true);
+
+        $requisition->refresh();
+        $this->assertEquals('approved', $requisition->origin_admin_status);
+    }
 }
 
