@@ -2,438 +2,467 @@
 
 @section('content')
 <style>
-    .sra-vault-container {
-        padding: 1.5rem 2rem;
-        max-width: 100%;
-        width: 100%;
+    /* ─── Page Container ─────────────────────────────── */
+    .vault-page { padding: 1.75rem 2rem; }
+
+    /* ─── Stat Cards ─────────────────────────────────── */
+    .vault-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.1rem;
+        margin-bottom: 1.75rem;
     }
-    .sra-stat-card {
+    .vault-stat-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 16px;
-        padding: 1.25rem 1.5rem;
+        padding: 1.1rem 1.4rem;
         display: flex;
         align-items: center;
-        gap: 1.25rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        transition: all 0.25s ease;
+        gap: 1rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        transition: transform .22s, box-shadow .22s;
     }
-    .sra-stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-    }
-    .sra-stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .vault-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+    .vault-stat-icon {
+        width: 46px; height: 46px;
+        border-radius: 13px;
+        display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
-    .sra-table-card {
+    .vault-stat-num { font-size: 1.65rem; font-weight: 950; color: var(--text-main); line-height: 1.1; }
+    .vault-stat-lbl { font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; letter-spacing: .04em; }
+
+    /* ─── Card Wrapper ───────────────────────────────── */
+    .vault-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 18px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
         overflow: hidden;
+        margin-bottom: 1.75rem;
     }
-    .sra-type-pill {
-        display: inline-flex;
+
+    /* ─── Toolbar (tabs + search) ────────────────────── */
+    .vault-toolbar {
+        padding: 1rem 1.4rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 5px;
-        padding: 3px 9px;
-        border-radius: 99px;
-        font-size: 0.7rem;
+        flex-wrap: wrap;
+        gap: .85rem;
+        background: rgba(248,250,252,.55);
+    }
+    .vault-tab-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .vault-tab {
+        padding: .55rem 1.1rem;
+        border-radius: 10px;
         font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        white-space: nowrap;
-    }
-    .pill-inventory {
-        background: rgba(16, 185, 129, 0.1);
-        color: #047857;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-    }
-    .pill-service {
-        background: rgba(99, 102, 241, 0.1);
-        color: #4338ca;
-        border: 1px solid rgba(99, 102, 241, 0.25);
-    }
-    .pill-donor {
-        background: rgba(245, 158, 11, 0.1);
-        color: #b45309;
-        border: 1px solid rgba(245, 158, 11, 0.25);
-    }
-    .sra-tab-btn {
-        padding: 0.65rem 1.25rem;
-        border-radius: 12px;
-        font-weight: 800;
-        font-size: 0.83rem;
+        font-size: .8rem;
         border: 1.5px solid transparent;
         background: transparent;
         color: var(--text-muted);
         cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        transition: all .2s;
+        display: inline-flex; align-items: center; gap: 7px;
     }
-    .sra-tab-btn.active {
+    .vault-tab.active {
         background: var(--primary);
-        color: white;
+        color: #fff;
         border-color: var(--primary);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 4px 12px rgba(16,185,129,.22);
     }
-    /* Table layout — fixed so columns stay even */
-    .sra-table {
+    .vault-search-wrap { position: relative; width: 100%; max-width: 320px; }
+    .vault-search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 15px; height: 15px; }
+    .vault-search-input {
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        table-layout: fixed;
+        padding: .6rem .85rem .6rem 2.1rem;
+        border-radius: 10px;
+        border: 1.5px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-main);
+        font-size: .83rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color .2s;
+        box-sizing: border-box;
     }
-    /* Column widths — total 100% */
-    .sra-table col.col-sra      { width: 13%; }
-    .sra-table col.col-supplier { width: 16%; }
-    .sra-table col.col-category { width: 11%; }
-    .sra-table col.col-items    { width: 20%; }
-    .sra-table col.col-date     { width: 11%; }
-    .sra-table col.col-sig      { width: 21%; }
-    .sra-table col.col-action   { width: 8%; }
+    .vault-search-input:focus { border-color: var(--primary); }
 
-    .sra-table th {
-        background: rgba(248, 250, 252, 0.9);
-        padding: 0.85rem 1rem;
-        font-size: 0.71rem;
+    /* ─── Table ──────────────────────────────────────── */
+    .vault-table-wrap { overflow-x: auto; }
+    .vault-table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: collapse;
+    }
+    /* Header */
+    .vault-table thead tr {
+        background: rgba(248,250,252,.9);
+        border-bottom: 2px solid var(--border-color);
+    }
+    .vault-table th {
+        padding: .8rem 1.1rem;
+        font-size: .69rem;
         font-weight: 800;
         text-transform: uppercase;
+        letter-spacing: .06em;
         color: var(--text-muted);
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid var(--border-color);
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        text-align: left;
     }
-    .sra-table td {
-        padding: 1rem;
-        font-size: 0.86rem;
+    .vault-table th.th-center { text-align: center; }
+
+    /* Body rows */
+    .vault-table tbody tr {
+        border-bottom: 1px solid rgba(226,232,240,.65);
+        transition: background .15s;
+    }
+    .vault-table tbody tr:last-child { border-bottom: none; }
+    .vault-table tbody tr:hover td { background: rgba(241,245,249,.55); }
+
+    /* Zebra */
+    .vault-table tbody tr:nth-child(even) td { background: rgba(248,250,252,.35); }
+
+    /* Cells */
+    .vault-table td {
+        padding: .85rem 1.1rem;
+        font-size: .85rem;
         color: var(--text-main);
-        border-bottom: 1px solid rgba(226, 232, 240, 0.6);
         vertical-align: middle;
-        overflow: hidden;
     }
-    .sra-table tr:last-child td { border-bottom: none; }
-    .sra-table tr:hover td {
-        background: rgba(241, 245, 249, 0.5);
+    .vault-table td.td-center { text-align: center; }
+
+    /* Row type accent */
+    .vault-table tr.sra-type-inventory td:first-child {
+        border-left: 3px solid #10b981;
     }
-    .cell-primary {
-        font-weight: 900;
-        font-size: 0.92rem;
+    .vault-table tr.sra-type-service td:first-child {
+        border-left: 3px solid #6366f1;
+    }
+
+    /* ─── Cell helpers ───────────────────────────────── */
+    .v-main {
+        font-weight: 800;
+        font-size: .87rem;
         color: var(--text-main);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.3;
     }
-    .cell-sub {
-        font-size: 0.72rem;
+    .v-sub {
+        font-size: .71rem;
         color: var(--text-muted);
         font-weight: 600;
-        margin-top: 3px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        margin-top: 2px;
+        line-height: 1.3;
     }
-    .cell-pills {
-        display: flex;
-        gap: 5px;
-        flex-wrap: wrap;
-        margin-top: 5px;
-    }
-    .sig-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        padding: 2px 6px;
+
+    /* ─── Type pills ─────────────────────────────────── */
+    .v-pill {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 2px 8px;
         border-radius: 99px;
-        font-size: 0.65rem;
+        font-size: .67rem;
         font-weight: 900;
-        background: rgba(16, 185, 129, 0.1);
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        white-space: nowrap;
+        margin-top: 4px;
+    }
+    .v-pill-inv  { background: rgba(16,185,129,.1);  color: #047857; border: 1px solid rgba(16,185,129,.25); }
+    .v-pill-svc  { background: rgba(99,102,241,.1);  color: #4338ca; border: 1px solid rgba(99,102,241,.25); }
+    .v-pill-don  { background: rgba(245,158,11,.1);  color: #b45309; border: 1px solid rgba(245,158,11,.25); }
+    .v-badge-full    { display: inline-block; padding: 1px 7px; border-radius: 99px; font-size: .65rem; font-weight: 900; color: #047857; background: rgba(16,185,129,.1); margin-top: 4px; margin-left: 4px; }
+    .v-badge-partial { display: inline-block; padding: 1px 7px; border-radius: 99px; font-size: .65rem; font-weight: 900; color: #b45309; background: rgba(245,158,11,.1); margin-top: 4px; margin-left: 4px; }
+
+    /* ─── Signatories — three stacked micro-lines ─────── */
+    .sig-stack { display: flex; flex-direction: column; gap: 3px; }
+    .sig-line {
+        display: flex; align-items: center; gap: 5px;
+        font-size: .72rem; font-weight: 700; color: var(--text-main);
+    }
+    .sig-check {
+        width: 14px; height: 14px; flex-shrink: 0;
+        background: rgba(16,185,129,.15);
+        border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
         color: #047857;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        white-space: nowrap;
-        flex-shrink: 0;
+        font-size: .62rem;
+        font-weight: 900;
     }
-    .sig-pills-row {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 4px;
-        align-items: center;
+    .sig-role {
+        font-size: .67rem; font-weight: 900; text-transform: uppercase;
+        color: var(--text-muted); letter-spacing: .03em; min-width: 38px;
     }
-    .badge-partial {
-        font-size: 0.67rem;
-        font-weight: 800;
-        color: #b45309;
-        background: rgba(245, 158, 11, 0.12);
-        padding: 2px 7px;
-        border-radius: 99px;
-        white-space: nowrap;
+    .sig-name {
+        font-size: .75rem; font-weight: 700; color: var(--text-main);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        max-width: 130px;
     }
-    .badge-full {
-        font-size: 0.67rem;
-        font-weight: 800;
-        color: #047857;
-        background: rgba(16, 185, 129, 0.12);
-        padding: 2px 7px;
-        border-radius: 99px;
-        white-space: nowrap;
-    }
-    .view-sra-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        padding: 0.5rem 0.85rem;
-        border-radius: 10px;
-        font-weight: 800;
-        font-size: 0.76rem;
+
+    /* ─── Action button ──────────────────────────────── */
+    .v-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: .45rem .9rem;
+        border-radius: 9px;
+        font-weight: 800; font-size: .75rem;
         text-decoration: none;
-        transition: opacity 0.2s;
+        transition: opacity .2s, transform .15s;
         white-space: nowrap;
     }
-    .view-sra-btn:hover { opacity: 0.85; }
+    .v-btn:hover { opacity: .88; transform: translateY(-1px); }
+
+    /* ─── Empty state ────────────────────────────────── */
+    .vault-empty {
+        text-align: center;
+        padding: 3.5rem 1.5rem;
+    }
 </style>
 
-<div class="sra-vault-container">
-    {{-- Hero Banner --}}
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+<div class="vault-page">
+
+    {{-- ── Page Header ── --}}
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
         <div>
-            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 99px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #047857; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
-                <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> STORES OFFICERS ARCHIVE
+            <div style="display:inline-flex; align-items:center; gap:7px; padding:3px 11px; border-radius:99px; background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.25); color:#047857; font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.04em; margin-bottom:7px;">
+                <i data-lucide="shield-check" style="width:13px; height:13px;"></i> Stores Officers Archive
             </div>
-            <h1 style="font-size: 1.85rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.03em; margin: 0 0 4px 0;">Approved Stores SRA Receipts Vault</h1>
-            <p style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600; margin: 0;">
-                Comprehensive, fully-authorized repository of all verified Inventory and Service Stores Received Advice (SRA) receipts.
-            </p>
+            <h1 style="font-size:1.75rem; font-weight:950; color:var(--text-main); letter-spacing:-.03em; margin:0 0 4px;">Approved Stores SRA Receipts Vault</h1>
+            <p style="font-size:.85rem; color:var(--text-muted); font-weight:600; margin:0;">Fully-authorized repository of all verified Inventory and Service SRA receipts.</p>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <button onclick="window.location.reload()" style="padding: 0.7rem 1.2rem; border-radius: 12px; font-weight: 800; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-color); transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh Vault
-            </button>
-        </div>
+        <button onclick="window.location.reload()" style="padding:.65rem 1.1rem; border-radius:11px; font-weight:800; font-size:.8rem; display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:var(--bg-card); color:var(--text-main); border:1.5px solid var(--border-color); transition:border-color .2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
+            <i data-lucide="refresh-cw" style="width:15px; height:15px;"></i> Refresh
+        </button>
     </div>
 
-    {{-- Stats Cards Grid --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem;">
-        <div class="sra-stat-card">
-            <div class="sra-stat-icon" style="background: rgba(16, 185, 129, 0.12); color: #059669;">
-                <i data-lucide="file-check-2" style="width: 24px; height: 24px;"></i>
+    {{-- ── Stat Cards ── --}}
+    <div class="vault-stat-grid">
+        <div class="vault-stat-card">
+            <div class="vault-stat-icon" style="background:rgba(16,185,129,.12); color:#059669;">
+                <i data-lucide="file-check-2" style="width:22px;height:22px;"></i>
             </div>
             <div>
-                <div style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); line-height: 1.1;">{{ $totalCombinedCount }}</div>
-                <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Total Authorized SRAs</div>
+                <div class="vault-stat-num">{{ $totalCombinedCount }}</div>
+                <div class="vault-stat-lbl">Total Authorized SRAs</div>
             </div>
         </div>
-
-        <div class="sra-stat-card">
-            <div class="sra-stat-icon" style="background: rgba(59, 130, 246, 0.12); color: #2563eb;">
-                <i data-lucide="boxes" style="width: 24px; height: 24px;"></i>
+        <div class="vault-stat-card">
+            <div class="vault-stat-icon" style="background:rgba(59,130,246,.12); color:#2563eb;">
+                <i data-lucide="boxes" style="width:22px;height:22px;"></i>
             </div>
             <div>
-                <div style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); line-height: 1.1;">{{ $totalInventoryCount }}</div>
-                <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Inventory SRA Receipts</div>
+                <div class="vault-stat-num">{{ $totalInventoryCount }}</div>
+                <div class="vault-stat-lbl">Inventory SRAs</div>
             </div>
         </div>
-
-        <div class="sra-stat-card">
-            <div class="sra-stat-icon" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5;">
-                <i data-lucide="receipt" style="width: 24px; height: 24px;"></i>
+        <div class="vault-stat-card">
+            <div class="vault-stat-icon" style="background:rgba(99,102,241,.12); color:#4f46e5;">
+                <i data-lucide="receipt" style="width:22px;height:22px;"></i>
             </div>
             <div>
-                <div style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); line-height: 1.1;">{{ $totalServiceCount }}</div>
-                <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Service SRA Receipts</div>
+                <div class="vault-stat-num">{{ $totalServiceCount }}</div>
+                <div class="vault-stat-lbl">Service SRAs</div>
             </div>
         </div>
     </div>
 
-    {{-- Filter & Search Control Panel --}}
-    <div class="sra-table-card" style="margin-bottom: 1.75rem;">
-        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; background: rgba(248, 250, 252, 0.5);">
-            {{-- Tabs --}}
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="filterSraType('all')" class="sra-tab-btn {{ $type === 'all' ? 'active' : '' }}" id="tab-all">
-                    <i data-lucide="layers" style="width: 16px; height: 16px;"></i> All Receipts ({{ $totalCombinedCount }})
+    {{-- ── Table Card ── --}}
+    <div class="vault-card">
+
+        {{-- Toolbar --}}
+        <div class="vault-toolbar">
+            <div class="vault-tab-group">
+                <button onclick="filterSraType('all')"       class="vault-tab {{ $type==='all'       ? 'active':'' }}" id="tab-all">
+                    <i data-lucide="layers"    style="width:15px;height:15px;"></i> All ({{ $totalCombinedCount }})
                 </button>
-                <button onclick="filterSraType('inventory')" class="sra-tab-btn {{ $type === 'inventory' ? 'active' : '' }}" id="tab-inventory">
-                    <i data-lucide="box" style="width: 16px; height: 16px;"></i> Inventory SRAs ({{ $totalInventoryCount }})
+                <button onclick="filterSraType('inventory')" class="vault-tab {{ $type==='inventory' ? 'active':'' }}" id="tab-inventory">
+                    <i data-lucide="box"       style="width:15px;height:15px;"></i> Inventory ({{ $totalInventoryCount }})
                 </button>
-                <button onclick="filterSraType('service')" class="sra-tab-btn {{ $type === 'service' ? 'active' : '' }}" id="tab-service">
-                    <i data-lucide="file-text" style="width: 16px; height: 16px;"></i> Service SRAs ({{ $totalServiceCount }})
+                <button onclick="filterSraType('service')"   class="vault-tab {{ $type==='service'   ? 'active':'' }}" id="tab-service">
+                    <i data-lucide="file-text" style="width:15px;height:15px;"></i> Service ({{ $totalServiceCount }})
                 </button>
             </div>
-
-            {{-- Live Search Input --}}
-            <div style="position: relative; width: 100%; max-width: 360px;">
-                <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
-                <input type="text" id="sraSearchInput" value="{{ $search }}" placeholder="Search SRA #, supplier, items..." onkeyup="handleSraSearch(event)" style="width: 100%; padding: 0.65rem 0.85rem 0.65rem 2.25rem; border-radius: 12px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 0.85rem; font-weight: 600; outline: none; transition: border-color 0.2s; box-sizing: border-box;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
+            <div class="vault-search-wrap">
+                <i data-lucide="search"></i>
+                <input type="text" id="sraSearchInput" class="vault-search-input"
+                       value="{{ $search }}" placeholder="Search SRA #, supplier, items…"
+                       onkeyup="handleSraSearch(event)">
             </div>
         </div>
 
-        {{-- SRA Table --}}
-        <div style="overflow-x: auto;">
-            <table class="sra-table" id="sraVaultTable">
-                <colgroup>
-                    <col class="col-sra">
-                    <col class="col-supplier">
-                    <col class="col-category">
-                    <col class="col-items">
-                    <col class="col-date">
-                    <col class="col-sig">
-                    <col class="col-action">
-                </colgroup>
+        {{-- Table --}}
+        <div class="vault-table-wrap">
+            <table class="vault-table" id="sraVaultTable">
                 <thead>
                     <tr>
-                        <th>SRA Number &amp; Type</th>
+                        <th>SRA No. &amp; Type</th>
                         <th>Supplier / Donor</th>
                         <th>Category</th>
-                        <th>Items Summary</th>
+                        <th>Items</th>
                         <th>Delivery Date</th>
-                        <th>Approved Signatories</th>
-                        <th style="text-align: center;">Action</th>
+                        <th>Approved By</th>
+                        <th class="th-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php $hasResults = false; @endphp
 
-                    {{-- 1. Render Inventory SRAs --}}
+                    {{-- ── Inventory SRAs ── --}}
                     @if($type === 'all' || $type === 'inventory')
                         @foreach($inventorySras as $batch)
                             @php
-                                $hasResults = true;
-                                $isDonor = ($batch->acquisition_type === 'Donor' || str_contains(strtolower($batch->supplier_status ?? ''), 'donor') || str_contains(strtolower($batch->supplier_status ?? ''), 'donation'));
-                                $isPartial = str_contains(strtolower($batch->supplier_status ?? ''), 'partial');
-                                $supplierName = trim(preg_replace('/\[.*?\]/', '', ($batch->acquisition_type === 'Donor' ? ($batch->donor_name ?: $batch->supplier_name) : $batch->supplier_name) ?? 'N/A'));
-                                $categoryLabel = $ledgeMap[$batch->ledge_category] ?? ('Cat. ' . $batch->ledge_category);
-                                $itemsCount = $batch->items->count();
+                                $hasResults  = true;
+                                $isDonor     = ($batch->acquisition_type === 'Donor'
+                                             || str_contains(strtolower($batch->supplier_status ?? ''), 'donor')
+                                             || str_contains(strtolower($batch->supplier_status ?? ''), 'donation'));
+                                $isPartial   = str_contains(strtolower($batch->supplier_status ?? ''), 'partial');
+                                $supplierName= trim(preg_replace('/\[.*?\]/', '',
+                                    ($isDonor ? ($batch->donor_name ?: $batch->supplier_name) : $batch->supplier_name) ?? 'N/A'));
+                                $categoryLabel = $ledgeMap[$batch->ledge_category] ?? ('Cat. '.$batch->ledge_category);
+                                $itemsCount    = $batch->items->count();
                                 $firstItemDesc = $batch->items->first()?->description ?? 'No items recorded';
-                                $sraNumberFormatted = 'SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT);
+                                $sraNo = 'SRA-'.str_pad($batch->id, 6, '0', STR_PAD_LEFT);
                             @endphp
                             <tr class="sra-row sra-type-inventory">
-                                {{-- SRA Number & Type --}}
+                                {{-- SRA No. & Type --}}
                                 <td>
-                                    <div class="cell-primary" style="font-family: monospace;">{{ $sraNumberFormatted }}</div>
-                                    <div class="cell-pills">
+                                    <div class="v-main" style="font-family:monospace; letter-spacing:.03em;">{{ $sraNo }}</div>
+                                    <div>
                                         @if($isDonor)
-                                            <span class="sra-type-pill pill-donor"><i data-lucide="gift" style="width: 11px; height: 11px;"></i> Donor</span>
+                                            <span class="v-pill v-pill-don"><i data-lucide="gift" style="width:10px;height:10px;"></i> Donor</span>
                                         @else
-                                            <span class="sra-type-pill pill-inventory"><i data-lucide="package-check" style="width: 11px; height: 11px;"></i> Inventory</span>
+                                            <span class="v-pill v-pill-inv"><i data-lucide="package-check" style="width:10px;height:10px;"></i> Inventory</span>
                                         @endif
                                         @if($isPartial)
-                                            <span class="badge-partial">Partial</span>
+                                            <span class="v-badge-partial">Partial</span>
                                         @else
-                                            <span class="badge-full">Full</span>
+                                            <span class="v-badge-full">Full</span>
                                         @endif
                                     </div>
                                 </td>
-                                {{-- Supplier / Donor --}}
+                                {{-- Supplier --}}
                                 <td>
-                                    <div class="cell-primary">{{ $supplierName }}</div>
-                                    <div class="cell-sub">{{ $batch->acquisition_type ?: 'Supplier' }} Delivery</div>
+                                    <div class="v-main">{{ $supplierName }}</div>
+                                    <div class="v-sub">{{ $batch->acquisition_type ?: 'Supplier' }} Delivery</div>
                                 </td>
                                 {{-- Category --}}
                                 <td>
-                                    <div class="cell-primary" style="color: var(--primary); font-size: 0.83rem;">{{ $categoryLabel }}</div>
-                                    <div class="cell-sub">Ledge {{ $batch->ledge_category }}</div>
+                                    <div class="v-main" style="color:var(--primary);">{{ $categoryLabel }}</div>
+                                    <div class="v-sub">Ledge {{ $batch->ledge_category }}</div>
                                 </td>
-                                {{-- Items Summary --}}
+                                {{-- Items --}}
                                 <td>
-                                    <div class="cell-primary" style="font-size: 0.84rem; font-weight: 750;">{{ \Illuminate\Support\Str::limit($firstItemDesc, 40) }}</div>
-                                    <div class="cell-sub">
-                                        @if($itemsCount > 1)
-                                            + {{ $itemsCount - 1 }} more item(s)
-                                        @else
-                                            1 item line
-                                        @endif
+                                    <div class="v-main" style="font-size:.83rem; font-weight:750;">{{ \Illuminate\Support\Str::limit($firstItemDesc, 38) }}</div>
+                                    <div class="v-sub">
+                                        @if($itemsCount > 1) +{{ $itemsCount - 1 }} more item(s) @else 1 item line @endif
                                     </div>
                                 </td>
-                                {{-- Delivery Date --}}
+                                {{-- Date --}}
                                 <td>
-                                    <div class="cell-primary" style="font-size: 0.84rem;">{{ \Carbon\Carbon::parse($batch->arrival_date ?: $batch->entry_date)->format('d M Y') }}</div>
-                                    <div class="cell-sub">{{ \Carbon\Carbon::parse($batch->updated_at)->format('h:i A') }}</div>
+                                    <div class="v-main" style="font-size:.83rem;">{{ \Carbon\Carbon::parse($batch->arrival_date ?: $batch->entry_date)->format('d M Y') }}</div>
+                                    <div class="v-sub">{{ \Carbon\Carbon::parse($batch->updated_at)->format('h:i A') }}</div>
                                 </td>
-                                {{-- Approved Signatories --}}
+                                {{-- Signatories --}}
                                 <td>
-                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
-                                        <span class="sig-pill">&#10003; Stores</span>
-                                        <span class="sig-pill">&#10003; Audit</span>
-                                        <span class="sig-pill">&#10003; Admin</span>
+                                    <div class="sig-stack">
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Stores</span>
+                                            <span class="sig-name">{{ $batch->storesApprover->name ?? 'Verified' }}</span>
+                                        </div>
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Audit</span>
+                                            <span class="sig-name">{{ $batch->auditorApprover->name ?? 'Verified' }}</span>
+                                        </div>
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Admin</span>
+                                            <span class="sig-name">{{ $batch->adminApprover->name ?? 'Authorized' }}</span>
+                                        </div>
                                     </div>
                                 </td>
                                 {{-- Action --}}
-                                <td style="text-align: center;">
-                                    <a href="{{ route('receiveditems.sra', ['id' => $batch->id]) }}" target="_blank" class="view-sra-btn" style="background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
-                                        <i data-lucide="printer" style="width: 14px; height: 14px;"></i> View SRA
+                                <td class="td-center">
+                                    <a href="{{ route('receiveditems.sra', ['id' => $batch->id]) }}" target="_blank"
+                                       class="v-btn" style="background:var(--primary); color:#fff; box-shadow:0 4px 12px rgba(16,185,129,.2);">
+                                        <i data-lucide="printer" style="width:13px;height:13px;"></i> View SRA
                                     </a>
                                 </td>
                             </tr>
                         @endforeach
                     @endif
 
-                    {{-- 2. Render Service SRAs --}}
+                    {{-- ── Service SRAs ── --}}
                     @if($type === 'all' || $type === 'service')
-                        @foreach($serviceSras as $serviceSra)
+                        @foreach($serviceSras as $svc)
                             @php $hasResults = true; @endphp
                             <tr class="sra-row sra-type-service">
-                                {{-- SRA Number & Type --}}
+                                {{-- SRA No. & Type --}}
                                 <td>
-                                    <div class="cell-primary" style="font-family: monospace;">{{ $serviceSra->sra_number }}</div>
-                                    <div class="cell-pills">
-                                        <span class="sra-type-pill pill-service"><i data-lucide="wrench" style="width: 11px; height: 11px;"></i> Service</span>
+                                    <div class="v-main" style="font-family:monospace; letter-spacing:.03em;">{{ $svc->sra_number }}</div>
+                                    <div>
+                                        <span class="v-pill v-pill-svc"><i data-lucide="wrench" style="width:10px;height:10px;"></i> Service</span>
                                     </div>
                                 </td>
-                                {{-- Supplier / Donor --}}
+                                {{-- Supplier --}}
                                 <td>
-                                    <div class="cell-primary">{{ $serviceSra->supplier_name }}</div>
-                                    <div class="cell-sub">{{ $serviceSra->supplier_address ?: 'Accra' }}</div>
+                                    <div class="v-main">{{ $svc->supplier_name }}</div>
+                                    <div class="v-sub">{{ $svc->supplier_address ?: 'Accra' }}</div>
                                 </td>
                                 {{-- Category --}}
                                 <td>
-                                    <div class="cell-primary" style="color: #4338ca; font-size: 0.83rem;">{{ $serviceSra->category ?: 'Service / Repairs' }}</div>
-                                    <div class="cell-sub">{{ $serviceSra->dept ?: 'NACOC' }}</div>
+                                    <div class="v-main" style="color:#4338ca;">{{ $svc->category ?: 'Service / Repairs' }}</div>
+                                    <div class="v-sub">{{ $svc->dept ?: 'NACOC' }}</div>
                                 </td>
-                                {{-- Items Summary --}}
+                                {{-- Items --}}
                                 <td>
-                                    <div class="cell-primary" style="font-size: 0.84rem; font-weight: 750;">{{ \Illuminate\Support\Str::limit($serviceSra->details, 45) }}</div>
-                                    <div class="cell-sub">Service Order</div>
+                                    <div class="v-main" style="font-size:.83rem; font-weight:750;">{{ \Illuminate\Support\Str::limit($svc->details, 42) }}</div>
+                                    <div class="v-sub">Service Order</div>
                                 </td>
-                                {{-- Delivery Date --}}
+                                {{-- Date --}}
                                 <td>
-                                    <div class="cell-primary" style="font-size: 0.84rem;">{{ \Carbon\Carbon::parse($serviceSra->date_of_delivery)->format('d M Y') }}</div>
-                                    <div class="cell-sub">Completed</div>
+                                    <div class="v-main" style="font-size:.83rem;">{{ \Carbon\Carbon::parse($svc->date_of_delivery)->format('d M Y') }}</div>
+                                    <div class="v-sub">Completed</div>
                                 </td>
-                                {{-- Approved Signatories --}}
+                                {{-- Signatories --}}
                                 <td>
-                                    <div class="sig-pills-row">
-                                        <span class="sig-pill">&#10003; Stores</span>
-                                        <span class="sig-pill">&#10003; Audit</span>
-                                        <span class="sig-pill">&#10003; Admin</span>
+                                    <div class="sig-stack">
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Stores</span>
+                                            <span class="sig-name">{{ $svc->stores_approved_by ?: 'Verified' }}</span>
+                                        </div>
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Audit</span>
+                                            <span class="sig-name">{{ $svc->auditor_approved_by ?: 'Verified' }}</span>
+                                        </div>
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Admin</span>
+                                            <span class="sig-name">{{ $svc->admin_approved_by ?: 'Authorized' }}</span>
+                                        </div>
                                     </div>
                                 </td>
                                 {{-- Action --}}
-                                <td style="text-align: center;">
-                                    <a href="{{ route('service-sra.receipt', ['id' => $serviceSra->id]) }}" target="_blank" class="view-sra-btn" style="background: #4f46e5; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">
-                                        <i data-lucide="printer" style="width: 14px; height: 14px;"></i> View SRA
+                                <td class="td-center">
+                                    <a href="{{ route('service-sra.receipt', ['id' => $svc->id]) }}" target="_blank"
+                                       class="v-btn" style="background:#4f46e5; color:#fff; box-shadow:0 4px 12px rgba(99,102,241,.2);">
+                                        <i data-lucide="printer" style="width:13px;height:13px;"></i> View SRA
                                     </a>
                                 </td>
                             </tr>
                         @endforeach
                     @endif
 
+                    {{-- ── Empty state ── --}}
                     @if(!$hasResults)
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
-                                <i data-lucide="archive-x" style="width: 42px; height: 42px; stroke-width: 1.5; color: var(--text-muted); margin-bottom: 8px;"></i>
-                                <div style="font-weight: 800; font-size: 1rem; color: var(--text-main);">No Approved SRA Receipts Found</div>
-                                <div style="font-size: 0.82rem; margin-top: 4px;">No fully-authorized SRA receipts matched your current search filters.</div>
+                            <td colspan="7" class="vault-empty">
+                                <i data-lucide="archive-x" style="width:40px;height:40px;stroke-width:1.4;color:var(--text-muted);display:block;margin:0 auto 10px;"></i>
+                                <div style="font-weight:800;font-size:.97rem;color:var(--text-main);">No Approved SRA Receipts Found</div>
+                                <div style="font-size:.81rem;color:var(--text-muted);margin-top:4px;">No fully-authorized SRA receipts matched your current filters.</div>
                             </td>
                         </tr>
                     @endif
@@ -441,35 +470,25 @@
             </table>
         </div>
     </div>
+
 </div>
 
 <script>
     function filterSraType(type) {
-        document.querySelectorAll('.sra-tab-btn').forEach(btn => btn.classList.remove('active'));
-        const activeBtn = document.getElementById('tab-' + type);
-        if (activeBtn) activeBtn.classList.add('active');
-
-        const rows = document.querySelectorAll('.sra-row');
-        rows.forEach(row => {
-            if (type === 'all') {
-                row.style.display = '';
-            } else if (type === 'inventory') {
-                row.style.display = row.classList.contains('sra-type-inventory') ? '' : 'none';
-            } else if (type === 'service') {
-                row.style.display = row.classList.contains('sra-type-service') ? '' : 'none';
-            }
+        document.querySelectorAll('.vault-tab').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById('tab-' + type);
+        if (btn) btn.classList.add('active');
+        document.querySelectorAll('.sra-row').forEach(row => {
+            if (type === 'all') { row.style.display = ''; }
+            else { row.style.display = row.classList.contains('sra-type-' + type) ? '' : 'none'; }
         });
     }
-
     function handleSraSearch(e) {
         const val = e.target.value.toLowerCase().trim();
-        const rows = document.querySelectorAll('.sra-row');
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            row.style.display = text.includes(val) ? '' : 'none';
+        document.querySelectorAll('.sra-row').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
         });
     }
-
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     });
