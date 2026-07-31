@@ -170,6 +170,16 @@
                 </div>
             </a>
 
+            <a href="{{ route('stores.sra-vault') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: var(--transition); box-shadow: var(--card-shadow);">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #047857; display: flex; align-items: center; justify-content: center; shrink: 0;">
+                    <i data-lucide="archive" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Approved SRA Vault</h4>
+                    <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">View all authorized receipts</p>
+                </div>
+            </a>
+
             <a href="{{ route('reports.index') }}" style="background: var(--bg-card); padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-main); display: flex; align-items: center; gap: 1rem; transition: var(--transition); box-shadow: var(--card-shadow);">
                 <div style="width: 42px; height: 42px; border-radius: 12px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; shrink: 0;">
                     <i data-lucide="bar-chart-3" style="width: 20px; height: 20px;"></i>

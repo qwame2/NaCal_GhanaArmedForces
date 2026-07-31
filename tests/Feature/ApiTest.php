@@ -1629,5 +1629,40 @@ class ApiTest extends TestCase
         $sraView->assertSee('SRA-000010');
         $sraView->assertSee('000018');
     }
+
+    public function test_store_officer_can_access_sra_vault_and_view_approved_receipts()
+    {
+        $storeOfficer = User::factory()->create([
+            'role' => 'Store Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+        ]);
+
+        $approvedBatch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'B',
+            'supplier_name' => 'Apex Cleaning Supplies Ghana Ltd',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => now()->format('Y-m-d'),
+            'approval_status' => 'approved',
+            'auditor_status' => 'approved',
+            'admin_status' => 'approved',
+        ]);
+
+        $approvedBatch->items()->create([
+            'description' => 'Industrial Disinfectant 5L',
+            'unit' => 'BTL',
+            'qty' => 30,
+            'stock_balance' => 30,
+            'variance' => 0,
+        ]);
+
+        $response = $this->actingAs($storeOfficer)->get(route('stores.sra-vault'));
+        $response->assertStatus(200);
+        $response->assertSee('Approved Stores SRA Receipts Vault');
+        $response->assertSee('Apex Cleaning Supplies Ghana Ltd');
+        $response->assertSee('Industrial Disinfectant 5L');
+    }
 }
 

@@ -25,6 +25,95 @@ class ReceivedItemsController extends Controller
             ];
     }
 
+    public function sraVaultIndex(Request $request)
+    {
+        InventoryBatch::selfHealSchema();
+
+        $user = auth()->user();
+        $isStoresUser = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || in_array($user->role, ['Officer', 'Store Officer', 'Head of Stores', 'Auditor'])
+            || strcasecmp($user->department ?? '', 'Stores') === 0
+            || strcasecmp($user->department ?? '', 'Store') === 0;
+
+        if (!$isStoresUser) {
+            abort(403, 'Unauthorized access to Stores SRA Vault.');
+        }
+
+        $search = trim($request->input('search', ''));
+        $type = $request->input('type', 'all');
+        $category = $request->input('category', '');
+
+        // 1. Fetch Approved Inventory SRAs
+        $inventoryQuery = InventoryBatch::with(['items', 'recorder', 'approver', 'auditorApprover', 'adminApprover', 'storesApprover'])
+            ->where(function($q) {
+                $q->where('approval_status', 'approved')
+                  ->orWhere(function($sub) {
+                      $sub->where('auditor_status', 'approved')
+                          ->where('admin_status', 'approved');
+                  });
+            });
+
+        if ($search) {
+            $inventoryQuery->where(function($q) use ($search) {
+                $q->where('supplier_name', 'like', "%{$search}%")
+                  ->orWhere('donor_name', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%")
+                  ->orWhereHas('items', function($iq) use ($search) {
+                      $iq->where('description', 'like', "%{$search}%")
+                        ->orWhere('serial_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($category) {
+            $inventoryQuery->where('ledge_category', $category);
+        }
+
+        $inventorySras = $inventoryQuery->orderBy('updated_at', 'desc')->get();
+
+        // 2. Fetch Approved Service SRAs
+        $serviceSras = collect();
+        if (\Illuminate\Support\Facades\Schema::hasTable('service_sras')) {
+            $serviceQuery = \App\Models\ServiceSra::where(function($q) {
+                $q->where('status', 'approved')
+                  ->orWhere(function($sub) {
+                      $sub->where('auditor_status', 'approved')
+                          ->where('admin_status', 'approved');
+                  });
+            });
+
+            if ($search) {
+                $serviceQuery->where(function($q) use ($search) {
+                    $q->where('sra_number', 'like', "%{$search}%")
+                      ->orWhere('supplier_name', 'like', "%{$search}%")
+                      ->orWhere('details', 'like', "%{$search}%")
+                      ->orWhere('dept', 'like', "%{$search}%");
+                });
+            }
+
+            $serviceSras = $serviceQuery->orderBy('updated_at', 'desc')->get();
+        }
+
+        $totalInventoryCount = $inventorySras->count();
+        $totalServiceCount = $serviceSras->count();
+        $totalCombinedCount = $totalInventoryCount + $totalServiceCount;
+
+        $ledgeMap = $this->getLedgeMap();
+
+        return view('stores.sra_vault', compact(
+            'inventorySras',
+            'serviceSras',
+            'totalInventoryCount',
+            'totalServiceCount',
+            'totalCombinedCount',
+            'search',
+            'type',
+            'category',
+            'ledgeMap'
+        ));
+    }
+
     public function preview($id)
     {
         $response = $this->previewApi($id);

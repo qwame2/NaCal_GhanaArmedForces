@@ -779,6 +779,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/stores/service-sra/{id}/process', [ServiceSraController::class, 'storesProcess'])->name('stores.service-sra.process');
     Route::get('/stores/item-entry-approval', [\App\Http\Controllers\EditRequestController::class, 'itemEntryIndex'])->name('stores.item-entry-approval');
     Route::get('/stores/rollback-requests', [\App\Http\Controllers\EditRequestController::class, 'rollbackRequestsIndex'])->name('stores.rollback-requests');
+    Route::get('/stores/sra-vault', [\App\Http\Controllers\ReceivedItemsController::class, 'sraVaultIndex'])->name('stores.sra-vault');
     // Auditor verification
     Route::get('/auditor/service-sra', [ServiceSraController::class, 'auditorIndex'])->name('auditor.service-sra.index');
     Route::get('/auditor/service-sra/{id}/review', [ServiceSraController::class, 'auditorReview'])->name('auditor.service-sra.review');
