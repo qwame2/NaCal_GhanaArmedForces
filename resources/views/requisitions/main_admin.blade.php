@@ -2056,7 +2056,7 @@
             </div>
         </div>`;
 
-        // Check if processed already
+        // Check if acting as HOD (e.g. Sub Main Admins are direct HOD of their department / admin authorizers)
         const isActingAsHOD = departmentsMatch(data.department, "{{ auth()->user()->department }}") && !['Head of Stores', 'Dept. Head (Stores)'].includes("{{ auth()->user()->role }}");
         let isProcessed = false;
         if (isStoresHead && !isActingAsHOD) {
@@ -2407,6 +2407,7 @@
         // Close the underlying modal container so it disappears when the confirmation SweetAlert displays
         closeModal();
 
+        // Sub Main Admins are direct HOD of their department / admin authorizers
         const isActingAsHOD = window.currentReqData && departmentsMatch(window.currentReqData.department, "{{ auth()->user()->department }}") && !['Head of Stores', 'Dept. Head (Stores)'].includes("{{ auth()->user()->role }}");
 
         Swal.fire({
