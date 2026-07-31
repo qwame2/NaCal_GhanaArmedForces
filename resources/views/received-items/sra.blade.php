@@ -399,7 +399,7 @@
                 RECEIVED ADVICE (SRA)
             </div>
             <div class="sra-number">
-                {{ str_pad($batch->id, 6, '0', STR_PAD_LEFT) }}
+                {{ str_pad(request('req_id') ?: $batch->id, 6, '0', STR_PAD_LEFT) }}
             </div>
         </div>
 
@@ -461,7 +461,7 @@
                 <span class="info-label">Is this a full or part delivery? (tick)</span>
                 
                 @php
-                    $isPartial = str_contains(strtolower($batch->supplier_status), 'partial');
+                    $isPartial = str_contains(strtolower($batch->supplier_status ?? ''), 'partial') || !empty($batch->previous_sra_nos) || request()->has('req_id');
                 @endphp
 
                 <div class="checkbox-row">
@@ -478,18 +478,24 @@
                 <div style="margin-top: 15px; font-size: 11px;">
                     <span class="info-label">If part delivery/Performance, indicate previous SRA Nos.</span>
                     @php
+                        $currentSraId = request('req_id') ?: $batch->id;
+                        $currentSraNo = 'SRA-' . str_pad($currentSraId, 6, '0', STR_PAD_LEFT);
+
                         $rawPrevNos = array_filter(array_map('trim', preg_split('/[\n,]+/', $batch->previous_sra_nos ?? '')));
                         $prevNos = array_values($rawPrevNos);
 
                         // Only show previous SRA numbers if a remainder has been submitted or returned
                         if (empty($prevNos)) {
-                            $hasRemainderEntry = \App\Models\EditRequest::where('item_id', $batch->id)
+                            $batchIdStr = (string)$batch->id;
+                            $batchIdInt = (int)$batch->id;
+
+                            $hasRemainderEntry = \App\Models\EditRequest::whereIn('item_id', [$batchIdStr, $batchIdInt])
                                 ->where('request_type', 'remainder_submission')
                                 ->whereIn('status', ['approved', 'completed', 'resubmitted', 'pending'])
                                 ->exists();
 
                             if ($hasRemainderEntry) {
-                                $prevEditReqs = \App\Models\EditRequest::where('item_id', $batch->id)
+                                $prevEditReqs = \App\Models\EditRequest::whereIn('item_id', [$batchIdStr, $batchIdInt])
                                     ->whereIn('request_type', ['sra_creation', 'remainder_submission'])
                                     ->whereIn('status', ['approved', 'completed', 'resubmitted'])
                                     ->orderBy('id', 'asc')
@@ -498,13 +504,24 @@
 
                                 if (!empty($prevEditReqs)) {
                                     foreach ($prevEditReqs as $pId) {
-                                        $prevNos[] = 'SRA-' . str_pad($pId, 6, '0', STR_PAD_LEFT);
+                                        $pNo = 'SRA-' . str_pad($pId, 6, '0', STR_PAD_LEFT);
+                                        if ($pNo !== $currentSraNo) {
+                                            $prevNos[] = $pNo;
+                                        }
                                     }
-                                } else {
-                                    $prevNos[] = 'SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT);
+                                }
+
+                                $initialBatchSraNo = 'SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT);
+                                if (empty($prevNos) && $initialBatchSraNo !== $currentSraNo) {
+                                    $prevNos[] = $initialBatchSraNo;
                                 }
                             }
                         }
+
+                        // Filter out current SRA number from previous SRA Nos list
+                        $prevNos = array_values(array_filter($prevNos, function($no) use ($currentSraNo) {
+                            return trim(strtoupper($no)) !== $currentSraNo;
+                        }));
                     @endphp
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;">
                         <span>1. <strong>{{ $prevNos[0] ?? '_______' }}</strong></span>

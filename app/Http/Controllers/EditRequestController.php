@@ -415,20 +415,21 @@ class EditRequestController extends Controller
         $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
 
         if ($request->status === 'approved') {
-            $data = json_decode($editReq->payload, true);
-            $requestType = $editReq->request_type;
-            
-        \Illuminate\Support\Facades\DB::beginTransaction();
-        try {
-            if (isset($data['rollback_id'])) {
-                $origReq = EditRequest::find($data['rollback_id']);
-                if ($origReq) {
-                    $origReq->status = 'approved';
-                    $origReq->approved_at = now();
-                    $origReq->save();
+            $data = $editReq->payload;
+            while (is_string($data)) {
+                $decoded = json_decode($data, true);
+                if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {
+                    $data = $decoded;
+                } else {
+                    break;
                 }
             }
+            if (!is_array($data)) $data = [];
+            $requestType = $editReq->request_type;
             \App\Models\InventoryBatch::selfHealSchema();
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
             if (ob_get_length()) ob_clean();
 
                 if ($requestType === 'remainder_submission') {

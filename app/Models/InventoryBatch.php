@@ -27,7 +27,7 @@ class InventoryBatch extends Model
     public static function selfHealSchema()
     {
         $cacheKey = 'inventory_batch_schema_self_healed';
-        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+        if (!app()->environment('testing') && \Illuminate\Support\Facades\Cache::has($cacheKey)) {
             return;
         }
 

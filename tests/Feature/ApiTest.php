@@ -1578,7 +1578,7 @@ class ApiTest extends TestCase
             'registration_status' => 'approved',
         ]);
 
-        $batch = \App\Models\InventoryBatch::create([
+        $batch = new \App\Models\InventoryBatch([
             'ledge_category' => 'A',
             'supplier_name' => 'Partial Office Depot Ltd [Partial Delivery]',
             'supplier_status' => 'Partial Delivery',
@@ -1587,6 +1587,8 @@ class ApiTest extends TestCase
             'arrival_date' => now()->format('Y-m-d'),
             'approval_status' => 'approved',
         ]);
+        $batch->id = 10;
+        $batch->save();
 
         $item = $batch->items()->create([
             'description' => 'A4 Executive Printing Paper',
@@ -1596,7 +1598,7 @@ class ApiTest extends TestCase
             'variance' => -20,
         ]);
 
-        $editReq = \App\Models\EditRequest::create([
+        $editReq = new \App\Models\EditRequest([
             'user_id' => $officer->id,
             'item_id' => $batch->id,
             'item_type' => 'batch',
@@ -1609,6 +1611,8 @@ class ApiTest extends TestCase
                 ]
             ]),
         ]);
+        $editReq->id = 18;
+        $editReq->save();
 
         // Approve remainder submission
         $approveResp = $this->actingAs($headOfStores)->post(route('sra-creation.process', $editReq->id), [
@@ -1619,10 +1623,11 @@ class ApiTest extends TestCase
         $freshBatch = $batch->fresh();
         $this->assertEquals('pending_auditor_admin', $freshBatch->approval_status);
 
-        // Verify printed SRA contains previous SRA number
-        $sraView = $this->actingAs($headOfStores)->get(route('receiveditems.sra', ['id' => $batch->id]));
+        // Verify printed SRA for remainder (req_id = 18) shows previous SRA-000010 and header 000018
+        $sraView = $this->actingAs($headOfStores)->get(route('receiveditems.sra', ['id' => $batch->id, 'req_id' => $editReq->id]));
         $sraView->assertStatus(200);
-        $sraView->assertSee('SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT));
+        $sraView->assertSee('SRA-000010');
+        $sraView->assertSee('000018');
     }
 }
 
