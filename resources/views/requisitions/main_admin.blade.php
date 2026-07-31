@@ -2057,7 +2057,7 @@
         </div>`;
 
         // Check if processed already
-        const isActingAsHOD = isBackupActive && departmentsMatch(data.department, "{{ auth()->user()->department }}");
+        const isActingAsHOD = departmentsMatch(data.department, "{{ auth()->user()->department }}") && !['Head of Stores', 'Dept. Head (Stores)'].includes("{{ auth()->user()->role }}");
         let isProcessed = false;
         if (isStoresHead && !isActingAsHOD) {
             if (data.status !== 'pending') {
@@ -2407,7 +2407,7 @@
         // Close the underlying modal container so it disappears when the confirmation SweetAlert displays
         closeModal();
 
-        const isActingAsHOD = isBackupActive && (window.currentReqData && departmentsMatch(window.currentReqData.department, "{{ auth()->user()->department }}"));
+        const isActingAsHOD = window.currentReqData && departmentsMatch(window.currentReqData.department, "{{ auth()->user()->department }}") && !['Head of Stores', 'Dept. Head (Stores)'].includes("{{ auth()->user()->role }}");
 
         Swal.fire({
             title: decision === 'approved' ? 'Approve?' : 'Decline Requisition?',
