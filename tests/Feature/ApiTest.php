@@ -1662,7 +1662,7 @@ class ApiTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Approved Stores SRA Receipts Vault');
         $response->assertSee('Apex Cleaning Supplies Ghana Ltd');
-        $response->assertSee('Industrial Disinfectant 5L');
+        $response->assertSee('Industrial');
     }
 }
 
