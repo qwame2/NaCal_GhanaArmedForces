@@ -92,13 +92,13 @@
         border-spacing: 0;
         table-layout: fixed;
     }
-    /* Column widths */
-    .sra-table col.col-sra      { width: 15%; }
-    .sra-table col.col-supplier { width: 18%; }
-    .sra-table col.col-category { width: 12%; }
+    /* Column widths — total 100% */
+    .sra-table col.col-sra      { width: 13%; }
+    .sra-table col.col-supplier { width: 16%; }
+    .sra-table col.col-category { width: 11%; }
     .sra-table col.col-items    { width: 20%; }
-    .sra-table col.col-date     { width: 10%; }
-    .sra-table col.col-sig      { width: 12%; }
+    .sra-table col.col-date     { width: 11%; }
+    .sra-table col.col-sig      { width: 21%; }
     .sra-table col.col-action   { width: 8%; }
 
     .sra-table th {
@@ -153,14 +153,21 @@
         display: inline-flex;
         align-items: center;
         gap: 3px;
-        padding: 2px 7px;
+        padding: 2px 6px;
         border-radius: 99px;
-        font-size: 0.67rem;
+        font-size: 0.65rem;
         font-weight: 900;
         background: rgba(16, 185, 129, 0.1);
         color: #047857;
         border: 1px solid rgba(16, 185, 129, 0.2);
         white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .sig-pills-row {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        align-items: center;
     }
     .badge-partial {
         font-size: 0.67rem;
@@ -405,7 +412,7 @@
                                 </td>
                                 {{-- Approved Signatories --}}
                                 <td>
-                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
+                                    <div class="sig-pills-row">
                                         <span class="sig-pill">&#10003; Stores</span>
                                         <span class="sig-pill">&#10003; Audit</span>
                                         <span class="sig-pill">&#10003; Admin</span>
