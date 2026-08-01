@@ -628,6 +628,20 @@
                 <button id="sidebar-toggle" style="background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
                 </button>
+                @php
+                    $roleLower = auth()->check() ? strtolower(auth()->user()->role ?? '') : '';
+                    $hideSearch = in_array($roleLower, [
+                        'director general',
+                        'main admin',
+                        'sub main admin',
+                        'department head',
+                        'dept head',
+                        'dept head hr',
+                        'head of welfare',
+                        'it head'
+                    ]);
+                @endphp
+                @if(auth()->check() && !$hideSearch)
                 <div class="search-bar" style="position: relative;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     <input type="text" id="global-search-input" placeholder="Search inventory, reports, transactions..." autocomplete="off">
@@ -636,6 +650,7 @@
                     <div id="global-search-results" style="display: none; position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: var(--bg-card); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid var(--border-color); z-index: 2000; overflow: hidden; max-height: 400px; overflow-y: auto;">
                     </div>
                 </div>
+                @endif
             </div>
 
             <div class="top-nav-actions">
