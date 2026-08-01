@@ -1019,9 +1019,22 @@
                                                          <i data-lucide="map-pin" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $supDetails['address'] }}
                                                      </span>
                                                  @endif
+                                                 @if(!empty($supDetails['contact_person']))
+                                                     <div style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 6px; display: flex; flex-direction: column; gap: 3px;">
+                                                         <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Contact Person</div>
+                                                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                             <i data-lucide="user-check" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $supDetails['contact_person'] }}
+                                                         </span>
+                                                         @if(!empty($supDetails['contact_phone']))
+                                                             <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--text-muted); font-weight: 500; padding-left: 18px;">
+                                                                 <i data-lucide="phone" style="width: 10px; height: 10px; stroke-width: 2.5;"></i> {{ $supDetails['contact_phone'] }}
+                                                             </span>
+                                                         @endif
+                                                     </div>
+                                                 @endif
                                                  @if(!empty($supDetails['delivery_person']))
                                                      <div style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 6px; display: flex; flex-direction: column; gap: 3px;">
-                                                         <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Representative</div>
+                                                         <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Delivery Person</div>
                                                          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
                                                              <i data-lucide="user" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $supDetails['delivery_person'] }}
                                                          </span>
@@ -1035,8 +1048,67 @@
                                              </div>
                                          @endif
                                     @elseif($item->donor_name)
-                                        <div style="font-weight: 800; color: var(--text-main);">{{ $item->donor_name }}</div>
-                                        <span style="font-size: 0.65rem; color: #a1a1aa; text-transform: uppercase; font-weight: 800;">Donor Contribution</span>
+                                        @php
+                                            $registry = \App\Models\Setting::get('suppliers_registry', []);
+                                            $donorDetails = $registry[$item->donor_name] ?? null;
+                                        @endphp
+                                         <div style="display: flex; align-items: center; gap: 6px;">
+                                             <div style="font-weight: 800; color: var(--text-main);">{{ $item->donor_name }}</div>
+                                             @if($donorDetails)
+                                                 <button onclick="toggleSupplierDetails(this)" style="background: rgba(5, 150, 105, 0.1); border: 1.5px solid rgba(5, 150, 105, 0.2); cursor: pointer; padding: 4px; color: var(--dg-primary); display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; transition: all 0.2s; outline: none; margin-left: 4px;" class="supplier-toggle-btn" onmouseover="this.style.background='rgba(5, 150, 105, 0.2)'; this.style.borderColor='rgba(5, 150, 105, 0.3)';" onmouseout="this.style.background='rgba(5, 150, 105, 0.1)'; this.style.borderColor='rgba(5, 150, 105, 0.2)';" type="button">
+                                                     <i data-lucide="chevron-down" style="width: 12px; height: 12px; stroke-width: 3.5;"></i>
+                                                 </button>
+                                             @endif
+                                         </div>
+                                         <span style="font-size: 0.65rem; color: #a1a1aa; text-transform: uppercase; font-weight: 800; display: block; margin-top: 2px;">Donor Contribution</span>
+                                         @if($donorDetails)
+                                             <div class="supplier-details-container" style="position: absolute; top: calc(100% - 4px); right: 12px; z-index: 999; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); width: 240px; display: none; flex-direction: column; gap: 6px; line-height: 1.3; text-align: left;">
+                                                 <div style="font-size: 0.65rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 4px;">
+                                                     Donor Details
+                                                 </div>
+                                                 @if(!empty($donorDetails['phone']))
+                                                     <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                         <i data-lucide="phone" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $donorDetails['phone'] }}
+                                                     </span>
+                                                 @endif
+                                                 @if(!empty($donorDetails['email']))
+                                                     <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600; word-break: break-all;">
+                                                         <i data-lucide="mail" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $donorDetails['email'] }}
+                                                     </span>
+                                                 @endif
+                                                 @if(!empty($donorDetails['address']))
+                                                     <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                         <i data-lucide="map-pin" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $donorDetails['address'] }}
+                                                     </span>
+                                                 @endif
+                                                 @if(!empty($donorDetails['contact_person']))
+                                                     <div style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 6px; display: flex; flex-direction: column; gap: 3px;">
+                                                         <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Contact Person</div>
+                                                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                             <i data-lucide="user-check" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $donorDetails['contact_person'] }}
+                                                         </span>
+                                                         @if(!empty($donorDetails['contact_phone']))
+                                                             <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--text-muted); font-weight: 500; padding-left: 18px;">
+                                                                 <i data-lucide="phone" style="width: 10px; height: 10px; stroke-width: 2.5;"></i> {{ $donorDetails['contact_phone'] }}
+                                                             </span>
+                                                         @endif
+                                                     </div>
+                                                 @endif
+                                                 @if(!empty($donorDetails['delivery_person']))
+                                                     <div style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 6px; display: flex; flex-direction: column; gap: 3px;">
+                                                         <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Delivery Person</div>
+                                                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                             <i data-lucide="user" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $donorDetails['delivery_person'] }}
+                                                         </span>
+                                                         @if(!empty($donorDetails['delivery_phone']))
+                                                             <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--text-muted); font-weight: 500; padding-left: 18px;">
+                                                                 {{ $donorDetails['delivery_phone'] }}
+                                                             </span>
+                                                         @endif
+                                                     </div>
+                                                 @endif
+                                             </div>
+                                         @endif
                                     @else
                                         <span style="color: var(--text-muted); font-weight: 500;">System</span>
                                     @endif
