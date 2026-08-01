@@ -1715,5 +1715,30 @@ class ApiTest extends TestCase
         $requisition->refresh();
         $this->assertEquals('approved', $requisition->origin_admin_status);
     }
+
+    public function test_admin_can_access_standalone_requisition_review_page()
+    {
+        $admin = User::factory()->create([
+            'role' => 'Main Admin',
+            'is_admin' => true,
+            'registration_status' => 'approved',
+        ]);
+
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => 'John Doe',
+            'department' => 'Logistics',
+            'purpose' => 'Test',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'approved',
+            'main_admin_status' => 'approved',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/requisitions/' . $requisition->id . '/review');
+        $response->assertStatus(200);
+        $response->assertSee('Requisition Execution & Review', false);
+        $response->assertSee('Back to Requisitions Command');
+    }
 }
 

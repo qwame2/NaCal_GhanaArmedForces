@@ -1094,8 +1094,19 @@ class StoreRequisitionController extends Controller
             'collector_contact' => $req->collector_contact,
             'collector_location' => $req->collector_location,
             'items'          => $items,
-            'alternatives'   => $alternatives,
         ]);
+    }
+
+    /**
+     * Admin: Standalone Requisition Review page.
+     */
+    public function adminReview($id)
+    {
+        $user = auth()->user();
+        if (!$user->is_admin && !$user->isDelegatedApprover()) abort(403);
+
+        $req = StoreRequisition::findOrFail($id);
+        return view('admin.requisition_review', compact('id', 'req'));
     }
 
     /**

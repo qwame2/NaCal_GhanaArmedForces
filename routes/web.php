@@ -1286,6 +1286,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Admin Requisition Routes
     Route::get('/admin/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'adminIndex'])->name('admin.requisitions');
     Route::get('/admin/requisitions/{id}/show', [\App\Http\Controllers\StoreRequisitionController::class, 'adminShow'])->name('admin.requisitions.show');
+    Route::get('/admin/requisitions/{id}/review', [\App\Http\Controllers\StoreRequisitionController::class, 'adminReview'])->name('admin.requisitions.review');
     Route::post('/admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'adminProcess'])->name('admin.requisitions.process');
     Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');
     Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');

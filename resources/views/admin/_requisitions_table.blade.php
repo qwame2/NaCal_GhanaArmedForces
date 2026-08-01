@@ -1,4 +1,4 @@
-﻿<table style="width:100%;border-collapse:collapse;">
+<table style="width:100%;border-collapse:collapse;">
     <thead style="background:var(--bg-main);">
         <tr>
             <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:10%;">Ref</th>
@@ -187,19 +187,19 @@
                 }
                 @endphp
                 @if($isReqProcessed)
-                    <button onclick="openRequisitionModal({{ $req->id }})"
-                        style="background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
+                    <a href="{{ route('admin.requisitions.review', $req->id) }}"
+                        style="text-decoration: none; background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
                         onmouseover="this.style.background='#059669'; this.style.color='white'; this.style.borderColor='#059669';"
                         onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669'; this.style.borderColor='rgba(5, 150, 105, 0.2)';">
                         <i data-lucide="check" style="width:14px; height:14px;"></i> PROCESSED
-                    </button>
+                    </a>
                 @else
-                    <button onclick="openRequisitionModal({{ $req->id }})"
-                        style="background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
+                    <a href="{{ route('admin.requisitions.review', $req->id) }}"
+                        style="text-decoration: none; background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
                         onmouseover="this.style.background='#059669'; this.style.color='white'; this.style.borderColor='#059669';"
                         onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669'; this.style.borderColor='rgba(5, 150, 105, 0.2)';">
                         <i data-lucide="clipboard-check" style="width:14px; height:14px;"></i> REVIEW
-                    </button>
+                    </a>
                 @endif
             </td>
         </tr>
