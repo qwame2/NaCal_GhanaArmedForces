@@ -1232,34 +1232,18 @@
                     submitBtn.style.opacity = '0.55';
                     submitBtn.style.cursor = 'not-allowed';
                     submitBtn.title = 'Cannot commit decision: requisition is still awaiting prior approvals.';
+                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Approve for final Collection`;
                 } else {
                     submitBtn.disabled = false;
                     submitBtn.style.opacity = '1';
                     submitBtn.style.cursor = 'pointer';
                     submitBtn.title = '';
+                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Approve for final Collection`;
+                    submitBtn.style.background = '#059669';
+                    submitBtn.style.boxShadow = '0 8px 20px rgba(5, 150, 105, 0.25)';
+                    submitBtn.onmouseover = function() { this.style.background = '#065f46'; };
+                    submitBtn.onmouseout = function() { this.style.background = '#059669'; };
                 }
-            }
-        }
-
-        if (submitBtn) {
-            const isAwaitingPriorApproval = currentReqData && currentReqData.status_badge && (
-                currentReqData.status_badge.label.includes('Awaiting Dept Head') ||
-                currentReqData.status_badge.label.includes('Awaiting Authorizer') ||
-                currentReqData.status_badge.label.includes('Awaiting DG')
-            );
-            if (isAwaitingPriorApproval) {
-                submitBtn.disabled = true;
-                submitBtn.style.opacity = '0.55';
-                submitBtn.style.cursor = 'not-allowed';
-                submitBtn.title = 'Cannot commit decision: requisition is still awaiting prior approvals.';
-                submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Approve for final Collection`;
-            } else if (currentReqData && currentReqData.alternative_status === 'proposed') {
-                submitBtn.disabled = true;
-                submitBtn.style.opacity = '0.5';
-                submitBtn.style.cursor = 'not-allowed';
-                submitBtn.innerHTML = `<i data-lucide="clock" style="width:16px;"></i> Awaiting Response from ${currentReqData.department}`;
-            } else {
-                submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Approve for final Collection`;
             }
         }
 
@@ -1277,27 +1261,6 @@
             bar.style.border = '1px solid rgba(239,68,68,.2)';
             icon.textContent = '⛔';
             text.innerHTML = 'Approval blocked — <b>allocation exceeds available stock</b>';
-        } else if (currentReqData && currentReqData.alternative_status === 'agreed' && cntReduced > 0) {
-            bar.className = 'all-approved status-alert-bar';
-            bar.style.background = 'rgba(5,150,105,.12)';
-            bar.style.color = '#065f46';
-            bar.style.border = '1px solid rgba(5,150,105,.25)';
-            icon.textContent = '✅';
-            text.innerHTML = 'Department has <b>agreed</b> to suggested quantity proposal. Proceed to Commit.';
-        } else if (currentReqData && currentReqData.alternative_status === 'proposed' && cntReduced > 0) {
-            bar.className = 'partial status-alert-bar';
-            bar.style.background = 'rgba(5,150,105,.12)';
-            bar.style.color = '#92400e';
-            bar.style.border = '1px solid rgba(5,150,105,.25)';
-            icon.textContent = '⏳';
-            text.innerHTML = 'Suggested quantity proposed. <b>Awaiting department response...</b>';
-        } else if (cntReduced > 0) {
-            bar.className = 'partial status-alert-bar';
-            bar.style.background = 'rgba(5, 150, 105, 0.05)';
-            bar.style.color = '#b45309';
-            bar.style.border = '1.5px dashed rgba(245, 158, 11, 0.3)';
-            icon.textContent = '🔀';
-            text.innerHTML = 'Quantity reduced. <b>Click button below to suggest new quantity to department</b>';
         } else if (allDeclined) {
             bar.className = 'all-declined status-alert-bar';
             bar.style.background = 'rgba(239,68,68,.1)';
@@ -1305,7 +1268,7 @@
             bar.style.border = '1px solid rgba(239,68,68,.2)';
             icon.textContent = '❌';
             text.innerHTML = 'All items will be <b>Declined</b>';
-        } else if (allApproved && !anyPartial) {
+        } else if (allApproved && !anyPartial && cntReduced === 0) {
             bar.className = 'all-approved status-alert-bar';
             bar.style.background = 'rgba(5,150,105,.12)';
             bar.style.color = '#065f46';

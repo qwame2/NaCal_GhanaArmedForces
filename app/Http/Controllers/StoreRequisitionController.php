@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\StoreRequisition;
 use App\Models\StoreRequisitionItem;
 use App\Models\InventoryItem;

@@ -1740,5 +1740,194 @@ class ApiTest extends TestCase
         $response->assertSee('Requisition Execution & Review', false);
         $response->assertSee('Back to Requisitions Command');
     }
+
+    public function test_stores_head_admin_can_reduce_requisition_quantity_and_stock_is_reduced_by_approved_amount()
+    {
+        $admin = User::factory()->create([
+            'role' => 'Head of Stores',
+            'is_admin' => true,
+            'registration_status' => 'approved',
+        ]);
+
+        $requisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+        ]);
+
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => $requisitioner->name,
+            'department' => 'HR',
+            'requested_by' => $requisitioner->id,
+            'purpose' => 'Test wipes',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'approved',
+            'main_admin_status' => 'approved',
+        ]);
+
+        $item = $requisition->items()->create([
+            'description' => 'Test Item ABC',
+            'category' => 'B',
+            'unit' => 'PACK',
+            'quantity_requested' => 10,
+        ]);
+
+        // Create inventory batch and items with 300 stock
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'B',
+            'supplier_name' => 'Test Supplier',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now(),
+            'arrival_date' => now(),
+            'recorded_by' => $admin->id,
+            'approval_status' => 'approved',
+            'supplier_status' => 'Received',
+        ]);
+
+        $inventoryItem = \App\Models\InventoryItem::create([
+            'batch_id' => $batch->id,
+            'description' => 'Test Item ABC',
+            'unit' => 'PACK',
+            'stock_balance' => 300,
+            'qty' => 300,
+            'variance' => 0,
+        ]);
+
+        // Post request to reduce from 10 to 2
+        $response = $this->actingAs($admin)->post('/admin/requisitions/' . $requisition->id . '/process', [
+            'status' => 'partially_approved',
+            'items' => [
+                [
+                    'id' => $item->id,
+                    'quantity_approved' => 2,
+                    'alternative_description' => null,
+                    'alternative_quantity_approved' => 0,
+                    'remarks' => 'Reduced quantity',
+                ]
+            ],
+            'admin_notes' => 'Some notes',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('success', true);
+
+        // Verify inventory item has stock subtracted by 2 (300 - 2 = 298), not 10!
+        $inventoryItem->refresh();
+        $this->assertEquals(298, (float)$inventoryItem->stock_balance);
+        $this->assertEquals(298, (float)$inventoryItem->qty);
+    }
+
+    public function test_stores_head_admin_proposes_quantity_hod_agrees_and_final_collection_subtracts_agreed_quantity()
+    {
+        $admin = User::factory()->create([
+            'role' => 'Head of Stores',
+            'is_admin' => true,
+            'registration_status' => 'approved',
+        ]);
+
+        $requisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+        ]);
+
+        $hod = User::factory()->create([
+            'role' => 'Department Head',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+        ]);
+
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => $requisitioner->name,
+            'department' => 'HR',
+            'requested_by' => $requisitioner->id,
+            'purpose' => 'Test wipes',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'approved',
+            'main_admin_status' => 'approved',
+        ]);
+
+        $item = $requisition->items()->create([
+            'description' => 'Test Item ABC',
+            'category' => 'B',
+            'unit' => 'PACK',
+            'quantity_requested' => 10,
+        ]);
+
+        // Create inventory batch and items with 300 stock
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'B',
+            'supplier_name' => 'Test Supplier',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now(),
+            'arrival_date' => now(),
+            'recorded_by' => $admin->id,
+            'approval_status' => 'approved',
+            'supplier_status' => 'Received',
+        ]);
+
+        $inventoryItem = \App\Models\InventoryItem::create([
+            'batch_id' => $batch->id,
+            'description' => 'Test Item ABC',
+            'unit' => 'PACK',
+            'stock_balance' => 300,
+            'qty' => 300,
+            'variance' => 0,
+        ]);
+
+        // 1. Propose quantity of 2 (status: pending, alternative_status: proposed)
+        $response = $this->actingAs($admin)->post('/admin/requisitions/' . $requisition->id . '/process', [
+            'status' => 'pending',
+            'alternative_status' => 'proposed',
+            'items' => [
+                [
+                    'id' => $item->id,
+                    'quantity_approved' => 2,
+                    'alternative_description' => null,
+                    'alternative_quantity_approved' => 0,
+                    'remarks' => 'Reduced quantity',
+                ]
+            ],
+            'admin_notes' => 'Suggesting 2',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(300, (float)$inventoryItem->fresh()->stock_balance); // No deduction yet!
+
+        // 2. HOD agrees (alternative_status: agreed)
+        $response = $this->actingAs($hod)->post('/main-admin/requisitions/' . $requisition->id . '/alternative-response', [
+            'response' => 'agree',
+            'notes' => 'Agreed to 2',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(300, (float)$inventoryItem->fresh()->stock_balance); // No deduction yet!
+
+        // 3. Final collection approval by Head of Stores Admin (status: partially_approved)
+        $response = $this->actingAs($admin)->post('/admin/requisitions/' . $requisition->id . '/process', [
+            'status' => 'partially_approved',
+            'items' => [
+                [
+                    'id' => $item->id,
+                    'quantity_approved' => 2,
+                    'alternative_description' => null,
+                    'alternative_quantity_approved' => 0,
+                    'remarks' => 'Reduced quantity approved',
+                ]
+            ],
+            'admin_notes' => 'Final approval',
+        ]);
+
+        $response->assertStatus(200);
+
+        // Verify inventory item has stock subtracted by 2 (300 - 2 = 298), not 10!
+        $inventoryItem->refresh();
+        $this->assertEquals(298, (float)$inventoryItem->stock_balance);
+        $this->assertEquals(298, (float)$inventoryItem->qty);
+    }
 }
 
