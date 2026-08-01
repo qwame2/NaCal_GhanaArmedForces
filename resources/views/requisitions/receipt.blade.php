@@ -589,21 +589,27 @@
                     <div class="dashboard-card-title">
                         PHYSICAL COLLECTION INFO
                     </div>
+                    @php
+                        $colName     = $receipt->collector_name     ?: ($req->collector_name     ?? 'N/A');
+                        $colStaffId  = $receipt->collector_staff_id  ?: ($req->collector_staff_id  ?? null);
+                        $colLocation = $receipt->collector_location  ?: ($req->collector_location  ?? $req->department ?? 'N/A');
+                        $colContact  = $receipt->collector_contact   ?: ($req->collector_contact   ?? 'N/A');
+                    @endphp
                     <div class="dashboard-row">
                         <span class="dashboard-label">Name:</span>
-                        <span class="dashboard-value" title="{{ $receipt->collector_name }}">{{ $receipt->collector_name }}</span>
+                        <span class="dashboard-value" title="{{ $colName }}">{{ $colName }}</span>
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Role / Staff ID:</span>
-                        <span class="dashboard-value">{{ $receipt->collector_staff_id ? 'ID: ' . $receipt->collector_staff_id : 'Collector' }}</span>
+                        <span class="dashboard-label">Staff ID:</span>
+                        <span class="dashboard-value">{{ $colStaffId ?: '—' }}</span>
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Department:</span>
-                        <span class="dashboard-value" title="{{ $receipt->collector_location }}">{{ $receipt->collector_location ?: $req->department }}</span>
+                        <span class="dashboard-value" title="{{ $colLocation }}">{{ $colLocation }}</span>
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Contact No:</span>
-                        <span class="dashboard-value">{{ $receipt->collector_contact }}</span>
+                        <span class="dashboard-value">{{ $colContact }}</span>
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Date &amp; Time:</span>

@@ -672,8 +672,13 @@
                     <td style="padding:1rem 1.5rem;">
                         <div style="display:flex;flex-wrap:wrap;gap:4px;">
                             @foreach($req->items->take(3) as $item)
+                            @php
+                                $displayQty = ($item->quantity_approved !== null)
+                                    ? $item->quantity_approved
+                                    : $item->quantity_requested;
+                            @endphp
                             <span style="font-size:.7rem;font-weight:700;color:var(--text-main);background:var(--bg-main);border:1px solid var(--border-color);padding:2px 8px;border-radius:6px;">
-                                {{ Str::limit($item->description, 20) }} ({{ number_format($item->quantity_requested,0) }})
+                                {{ Str::limit($item->description, 20) }} ({{ number_format($displayQty, 0) }})
                             </span>
                             @endforeach
                             @if($req->items->count() > 3)

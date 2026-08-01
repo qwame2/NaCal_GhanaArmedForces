@@ -1575,7 +1575,6 @@ class StoreRequisitionController extends Controller
         if (!$isStoresHead) {
             $query->where(function($q) use ($depts) {
                 $q->whereIn('department', $depts)
-                  ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
                   ->orWhereHas('requester', function($sq) {
                       $sq->where('sponsored_by', auth()->id());
                   });
@@ -1835,23 +1834,50 @@ class StoreRequisitionController extends Controller
                 'declined' => $declinedCount,
             ];
         } else {
-            $statsData = StoreRequisition::where(function($q) use ($depts) {
-                    $q->whereIn('department', $depts)
-                      ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
-                      ->orWhereHas('requester', function($sq) {
-                          $sq->where('sponsored_by', auth()->id());
-                      });
+            $userName = auth()->user()->name;
+
+            // Pending: only this HOD's own department awaiting their review
+            $pendingCount = StoreRequisition::whereIn('department', $depts)
+                ->where(function($q) {
+                    $q->where(function($q2) {
+                        $q2->where('status', 'pending')
+                           ->where('origin_admin_status', 'pending');
+                    })->orWhere(function($q2) {
+                        $q2->where('status', 'pending')
+                           ->where('alternative_status', 'proposed');
+                    });
                 })
-                ->selectRaw("
-                    SUM(CASE WHEN (status = 'pending' AND origin_admin_status = 'pending') OR (status = 'pending' AND alternative_status = 'proposed') THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN status IN ('approved', 'partially_approved') THEN 1 ELSE 0 END) as approved,
-                    SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined
-                ")->first();
+                ->count();
+
+            // Also include sponsored users' pending requests
+            $pendingCount += StoreRequisition::whereHas('requester', function($sq) {
+                    $sq->where('sponsored_by', auth()->id());
+                })
+                ->where(function($q) {
+                    $q->where(function($q2) {
+                        $q2->where('status', 'pending')
+                           ->where('origin_admin_status', 'pending');
+                    })->orWhere(function($q2) {
+                        $q2->where('status', 'pending')
+                           ->where('alternative_status', 'proposed');
+                    });
+                })
+                ->count();
+
+            // Approved by Me: only requisitions this user personally approved (origin_approved_by = their name)
+            $approvedCount = StoreRequisition::where('origin_approved_by', $userName)
+                ->whereIn('status', ['approved', 'partially_approved'])
+                ->count();
+
+            // Declined by Me: only requisitions this user personally declined
+            $declinedCount = StoreRequisition::where('origin_approved_by', $userName)
+                ->where('origin_admin_status', 'declined')
+                ->count();
 
             $stats = [
-                'pending'  => (int) ($statsData->pending ?? 0),
-                'approved' => (int) ($statsData->approved ?? 0),
-                'declined' => (int) ($statsData->declined ?? 0),
+                'pending'  => $pendingCount,
+                'approved' => $approvedCount,
+                'declined' => $declinedCount,
             ];
         }
 
@@ -2700,7 +2726,6 @@ class StoreRequisitionController extends Controller
         if (!$isStoresHead) {
             $query->where(function($q) {
                 $q->where('department', auth()->user()->department)
-                  ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
                   ->orWhereHas('requester', function($sq) {
                       $sq->where('sponsored_by', auth()->id());
                   });
