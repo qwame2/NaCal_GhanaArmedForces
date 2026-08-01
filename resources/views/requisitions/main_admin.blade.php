@@ -1679,7 +1679,7 @@
     <div class="modal-box">
         <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:rgba(5, 150, 105,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <div style="width:44px;height:44px;background:rgba(5, 150, 105,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <i data-lucide="shield-check" style="width:20px;color:#059669;"></i>
                 </div>
                 <div>
@@ -1844,6 +1844,23 @@
         const modalBox = document.querySelector('.modal-box');
         modalBox.className = 'modal-box';
         modalBox.classList.add(`${data.priority}-priority`);
+
+        let actionBtnsHtml = '';
+
+        // Check if acting as HOD (e.g. Sub Main Admins are direct HOD of their department / admin authorizers)
+        const isActingAsHOD = departmentsMatch(data.department, "{{ auth()->user()->department }}") && !['Head of Stores', 'Dept. Head (Stores)'].includes("{{ auth()->user()->role }}");
+        let isProcessed = false;
+        if (isStoresHead && !isActingAsHOD) {
+            if (data.status !== 'pending') {
+                isProcessed = true;
+            } else if (data.origin_admin_status === 'pending') {
+                isProcessed = true;
+            } else if (data.main_admin_status !== 'pending') {
+                isProcessed = true;
+            }
+        } else {
+            isProcessed = (data.origin_admin_status !== 'pending' || data.main_admin_status !== 'pending' || data.status !== 'pending') && (data.alternative_status !== 'proposed');
+        }
 
         document.getElementById('modalSubtitle').textContent = `Requisition Ref: ${data.unique_id || ('REQ-' + String(data.id).padStart(5, '0'))}`;
 
@@ -2056,19 +2073,6 @@
         </div>`;
 
         // Check if acting as HOD (e.g. Sub Main Admins are direct HOD of their department / admin authorizers)
-        const isActingAsHOD = departmentsMatch(data.department, "{{ auth()->user()->department }}") && !['Head of Stores', 'Dept. Head (Stores)'].includes("{{ auth()->user()->role }}");
-        let isProcessed = false;
-        if (isStoresHead && !isActingAsHOD) {
-            if (data.status !== 'pending') {
-                isProcessed = true;
-            } else if (data.origin_admin_status === 'pending') {
-                isProcessed = true;
-            } else if (data.main_admin_status !== 'pending') {
-                isProcessed = true;
-            }
-        } else {
-            isProcessed = (data.origin_admin_status !== 'pending' || data.main_admin_status !== 'pending' || data.status !== 'pending') && (data.alternative_status !== 'proposed');
-        }
         let decisionHtml = '';
 
         if (isStoresHead && !isActingAsHOD && data.origin_admin_status === 'pending') {
@@ -2155,32 +2159,29 @@
                 </div>`;
             } else {
                 const isAwaitingDg = !isActingAsHOD && data.requires_dg_approval && (data.dg_status !== 'approved');
-                // Render standard decision actions
+                // Store action buttons to inject into the footer later
+                if (isAwaitingDg) {
+                    actionBtnsHtml = `
+                    <button disabled title="Cannot approve: awaiting Director General (DG) approval." style="display:inline-flex;align-items:center;gap:6px;padding:0.75rem 2rem;border-radius:12px;background:#e2e8f0;color:#94a3b8;border:none;font-weight:800;font-size:0.9rem;cursor:not-allowed;">
+                        <i data-lucide="lock" style="width:16px;"></i> Approve (Awaiting DG)
+                    </button>`;
+                } else {
+                    actionBtnsHtml = `
+                    <button onclick="processDecision('declined')" style="display:inline-flex;align-items:center;gap:6px;padding:0.75rem 2rem;border-radius:12px;background:rgba(239,68,68,0.08);color:#ef4444;border:1.5px solid rgba(239,68,68,0.25);font-weight:800;font-size:0.9rem;cursor:pointer;transition:all .15s;" onmouseover="this.style.background='#ef4444';this.style.color='white';" onmouseout="this.style.background='rgba(239,68,68,0.08)';this.style.color='#ef4444';">
+                        <i data-lucide="x-circle" style="width:16px;"></i> Decline Request
+                    </button>
+                    <button onclick="processDecision('approved')" style="display:inline-flex;align-items:center;gap:6px;padding:0.75rem 2rem;border-radius:12px;background:#059669;color:white;border:none;font-weight:800;font-size:0.9rem;cursor:pointer;box-shadow:0 4px 15px rgba(5,150,105,0.3);transition:all .15s;" onmouseover="this.style.background='#065f46';" onmouseout="this.style.background='#059669';">
+                        <i data-lucide="check-circle" style="width:16px;"></i> Approve Request(s)
+                    </button>`;
+                }
+                // Body: only show the notes textarea
                 decisionHtml = `
                 <div class="decision-area animate-slide-up">
                     <div style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
                         <i data-lucide="message-square" style="width: 14px; color: var(--primary);"></i>
-                        Oversight Decision Form
+                        Oversight Decision Notes
                     </div>
-                    <textarea id="decisionNotes" class="decision-text-area" placeholder="Enter notes or comments regarding this decision (Optional notes for Head, required reason if declining)..." ${isAwaitingDg ? 'disabled' : ''}></textarea>
-
-                    <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-                        <button onclick="processDecision('declined')" style="flex:1; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.25); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';">
-                            <i data-lucide="x-circle" style="width: 18px;"></i>
-                            Decline Request
-                        </button>
-                        ${isAwaitingDg ? `
-                        <button disabled style="flex:1.5; background: #cbd5e1; color: #94a3b8; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" title="Cannot approve: this requisition is awaiting Director General (DG) approval.">
-                            <i data-lucide="lock" style="width: 18px;"></i>
-                            Approve (Awaiting DG Approval)
-                        </button>
-                        ` : `
-                        <button onclick="processDecision('approved')" style="flex:1.5; background: #059669; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(5, 150, 105, 0.25);" onmouseover="this.style.background='#065f46';" onmouseout="this.style.background='#059669';">
-                            <i data-lucide="check-circle" style="width: 18px;"></i>
-                            Approve
-                        </button>
-                        `}
-                    </div>
+                    <textarea id="decisionNotes" class="decision-text-area" placeholder="Enter notes or comments regarding this decision (optional for approval, required reason if declining)..." ${isAwaitingDg ? 'disabled' : ''}></textarea>
                 </div>`;
             }
         } else {
@@ -2371,20 +2372,29 @@
         ${collectorInfoHtml}
         `;
 
-        let footerHtml = `
-        <button onclick="closeModal()" style="background:var(--bg-main); color:var(--text-main); border:1.5px solid var(--border-color); padding:.75rem 1.5rem; border-radius:12px; font-weight:800; cursor:pointer; font-size:.88rem; transition:0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='var(--bg-main)'">
-            Close Panel
-        </button>`;
+        let footerHtml = '';
 
         if (data.collected_at) {
             footerHtml = `
             <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
                 style="background:rgba(5, 150, 105, 0.08); border: 1.5px solid rgba(5, 150, 105, 0.2); color: #059669; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#059669'; this.style.color='white';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';">
                 <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
-            </a>` + footerHtml;
+            </a>`;
         }
 
-        document.getElementById('modalFooter').innerHTML = footerHtml;
+        // Prepend action buttons (Approve/Decline) if set
+        if (typeof actionBtnsHtml !== 'undefined' && actionBtnsHtml) {
+            footerHtml = actionBtnsHtml + footerHtml;
+        }
+
+        const footerEl = document.getElementById('modalFooter');
+        if (footerHtml) {
+            footerEl.innerHTML = footerHtml;
+            footerEl.style.display = 'flex';
+        } else {
+            footerEl.innerHTML = '';
+            footerEl.style.display = 'none';
+        }
 
         lucide.createIcons();
         checkAltOptions();
@@ -2418,7 +2428,7 @@
                 'This will de-activate the requisition and return it as declined to the requesting department.',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: decision === 'approved' ? 'Yes' : 'Yes, Decline',
+            confirmButtonText: decision === 'approved' ? 'Confirm' : 'Confirm Decline',
             cancelButtonText: 'Abort',
             confirmButtonColor: decision === 'approved' ? '#059669' : '#ef4444',
             cancelButtonColor: '#ef4444',
@@ -2511,6 +2521,8 @@
         if (reqModal) {
             reqModal.classList.remove('open');
         }
+        const footer = document.getElementById('modalFooter');
+        if (footer) footer.innerHTML = '';
     }
 
     function checkAltOptions() {

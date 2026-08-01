@@ -65,7 +65,10 @@
             </div>
 
             <!-- Toolbar actions containing filters and toggles -->
-            <div class="vault-controls">
+            <form method="GET" action="{{ route('admin.index') }}" class="vault-controls" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin:0;">
+                <!-- Keep existing per_page if present -->
+                <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
+
                 @if(isset($legacyAdmins) && $legacyAdmins->count() > 0)
                 <button type="button" class="btn-action-legacy" onclick="openLegacyAuditModal()">
                     <i data-lucide="history"></i>
@@ -75,21 +78,38 @@
 
                 <div class="search-field-wrapper">
                     <i data-lucide="search" class="search-field-icon"></i>
-                    <input type="text" id="registrySearch" placeholder="Search personnel name, username...">
+                    <input type="text" name="search" id="registrySearch" value="{{ request('search') }}" placeholder="Search name, username, department...">
                     <div class="shortcut-pill">
-                        <span>⌘ K</span>
+                        <span>Enter</span>
                     </div>
                 </div>
 
+                <div class="filter-field-wrapper-admin" style="position:relative; display:flex; align-items:center; border:1px solid rgba(0,0,0,0.08); border-radius:14px; padding:0 12px; background:#f1f5f9; height: 42px; gap: 8px;">
+                    <i data-lucide="filter" style="width:16px; height:16px; color:var(--text-slate-muted);"></i>
+                    <select name="role_filter" id="registryRoleFilter" onchange="this.form.submit()" style="border:none; background:transparent; font-size:0.85rem; font-weight:700; color:var(--text-slate-dark); outline:none; cursor:pointer; padding-right: 8px; font-family: inherit;">
+                        <option value="all" {{ request('role_filter') === 'all' ? 'selected' : '' }}>All Roles</option>
+                        <option value="requisitioner" {{ request('role_filter') === 'requisitioner' ? 'selected' : '' }}>Requisitioner</option>
+                        <option value="heads" {{ request('role_filter') === 'heads' ? 'selected' : '' }}>Heads</option>
+                        <option value="authorizers" {{ request('role_filter') === 'authorizers' ? 'selected' : '' }}>Authorizers</option>
+                        <option value="store-officers" {{ request('role_filter') === 'store-officers' ? 'selected' : '' }}>Store Officers</option>
+                    </select>
+                </div>
+
+                @if(request('search') || (request('role_filter') && request('role_filter') !== 'all'))
+                <a href="{{ route('admin.index', ['per_page' => request('per_page', 10)]) }}" class="btn-action-legacy" style="background:#f1f5f9; border-color:#cbd5e1; color:var(--text-slate-dark); text-decoration:none; padding:10px 15px; font-size:0.8rem; border-radius:12px; display:inline-flex; align-items:center; gap:5px; height:42px; box-sizing:border-box;">
+                    <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Clear Filters
+                </a>
+                @endif
+
                 <div class="view-toggle-capsule">
-                    <button class="toggle-btn active" id="btnViewTable" onclick="toggleLayout('table')" title="Table View">
+                    <button type="button" class="toggle-btn active" id="btnViewTable" onclick="toggleLayout('table')" title="Table View">
                         <i data-lucide="list"></i>
                     </button>
-                    <button class="toggle-btn" id="btnViewGrid" onclick="toggleLayout('grid')" title="Grid View">
+                    <button type="button" class="toggle-btn" id="btnViewGrid" onclick="toggleLayout('grid')" title="Grid View">
                         <i data-lucide="grid-3x3"></i>
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
 
         <!-- 1. Redesigned Table View -->
@@ -108,7 +128,20 @@
                     </thead>
                     <tbody id="registryBody">
                         @foreach($users as $user)
-                        <tr class="user-row-item">
+                        @php
+                            $roleLower = strtolower($user->role ?? '');
+                            $roleCat = 'other';
+                            if ($roleLower === 'requisitioner' || $roleLower === 'requisitioners') {
+                                $roleCat = 'requisitioner';
+                            } elseif ($roleLower === 'department head' || $roleLower === 'dept head' || $roleLower === 'it head') {
+                                $roleCat = 'heads';
+                            } elseif (in_array($roleLower, ['main admin', 'sub main admin', 'auditor', 'external auditor', 'director general'])) {
+                                $roleCat = 'authorizers';
+                            } elseif ($roleLower === 'officer' || $roleLower === 'head of stores') {
+                                $roleCat = 'store-officers';
+                            }
+                        @endphp
+                        <tr class="user-row-item" data-role-category="{{ $roleCat }}">
                             <td>
                                 <div class="personnel-cell">
                                     <div class="avatar-container">
@@ -224,7 +257,20 @@
         <div id="gridLayoutView" class="layout-container" style="display: none;">
             <div class="cards-grid-layout" id="registryGrid">
                 @foreach($users as $user)
-                <div class="personnel-card-item {{ !$user->is_active ? 'inactive-mode' : '' }}">
+                @php
+                    $roleLower = strtolower($user->role ?? '');
+                    $roleCat = 'other';
+                    if ($roleLower === 'requisitioner' || $roleLower === 'requisitioners') {
+                        $roleCat = 'requisitioner';
+                    } elseif ($roleLower === 'department head' || $roleLower === 'dept head' || $roleLower === 'it head') {
+                        $roleCat = 'heads';
+                    } elseif (in_array($roleLower, ['main admin', 'sub main admin', 'auditor', 'external auditor', 'director general'])) {
+                        $roleCat = 'authorizers';
+                    } elseif ($roleLower === 'officer' || $roleLower === 'head of stores') {
+                        $roleCat = 'store-officers';
+                    }
+                @endphp
+                <div class="personnel-card-item {{ !$user->is_active ? 'inactive-mode' : '' }}" data-role-category="{{ $roleCat }}">
                     <div class="card-status-indicator {{ $user->is_online ? 'online' : 'offline' }}"></div>
                     
                     <div class="card-profile-header">
@@ -1537,21 +1583,6 @@
 
 <script>
     jQuery(document).ready(function($) {
-        // Registry live search filter
-        $("#registrySearch").on("keyup", function() {
-            var value = $(this).val().toLowerCase();
-            
-            // Filter Table rows
-            $("#registryBody tr").filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-            });
-
-            // Filter Grid Cards
-            $("#registryGrid .personnel-card-item").filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-            });
-        });
-
         // Hotkey trigger: Ctrl/Cmd + K to focus search
         $(document).keydown(function(e) {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

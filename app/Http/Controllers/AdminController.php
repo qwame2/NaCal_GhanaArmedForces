@@ -39,10 +39,34 @@ class AdminController extends Controller
         }
 
         $perPage = $request->input('per_page', 10);
-        $users = User::where('role', '!=', 'Head of Stores')
-            ->where('registration_status', 'approved')
-            ->orderBy('updated_at', 'desc')
-            ->paginate($perPage);
+        $search = $request->input('search');
+        $roleFilter = $request->input('role_filter');
+
+        $query = User::where('role', '!=', 'Head of Stores')
+            ->where('registration_status', 'approved');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('username', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('department', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($roleFilter && $roleFilter !== 'all') {
+            if ($roleFilter === 'requisitioner') {
+                $query->whereIn('role', ['Requisitioner', 'Requisitioners']);
+            } elseif ($roleFilter === 'heads') {
+                $query->whereIn('role', ['Department Head', 'Dept Head', 'IT Head']);
+            } elseif ($roleFilter === 'authorizers') {
+                $query->whereIn('role', ['Main Admin', 'Sub Main Admin', 'Auditor', 'External Auditor', 'Director General']);
+            } elseif ($roleFilter === 'store-officers') {
+                $query->whereIn('role', ['Officer', 'Head of Stores']);
+            }
+        }
+
+        $users = $query->orderBy('updated_at', 'desc')->paginate($perPage);
 
         $totalUsers = User::where('role', '!=', 'Head of Stores')
             ->where('registration_status', 'approved')
