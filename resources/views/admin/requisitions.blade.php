@@ -1381,6 +1381,14 @@
         });
     }
 
+    function cleanHtmlForComparison(element) {
+        if (!element) return '';
+        const clone = element.cloneNode(true);
+        // Remove all icon elements and SVG expansions to prevent false change detection
+        clone.querySelectorAll('svg, i, [data-lucide]').forEach(el => el.remove());
+        return clone.innerHTML.replace(/\s+/g, ' ').trim();
+    }
+
     async function pollStoreRequisitions() {
         const modal = document.getElementById('reqModal');
         if (modal && modal.classList.contains('open')) return;
@@ -1448,11 +1456,15 @@
                     const newCollected = newRow.getAttribute('data-collected');
                     const currentCollected = currentRow.getAttribute('data-collected');
 
-                    if (newStatus !== currentStatus || newCollected !== currentCollected || newRow.innerHTML !== currentRow.innerHTML) {
+                    if (newStatus !== currentStatus || newCollected !== currentCollected || cleanHtmlForComparison(newRow) !== cleanHtmlForComparison(currentRow)) {
                         currentRow.innerHTML = newRow.innerHTML;
                         currentRow.className = newRow.className;
                         currentRow.setAttribute('data-status', newStatus);
-                        currentRow.setAttribute('data-collected', currentCollected);
+                        if (newRow.hasAttribute('data-collected')) {
+                            currentRow.setAttribute('data-collected', newCollected);
+                        } else {
+                            currentRow.removeAttribute('data-collected');
+                        }
                         currentRow.setAttribute('style', newRow.getAttribute('style') || '');
                         
                         if (window.lucide) {
@@ -1460,6 +1472,16 @@
                         }
                     }
                 });
+
+                // Update pagination if it exists and changed
+                const currentPag = container.querySelector('.ajax-req-page-btn')?.closest('div');
+                const newPag = doc.querySelector('.ajax-req-page-btn')?.closest('div');
+                if (currentPag && newPag) {
+                    if (currentPag.innerText.replace(/\s+/g, ' ').trim() !== newPag.innerText.replace(/\s+/g, ' ').trim()) {
+                        currentPag.innerHTML = newPag.innerHTML;
+                        bindPaginationClicks();
+                    }
+                }
             }
 
             if (data.stats) {
