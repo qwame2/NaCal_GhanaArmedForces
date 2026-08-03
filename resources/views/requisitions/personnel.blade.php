@@ -859,11 +859,11 @@
                     <div style="font-size:.7rem;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Requester Information</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                         <div style="display:flex;flex-direction:column;gap:6px;">
-                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Full Name <span style="color:#ef4444;">*</span></label>
+                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Full Name</label>
                             <input type="text" id="nr-requester-name" value="{{ auth()->user()->name }}" readonly placeholder="Full name of requester" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;cursor:not-allowed;opacity:0.85;">
                         </div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
-                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Department <span style="color:#ef4444;">*</span></label>
+                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Department</label>
                             <input type="text" id="nr-department" value="{{ auth()->user()->department ?? '' }}" readonly placeholder="e.g. Stores, Logistics" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;cursor:not-allowed;opacity:0.85;">
                         </div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
@@ -1878,11 +1878,9 @@
 
     function nrGoNext() {
         if (nrCurrentStep === 1) {
-            const name    = document.getElementById('nr-requester-name').value.trim();
-            const dept    = document.getElementById('nr-department').value.trim();
             const purpose = document.getElementById('nr-purpose').value.trim();
-            if (!name || !dept || !purpose) {
-                Swal.fire({ icon:'warning', title:'Missing Fields', text:'Please fill in Full Name, Department, and Purpose.', confirmButtonColor:'var(--primary)' });
+            if (!purpose) {
+                Swal.fire({ icon:'warning', title:'Missing Field', text:'Please fill in Purpose.', confirmButtonColor:'var(--primary)' });
                 return;
             }
         } else if (nrCurrentStep === 2) {

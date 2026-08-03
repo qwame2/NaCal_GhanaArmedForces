@@ -1736,6 +1736,7 @@
 <script>
     const isStoresHead = {{ $isStoresHead ? 'true' : 'false' }};
     const isBackupActive = {{ (!auth()->user()->isMainAdminOrSub() && $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])) ? 'true' : 'false' }};
+    const isSubMainAdmin = {{ auth()->user()->isSubMainAdmin() ? 'true' : 'false' }};
     let currentReqId = null;
     window._reqDetailsCache = window._reqDetailsCache || {};
 
@@ -1958,7 +1959,7 @@
                 `<span style="color:#059669;font-size:.7rem;font-weight:700;">✔ Sufficient Stock</span>` :
                 `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
-            const stockLine = isStoresHead && !isBackupActive ?
+            const stockLine = isStoresHead && !isBackupActive && !isSubMainAdmin ?
                 ` · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})` :
                 '';
 

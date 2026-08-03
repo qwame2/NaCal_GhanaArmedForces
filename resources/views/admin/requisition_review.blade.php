@@ -478,6 +478,7 @@
 </div>
 
 <script>
+    const isSubMainAdmin = {{ auth()->user()->isSubMainAdmin() ? 'true' : 'false' }};
     const currentReqId = {{ $id }};
     let currentReqData = null;
 
@@ -617,9 +618,9 @@
                     defaultOriginalApproved = Math.max(0, parseFloat(item.quantity_requested) - altApprovedQty);
                 }
 
-                const stockInfo = item.stock_sufficient ?
+                const stockInfo = isSubMainAdmin ? '' : (item.stock_sufficient ?
                     `<span style="color:#059669;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>` :
-                    `<span style="color:#059669;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
+                    `<span style="color:#059669;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`);
 
                 const descTextHtml = isAltAgreed ?
                     `<span>${item.description}</span> <span style="color:var(--store-orange); font-weight:800; margin-left:6px;"><i data-lucide="shuffle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${item.alternative_description}</span>` :
@@ -735,7 +736,7 @@
                                     <div style="font-size:.95rem;font-weight:800;color:var(--text-main);">${item.description}</div>
                                 `}
                                 <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;margin-top:4px;">
-                                    Unit: ${item.unit} · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})
+                                    Unit: ${item.unit}${isSubMainAdmin ? '' : ` · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})`}
                                 </div>
                             </div>
                         </div>
