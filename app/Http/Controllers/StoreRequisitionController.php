@@ -840,7 +840,19 @@ class StoreRequisitionController extends Controller
         if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) abort(403);
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
-            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'partially_approved' THEN 2 WHEN status = 'approved' THEN 3 WHEN status = 'declined' THEN 4 ELSE 5 END")
+            ->orderByRaw("CASE 
+                WHEN (status = 'pending' 
+                      AND origin_admin_status = 'approved' 
+                      AND (requires_dg_approval = 0 OR dg_status = 'approved') 
+                      AND main_admin_status = 'approved' 
+                      AND (alternative_status IS NULL OR alternative_status NOT IN ('proposed', 'agreed'))) THEN 0
+                WHEN (status IN ('approved', 'partially_approved') AND collected_at IS NULL) THEN 1
+                WHEN collected_at IS NOT NULL THEN 2
+                WHEN status = 'pending' THEN 3
+                ELSE 4
+            END")
+            ->orderBy('collected_at', 'desc')
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'declined' THEN 2 ELSE 3 END")
             ->orderByRaw("CASE WHEN priority = 'urgent' THEN 1 WHEN priority = 'normal' THEN 2 WHEN priority = 'low' THEN 3 ELSE 4 END")
             ->orderBy('created_at', 'desc');
 
@@ -1449,9 +1461,15 @@ class StoreRequisitionController extends Controller
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
             ->orderByRaw("CASE 
-                WHEN (status IN ('approved', 'partially_approved') AND collected_at IS NULL) THEN 0 
-                WHEN collected_at IS NOT NULL THEN 1 
-                ELSE 2 
+                WHEN (status = 'pending' 
+                      AND origin_admin_status = 'approved' 
+                      AND (requires_dg_approval = 0 OR dg_status = 'approved') 
+                      AND main_admin_status = 'approved' 
+                      AND (alternative_status IS NULL OR alternative_status NOT IN ('proposed', 'agreed'))) THEN 0
+                WHEN (status IN ('approved', 'partially_approved') AND collected_at IS NULL) THEN 1
+                WHEN collected_at IS NOT NULL THEN 2
+                WHEN status = 'pending' THEN 3
+                ELSE 4
             END")
             ->orderBy('collected_at', 'desc')
             ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'declined' THEN 2 ELSE 3 END")
