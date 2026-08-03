@@ -1448,8 +1448,13 @@ class StoreRequisitionController extends Controller
 
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
-            ->orderByRaw("CASE WHEN (status IN ('approved', 'partially_approved') AND collected_at IS NULL) THEN 0 ELSE 1 END")
-            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'partially_approved' THEN 2 WHEN status = 'approved' THEN 3 WHEN status = 'declined' THEN 4 ELSE 5 END")
+            ->orderByRaw("CASE 
+                WHEN (status IN ('approved', 'partially_approved') AND collected_at IS NULL) THEN 0 
+                WHEN collected_at IS NOT NULL THEN 1 
+                ELSE 2 
+            END")
+            ->orderBy('collected_at', 'desc')
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'declined' THEN 2 ELSE 3 END")
             ->orderByRaw("CASE WHEN priority = 'urgent' THEN 1 WHEN priority = 'normal' THEN 2 WHEN priority = 'low' THEN 3 ELSE 4 END")
             ->orderBy('created_at', 'desc');
 
