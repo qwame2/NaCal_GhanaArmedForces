@@ -1319,8 +1319,10 @@
             });
             const data = await response.json();
 
-            if (data.html) {
-                container.innerHTML = data.html;
+            // Controller returns rows + pagination (not a single html key)
+            const html = data.html || ((data.rows || '') + (data.pagination || ''));
+            if (html) {
+                container.innerHTML = html;
             }
             if (data.stats) {
                 updateStats(data.stats);
@@ -1359,8 +1361,10 @@
                     });
                     const data = await response.json();
 
-                    if (data.html) {
-                        container.innerHTML = data.html;
+                    // Controller returns rows + pagination (not a single html key)
+                    const pageHtml = data.html || ((data.rows || '') + (data.pagination || ''));
+                    if (pageHtml) {
+                        container.innerHTML = pageHtml;
                     }
                     if (data.stats) {
                         updateStats(data.stats);
@@ -1425,10 +1429,13 @@
                 }
             });
             const data = await response.json();
-            if (!data.html) return;
+
+            // Controller returns rows + pagination keys (not a single html key)
+            const newHtml = data.html || ((data.rows || '') + (data.pagination || ''));
+            if (!newHtml) return;
 
             const parser = new DOMParser();
-            const doc = parser.parseFromString(data.html, 'text/html');
+            const doc = parser.parseFromString(newHtml, 'text/html');
 
             const currentRows = Array.from(container.querySelectorAll('.req-table-row'));
             const newRows = Array.from(doc.querySelectorAll('.req-table-row'));
@@ -1441,7 +1448,7 @@
             const paginationMismatch = (currentPagination && !newPagination) || (!currentPagination && newPagination);
 
             if (currentIds !== newIds || paginationMismatch) {
-                container.innerHTML = data.html;
+                container.innerHTML = newHtml;
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
