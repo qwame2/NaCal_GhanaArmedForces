@@ -1509,13 +1509,13 @@
                     if (!data) return;
                     const badge = document.getElementById('global-unread-badge');
                     if (badge) {
-                        const totalDisplayCount = (data.count || 0) + (data.approvals_count || 0) + (data.requested_approvals_count || 0);
-                        if (totalDisplayCount > 0) {
-                            badge.textContent = totalDisplayCount;
-                            badge.style.display = 'block';
-                        } else {
-                            badge.style.display = 'none';
-                        }
+                            const totalDisplayCount = (data.count || 0);
+                            if (totalDisplayCount > 0) {
+                                badge.textContent = totalDisplayCount;
+                                badge.style.display = 'block';
+                            } else {
+                                badge.style.display = 'none';
+                            }
                     }
 
                     // Re-check messages page active in other tabs
