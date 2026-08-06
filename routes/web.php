@@ -823,6 +823,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/it-hub/queue-action', [\App\Http\Controllers\ITController::class, 'runQueueAction'])->name('it-hub.queue-action');
     Route::post('/it-hub/deep-scan', [\App\Http\Controllers\ITController::class, 'runDeepDiagnosticScan'])->name('it-hub.deep-scan');
     Route::get('/it-hub/deep-scan-page', [\App\Http\Controllers\ITController::class, 'showDeepScanPage'])->name('it-hub.deep-scan-page');
+    Route::get('/it-hub/password-reset', [\App\Http\Controllers\ITController::class, 'passwordResetPage'])->name('it-hub.password-reset');
+    Route::post('/it-hub/password-reset/approve/{id}', [\App\Http\Controllers\ITController::class, 'approveHeadPasswordRequest'])->name('it-hub.password-reset.approve');
+    Route::post('/it-hub/password-reset/reject/{id}', [\App\Http\Controllers\ITController::class, 'rejectHeadPasswordRequest'])->name('it-hub.password-reset.reject');
 
     Route::get('/api/inventory/check-duplicate', [InventoryController::class, 'checkDuplicate'])->name('api.inventory.check-duplicate');
 

@@ -212,6 +212,12 @@
                 <span>Run Diagnostic Scan</span>
             </a>
 
+            <a href="{{ route('it-hub.password-reset') }}" style="display:inline-flex; align-items:center; gap:8px; padding:0.6rem 1.1rem; background:#2563eb; color:white; border:none; border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer; box-shadow:0 4px 12px rgba(37, 99, 235, 0.25); text-decoration:none;">
+                <i data-lucide="key-round" style="width:15px; height:15px;"></i>
+                <span>Password Reset Center</span>
+                <span id="prBadgeCount" style="{{ ($pendingResetCount ?? 0) > 0 ? 'display:inline-block;' : 'display:none;' }} background:#ef4444; color:white; font-size:0.7rem; font-weight:900; padding:2px 6px; border-radius:99px; margin-left:4px;">{{ $pendingResetCount ?? 0 }}</span>
+            </a>
+
             <button onclick="triggerStoragePurge()" style="display:inline-flex; align-items:center; gap:6px; padding:0.6rem 1.1rem; background:rgba(245, 158, 11, 0.1); color:#d97706; border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; font-weight:800; font-size:0.8rem; cursor:pointer;">
                 <i data-lucide="trash-2" style="width:15px; height:15px;"></i>
                 <span>Storage Janitor Purge</span>
@@ -824,6 +830,17 @@
             }
             if (data.health_score !== undefined) {
                 document.getElementById('statHealthScore').innerText = data.health_score;
+            }
+            if (data.pending_reset_count !== undefined) {
+                const prBadge = document.getElementById('prBadgeCount');
+                if (prBadge) {
+                    prBadge.innerText = data.pending_reset_count;
+                    if (data.pending_reset_count > 0) {
+                        prBadge.style.display = 'inline-block';
+                    } else {
+                        prBadge.style.display = 'none';
+                    }
+                }
             }
 
             // Executive summary score cards

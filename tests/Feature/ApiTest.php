@@ -1929,5 +1929,62 @@ class ApiTest extends TestCase
         $this->assertEquals(298, (float)$inventoryItem->stock_balance);
         $this->assertEquals(298, (float)$inventoryItem->qty);
     }
+
+    public function test_it_admin_can_manage_head_of_stores_password_reset_otps(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'registration_status' => 'approved']);
+        $headOfStores = User::factory()->create(['role' => 'Head of Stores', 'registration_status' => 'approved']);
+
+        // 1. Create a password reset request for Head of Stores
+        $resetReq = \App\Models\PasswordResetRequest::create([
+            'user_id' => $headOfStores->id,
+            'username' => $headOfStores->username,
+            'status' => 'pending',
+        ]);
+
+        // Verify telemetry endpoint returns the count
+        $this->actingAs($admin)->get('/it-hub/telemetry')
+            ->assertStatus(200)
+            ->assertJsonFragment([
+                'pending_reset_count' => 1
+            ]);
+
+        // 2. Access the IT Hub password reset page
+        $this->actingAs($admin)->get('/it-hub/password-reset')
+            ->assertStatus(200)
+            ->assertSee($headOfStores->name);
+
+        // 3. Approve the request & generate OTP
+        $response = $this->actingAs($admin)->post("/it-hub/password-reset/approve/{$resetReq->id}");
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Recovery OTP generated successfully.'
+                 ]);
+
+        $this->assertEquals('approved', $resetReq->fresh()->status);
+        $this->assertNotNull($resetReq->fresh()->otp);
+
+        // Verify system logs entry
+        $this->assertTrue(\App\Models\SystemLog::where('action', 'IT_PASSWORD_RESET_APPROVE')
+            ->where('description', 'like', "%{$headOfStores->username}%")
+            ->exists());
+
+        // 4. Reject/Revoke the request
+        $response = $this->actingAs($admin)->post("/it-hub/password-reset/reject/{$resetReq->id}");
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Recovery request rejected and OTP revoked.'
+                 ]);
+
+        $this->assertEquals('rejected', $resetReq->fresh()->status);
+        $this->assertNull($resetReq->fresh()->otp);
+
+        // Verify system logs entry
+        $this->assertTrue(\App\Models\SystemLog::where('action', 'IT_PASSWORD_RESET_REJECT')
+            ->where('description', 'like', "%{$headOfStores->username}%")
+            ->exists());
+    }
 }
 
