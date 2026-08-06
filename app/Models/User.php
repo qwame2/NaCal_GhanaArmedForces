@@ -106,7 +106,7 @@ class User extends Authenticatable implements LdapAuthenticatable
 
     public function getIsOnlineAttribute($value)
     {
-        if (!$this->is_active) {
+        if (array_key_exists('is_active', $this->attributes) && !$this->is_active) {
             return false;
         }
         return (bool)$value;
@@ -302,16 +302,18 @@ class User extends Authenticatable implements LdapAuthenticatable
     {
         // Dynamic clean up of stale admin statuses using the sessions table
         try {
-            $activeSessionUserIds = \Illuminate\Support\Facades\DB::table('sessions')
-                ->where('last_activity', '>=', now()->subSeconds(60)->timestamp)
-                ->whereNotNull('user_id')
-                ->pluck('user_id')
-                ->toArray();
+            if (config('session.driver') === 'database') {
+                $activeSessionUserIds = \Illuminate\Support\Facades\DB::table('sessions')
+                    ->where('last_activity', '>=', now()->subSeconds(60)->timestamp)
+                    ->whereNotNull('user_id')
+                    ->pluck('user_id')
+                    ->toArray();
 
-            self::where('is_admin', true)
-                ->where('is_online', true)
-                ->whereNotIn('id', $activeSessionUserIds)
-                ->update(['is_online' => false]);
+                self::where('is_admin', true)
+                    ->where('is_online', true)
+                    ->whereNotIn('id', $activeSessionUserIds)
+                    ->update(['is_online' => false]);
+            }
         } catch (\Exception $e) {}
 
         return self::where(function($q) {

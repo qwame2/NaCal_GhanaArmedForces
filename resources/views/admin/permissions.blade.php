@@ -30,34 +30,19 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Store Officers
     </button>
-
-    <button class="pager-tab" id="tab-departments" onclick="switchTab('departments')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="16"></line><line x1="15" y1="22" x2="15" y2="16"></line><line x1="9" y1="16" x2="15" y2="16"></line><path d="M8 6h2v2H8V6zm0 4h2v2H8v-2zm8-4h2v2h-2V6zm0 4h2v2h-2v-2z"></path></svg>
-        Departmental Tab
+    <button class="pager-tab" id="tab-requisitioners" onclick="switchTab('requisitioners')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Requisitioners
     </button>
     <button class="pager-tab" id="tab-dept-heads" onclick="switchTab('dept-heads')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Other Dept. Heads
-    </button>
-    <button class="pager-tab" id="tab-director-generals" onclick="switchTab('director-generals')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
-        Director General(DG)
     </button>
 
     <button class="pager-tab" id="tab-registrations" onclick="switchTab('registrations')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
         Registration Requests
         <span class="tab-badge" id="reg-badge" style="display: {{ $pendingUsers->count() > 0 ? 'inline-block' : 'none' }}">{{ $pendingUsers->count() }}</span>
-    </button>
-    @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
-    <button class="pager-tab" id="tab-delegation" onclick="switchTab('delegation')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Authority Delegation
-    </button>
-    @endif
-    <button class="pager-tab" id="tab-role-history" onclick="switchTab('role-history')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-        Role &amp; Privilege History
     </button>
 </div>
 
@@ -70,98 +55,177 @@
                 <div class="col-ctrl">Item Entry</div>
                 <div class="col-ctrl">Confirm Collection</div>
                 <div class="col-ctrl">Report Access</div>
-                <div class="col-ctrl">Stock Check</div>
-                <div class="col-ctrl">Place Requisition</div>
                 <div class="col-stat">Clearance Status</div>
             </div>
 
             <div class="m-body" id="storeOfficersBody">
-                @include('admin.partials.store_officers')
+                @forelse($storeOfficers as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                    @if($user->role === 'Main Admin')
+                                        Head of Admin
+                                    @elseif($user->role === 'Officer')
+                                        Store Officer
+                                    @elseif($user->role === 'Dept Head HR')
+                                        Dept Head HR
+                                    @elseif($user->role === 'Head of Welfare')
+                                        Head of Welfare
+                                    @else
+                                        {{ $user->role }}
+                                    @endif
+                                </span>
+                                @if($user->department)
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                    {{ $user->department }}
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Inventory Entry">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Add/Edit Items</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Logistics Operations">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Confirm Collection</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Analytics Access">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">View Reports</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No store officers registered.
+                </div>
+                @endforelse
             </div>
-        </div>
-        
-        <!-- Pagination Controls -->
-        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
-            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
-            </div>
-            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
         </div>
     </div>
 </div>
 
-
-
-{{-- ── Panel: Departments ── --}}
-<div id="panel-departments" class="pager-panel">
+{{-- ── Panel: Requisitioners ── --}}
+<div id="panel-requisitioners" class="pager-panel">
     <div class="permissions-matrix-wrapper">
         <div class="matrix-table">
             <div class="m-header">
-                <div class="col-id" style="flex: 0 0 450px;">Department Name</div>
-                <div class="col-ctrl" style="flex: 1;">Total Staff (Active)</div>
-                <div class="col-req-ctrl" style="flex: 0 0 250px;">Requisition Status</div>
-                <div class="col-stat" style="flex: 0 0 200px;">Clearance Status</div>
+                <div class="col-id">Personnel</div>
+                <div class="col-req-ctrl">Make Requests</div>
+                <div class="col-req-ctrl">Report Access</div>
+                <div class="col-stat">Clearance Status</div>
             </div>
 
-            <div class="m-body" id="departmentsBody">
-                @foreach($allDepartments as $dept)
-                @php
-                    $isDeptDisabled = in_array(strtolower(trim($dept)), array_map('strtolower', array_map('trim', $disabledDepts)));
-                @endphp
-                <div class="m-row" data-department="{{ $dept }}">
-                    <div class="col-id" style="flex: 0 0 450px;">
-                        <div class="m-avatar" style="background: #0ea5e9; display: flex; align-items: center; justify-content: center; color: white;">
-                            <i data-lucide="building" style="width: 22px; height: 22px;"></i>
+            <div class="m-body" id="requisitionersBody">
+                @forelse($requisitioners as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
                         </div>
                         <div class="m-identity">
-                            <h4 class="m-name">{{ $dept }}</h4>
-                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; color: var(--text-muted); font-size: 0.75rem;">
-                                <span>Sector Identity</span>
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                                @if($user->department)
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                    {{ $user->department }}
+                                </span>
+                                @endif
+                                @if($user->sponsor)
+                                <span style="font-size: 0.65rem; background: #f5f3ff; color: #6d28d9; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-family: sans-serif; border: 1px solid rgba(109,40,217,0.1); white-space: nowrap;">
+                                    via {{ $user->sponsor->name }}
+                                </span>
+                                @endif
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-ctrl" style="flex: 1;">
-                        <span style="font-weight: 800; font-size: 1rem; color: var(--text-main); background: #f1f5f9; padding: 4px 12px; border-radius: 8px;">
-                            {{ $userCounts[$dept] ?? 0 }} Staff
-                        </span>
-                    </div>
-
-                    {{-- Requisition Toggle --}}
-                    <div class="col-req-ctrl" style="flex: 0 0 250px;">
+                    {{-- Make Requests toggle --}}
+                    <div class="col-req-ctrl">
                         <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="{{ auth()->user()->role === 'Head of Stores' ? 'Allow or block this department from making requisitions' : 'Only Head of Stores can change this' }}">
-                                @if(auth()->user()->role === 'Head of Stores')
-                                    <input type="checkbox" onchange="toggleDepartmentStatus(this)" {{ !$isDeptDisabled ? 'checked' : '' }}>
-                                @else
-                                    <input type="checkbox" disabled style="opacity: 0.6; cursor: not-allowed;" {{ !$isDeptDisabled ? 'checked' : '' }}>
-                                @endif
+                            <label class="normal-toggle" title="Allow or block this user from submitting requisition requests">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_make_requisition')" {{ ($user->can_make_requisition ?? true) ? 'checked' : '' }}>
                                 <div class="toggle-slider"></div>
                             </label>
                             <div class="toggle-text">
-                                <span class="t-main">{{ !$isDeptDisabled ? 'Allowed' : 'Blocked' }}</span>
-                                <span class="t-sub">Requisition Request</span>
+                                <span class="t-main">{{ ($user->can_make_requisition ?? true) ? 'Allowed' : 'Blocked' }}</span>
+                                <span class="t-sub">Submit requests</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-stat" style="flex: 0 0 200px;">
-                        <div class="badge-status {{ !$isDeptDisabled ? 'authorized' : 'revoked' }}">
-                            <i data-lucide="{{ !$isDeptDisabled ? 'shield-check' : 'shield-alert' }}"></i>
-                            {{ !$isDeptDisabled ? 'ACTIVE' : 'DISABLED' }}
+                    {{-- Report Access toggle --}}
+                    <div class="col-req-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Report Access">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">View Reports</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
                         </div>
                     </div>
                 </div>
-                @endforeach
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No requisitioners registered.
+                </div>
+                @endforelse
             </div>
-        </div>
-        
-        <!-- Pagination Controls -->
-        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
-            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
-            </div>
-            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
         </div>
     </div>
 </div>
@@ -189,17 +253,15 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                                     @if($user->role === 'Main Admin')
-                                        Head of Admin(Authorizer)
-                                    @elseif($user->role === 'Sub Main Admin')
-                                        Delegators(Authorizer)
+                                        Head of Admin
                                     @else
                                         {{ $user->role }}
                                     @endif
                                 </span>
                                 @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(6, 95, 70, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
                                     {{ $user->department }}
                                 </span>
                                 @endif
@@ -249,433 +311,15 @@
                 @endforelse
             </div>
         </div>
-        
-        <!-- Pagination Controls -->
-        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
-            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
-            </div>
-            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
-        </div>
-    </div>
-</div>
-
-{{-- ── Panel: Director General ── --}}
-<div id="panel-director-generals" class="pager-panel">
-    <div class="permissions-matrix-wrapper">
-        <div class="matrix-table">
-            <div class="m-header">
-                <div class="col-id">Personnel</div>
-                <div class="col-stat">Clearance Status</div>
-            </div>
-
-            <div class="m-body" id="directorGeneralsBody">
-                @forelse($directorGenerals as $user)
-                <div class="m-row" data-user-id="{{ $user->id }}">
-                    <div class="col-id">
-                        <div class="m-avatar">
-                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
-                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
-                        </div>
-                        <div class="m-identity">
-                            <h4 class="m-name">{{ $user->name }}</h4>
-                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
-                                <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
-                                    Director General
-                                </span>
-                                @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(6, 95, 70, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
-                                    {{ $user->department }}
-                                </span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-stat">
-                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
-                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
-                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
-                    No Director General registered.
-                </div>
-                @endforelse
-            </div>
-        </div>
-        
-        <!-- Pagination Controls -->
-        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
-            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
-            </div>
-            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
-        </div>
     </div>
 </div>
 
 {{-- ── Panel: Registration Requests ── --}}
 <div id="panel-registrations" class="pager-panel">
     @include('admin.partials.pending_registrations')
-    
-    <!-- Pagination Controls -->
-    <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.04);">
-        <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-            Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
-        </div>
-        <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
-    </div>
-</div>
-
-{{-- ── Panel: Authority Delegation ── --}}
-@if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
-<div id="panel-delegation" class="pager-panel">
-    @php
-        $delegatedId = \App\Models\Setting::get('delegated_approver_id');
-        $currentOtp = \App\Models\Setting::get('delegation_otp_code');
-        $currentOtpExpires = \App\Models\Setting::get('delegation_otp_expires_at');
-        $hasActiveOtp = !empty($currentOtp) && (!$currentOtpExpires || now()->lt(\Carbon\Carbon::parse($currentOtpExpires)));
-    @endphp
-
-    <!-- OTP Generation Card -->
-    <div class="cfg-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary); background: white; border-radius: 28px; border: 1px solid #f1f5f9; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); overflow: hidden;">
-        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 2rem; border-bottom: 1px solid #f8fafc; background: #fafbff; flex-wrap: wrap; gap: 1.5rem;">
-            <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 300px;">
-                <div class="cfg-icon-box" style="background: #059669; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
-                    <i data-lucide="key-round" style="width: 22px; height: 22px;"></i>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.1rem; font-weight: 950; color: #0f172a; margin: 0;">Generate Delegation OTP</h3>
-                    <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin: 2px 0 0;">Generate a short code for any Store Officer to instantly activate delegated authority. Once used, the code is consumed and cannot be reused.</p>
-                </div>
-            </div>
-            <div style="display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap;">
-                <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
-                    <label for="delegation-revocation-time" style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Auto-Revocation Time (Optional)</label>
-                    <input type="datetime-local" id="delegation-revocation-time" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; font-weight: 700; color: #1e293b; outline: none; background: white; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
-                </div>
-                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: #059669; border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(5, 150, 105, 0.25); transition: all 0.3s ease;">
-                    <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
-                    Generate OTP
-                </button>
-            </div>
-        </div>
-        <div class="cfg-card-body" id="otp-display-container" style="display: {{ $hasActiveOtp ? 'block' : 'none' }}; padding: 2rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; background: #f8fafc; border-radius: 20px; padding: 1.5rem 2rem; border: 1px solid #f1f5f9;">
-                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                    <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Active OTP Code:</span>
-                    <span id="active-otp-code" style="font-family: monospace; font-size: 2rem; font-weight: 900; color: #0ea5e9; letter-spacing: 4px; background: white; padding: 0.5rem 1.5rem; border-radius: 12px; border: 1.5px dashed #0ea5e9; display: inline-block;">{{ $currentOtp }}</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                    <span style="font-size: 0.85rem; font-weight: 700; color: #475569;" id="otp-expiry-text">
-                        Status: <span id="otp-expiry-time" style="color: #059669; font-weight: 800;">
-                            @if($currentOtpExpires)
-                                Revocation Scheduled: <span style="color: #ef4444;">{{ \Carbon\Carbon::parse($currentOtpExpires)->format('d/m/y H:i') }}</span>
-                            @else
-                                Active 
-                            @endif
-                        </span>
-                    </span>
-                    <button type="button" class="otp-preset-btn" onclick="revokeDelegationOtp()" style="padding: 0.6rem 1.2rem; background: #ef4444; border: 1.5px solid #ef4444; color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15); border-radius: 10px; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease;">
-                        Revoke OTP
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="permissions-matrix-wrapper">
-        <div class="matrix-table">
-            <div class="m-header">
-                <div class="col-id">Store Officer</div>
-                <div class="col-ctrl">Delegate Approval Authority</div>
-                <div class="col-stat">Delegation Status</div>
-            </div>
-
-            <div class="m-body" id="delegationMatrixBody">
-                @forelse($storeOfficers->where('is_active', true) as $user)
-                <div class="m-row" data-user-id="{{ $user->id }}">
-                    <div class="col-id">
-                        <div class="m-avatar">
-                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
-                            <span class="m-pulse online"></span>
-                        </div>
-                        <div class="m-identity">
-                            <h4 class="m-name">{{ $user->name }}</h4>
-                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
-                                <span>@ {{ $user->username }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Approval Delegation">
-                                <input type="checkbox" class="delegation-toggle-switch" onchange="toggleDelegationState(this)" {{ $delegatedId == $user->id ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">{{ $delegatedId == $user->id ? 'Active' : 'Inactive' }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-stat">
-                        <div class="badge-status {{ $delegatedId == $user->id ? 'authorized' : 'revoked' }}">
-                            <i data-lucide="{{ $delegatedId == $user->id ? 'shield-check' : 'shield-alert' }}"></i>
-                            {{ $delegatedId == $user->id ? 'DELEGATED' : 'STANDBY' }}
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
-                    No active store officers available for delegation.
-                </div>
-                @endforelse
-            </div>
-        </div>
-        
-        <!-- Pagination Controls -->
-        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
-            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
-            </div>
-            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
-        </div>
-    </div>
-</div>
-@endif
-
-{{-- ── Panel: Role & Privilege History ── --}}
-<div id="panel-role-history" class="pager-panel">
-    <div class="permissions-matrix-wrapper" style="background: white; border-radius: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 4rem; padding: 2rem;">
-        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-            Role &amp; Privilege Modifications
-        </h3>
-        
-        @php
-            $embeddedRoleHistory = \App\Models\UserRoleHistory::with(['user', 'changer'])->orderBy('created_at', 'desc')->take(250)->get();
-        @endphp
-
-        @if($embeddedRoleHistory->isEmpty())
-            <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
-                No role or privilege updates recorded.
-            </div>
-        @else
-            <div class="table-responsive" style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
-                    <thead>
-                        <tr style="background: #f8fafc; border-bottom: 1px solid #edf2f7;">
-                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Date</th>
-                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Staff Name</th>
-                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Action</th>
-                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Role Evolution</th>
-                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Privilege Details</th>
-                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Changed By</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($embeddedRoleHistory as $historyRecord)
-                            <tr style="border-bottom: 1px solid #edf2f7; transition: background 0.15s;" onmouseover="this.style.background='#fafcff'" onmouseout="this.style.background=''">
-                                <td style="padding: 1rem 1.25rem; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; white-space: nowrap;">
-                                    {{ $historyRecord->created_at->format('d/m/y H:i') }}
-                                </td>
-                                <td style="padding: 1rem 1.25rem; font-weight: 800; color: var(--text-main);">
-                                    {{ $historyRecord->user->name ?? 'Deleted User' }}
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500; font-family: monospace; margin-top: 1px;">
-                                        @ @if($historyRecord->user){{ $historyRecord->user->username }}@else{{ 'deleted' }}@endif
-                                    </div>
-                                </td>
-                                <td style="padding: 1rem 1.25rem;">
-                                    <span style="display: inline-flex; align-items: center; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
-                                        @if($historyRecord->action === 'created')
-                                            background: #ecfdf5; color: #059669;
-                                        @elseif($historyRecord->action === 'role_changed')
-                                            background: #fdf2f8; color: #db2777;
-                                        @elseif($historyRecord->action === 'status_changed')
-                                            background: #ecfdf5; color: #047857;
-                                        @else
-                                            background: #eff6ff; color: #2563eb;
-                                        @endif">
-                                        {{ str_replace('_', ' ', $historyRecord->action) }}
-                                    </span>
-                                </td>
-                                <td style="padding: 1rem 1.25rem; font-weight: 700;">
-                                    @if($historyRecord->action === 'created')
-                                        <span style="color: #059669;">{{ $historyRecord->new_role }}</span>
-                                    @else
-                                        @if($historyRecord->old_role != $historyRecord->new_role)
-                                            <span style="color: var(--text-muted); text-decoration: line-through; font-size: 0.78rem; font-weight: 500;">{{ $historyRecord->old_role }}</span>
-                                            <span style="color: var(--primary); margin: 0 4px;">&rarr;</span>
-                                            <span style="color: var(--text-main);">{{ $historyRecord->new_role }}</span>
-                                        @else
-                                            <span style="color: var(--text-muted); font-size: 0.78rem;">{{ $historyRecord->new_role }}</span>
-                                        @endif
-                                    @endif
-                                </td>
-                                <td style="padding: 1rem 1.25rem;">
-                                    @if($historyRecord->new_permissions)
-                                        <div style="display: flex; flex-direction: column; gap: 3px; max-width: 220px;">
-                                            @foreach(['can_add_inventory' => 'Inventory Entry', 'can_operate_logistics' => 'Confirm Collection', 'can_generate_reports' => 'View Reports', 'can_verify_stock' => 'Stock Checks', 'can_make_requisition' => 'Make Requests', 'can_approve_requisition' => 'Approve Requests'] as $key => $label)
-                                                @php
-                                                    $oldVal = $historyRecord->old_permissions[$key] ?? false;
-                                                    $newVal = $historyRecord->new_permissions[$key] ?? false;
-                                                @endphp
-                                                @if($historyRecord->action === 'created' || $oldVal != $newVal)
-                                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; padding: 1px 4px; background: #f8fafc; border-radius: 4px; border: 1px solid #f1f5f9;">
-                                                        <span style="font-weight: 700; color: #475569;">{{ $label }}</span>
-                                                        @if($historyRecord->action === 'created')
-                                                            <span style="font-weight: 800; color: {{ $newVal ? '#059669' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
-                                                        @else
-                                                            <span style="font-weight: 800;">
-                                                                <span style="color: {{ $oldVal ? '#059669' : '#dc2626' }}; text-decoration: text-decoration; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
-                                                                <span style="color: #64748b; margin: 0 1px;">&rarr;</span>
-                                                                <span style="color: {{ $newVal ? '#059669' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td style="padding: 1rem 1.25rem; font-weight: 700; color: var(--text-main);">
-                                    {{ $historyRecord->changer->name ?? 'System' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination Controls -->
-            <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
-                <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-                    Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
-                </div>
-                <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;">
-                    <!-- Buttons will be dynamically inserted here -->
-                </div>
-            </div>
-        @endif
-    </div>
 </div>
 
 <style>
-    .main-wrapper > *:not(header) {
-        max-width: 2000px !important;
-    }
-
-    /* ── Delegation Card Styles (copied from settings) ── */
-    .cfg-card {
-        background: white;
-        border-radius: 28px;
-        border: 1px solid #f1f5f9;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-        overflow: hidden;
-    }
-    .cfg-card-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.75rem 2rem;
-        border-bottom: 1px solid #f8fafc;
-        background: #fafbff;
-    }
-    .cfg-icon-box {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        flex-shrink: 0;
-    }
-    .cfg-icon-box i {
-        width: 22px;
-        height: 22px;
-    }
-    .cfg-card-header h3 {
-        font-size: 1.1rem;
-        font-weight: 950;
-        color: #0f172a;
-        margin: 0;
-    }
-    .cfg-card-header p {
-        font-size: 0.78rem;
-        color: #94a3b8;
-        font-weight: 600;
-        margin: 2px 0 0;
-    }
-    .cfg-card-body {
-        padding: 2rem;
-    }
-    .cfg-text-input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 0.75rem 1rem;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 14px;
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: #1e293b;
-        outline: none;
-        transition: 0.25s;
-        background: white;
-    }
-    .cfg-text-input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
-    }
-    .btn-cfg-save {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 0.85rem 2rem;
-        font-size: 0.9rem;
-        font-weight: 900;
-        color: white;
-        background: #059669;
-        border: none;
-        border-radius: 16px;
-        cursor: pointer;
-        box-shadow: 0 4px 18px rgba(5, 150, 105, 0.25);
-        transition: all 0.3s ease;
-    }
-    .btn-cfg-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(5, 150, 105, 0.35);
-    }
-    .otp-preset-btn {
-        padding: 0.6rem 1.2rem;
-        background: #ef4444;
-        border: 1.5px solid #ef4444;
-        color: white;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
-        border-radius: 10px;
-        font-size: 0.85rem;
-        font-weight: 800;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .otp-preset-btn:hover {
-        background: #dc2626;
-        border-color: #dc2626;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
-    }
-
     .swal-cancel-dark {
         background-color: #f1f5f9 !important;
         color: #475569 !important;
@@ -701,34 +345,14 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     }
     .search-vault:focus-within {
-        border-color: #0ea5e9;
-        box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1);
+        border-color: #4f46e5;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
         transform: translateY(-2px);
     }
-    .search-vault i { color: #0ea5e9; opacity: 0.6; margin-right: 1rem; width: 20px; }
+    .search-vault i { color: #4f46e5; opacity: 0.6; margin-right: 1rem; width: 20px; }
     .search-vault input { border: none; outline: none; padding: 0.75rem 0; font-size: 0.95rem; font-weight: 600; color: #0f172a; width: 100%; background: transparent; }
     .search-vault input::placeholder { color: #94a3b8; font-weight: 500; }
     .search-kicker { font-size: 0.7rem; font-weight: 800; color: #64748b; background: #f1f5f9; padding: 4px 8px; border-radius: 8px; white-space: nowrap; border: 1px solid #e2e8f0; }
-
-    :root {
-        --primary: #6366f1;
-        --primary-light: #818cf8;
-        --primary-dark: #4f46e5;
-        --primary-glow: rgba(99, 102, 241, 0.12);
-        --secondary: #10b981;
-        --accent: #f59e0b;
-        --danger: #ef4444;
-        --bg-main: #f3f4f6;
-        --bg-sidebar: #ffffff;
-        --bg-card: #ffffff;
-        --bg-nav: rgba(255, 255, 255, 0.8);
-        --text-main: #0f172a;
-        --text-muted: #64748b;
-        --border-color: #f1f5f9;
-        --radius-xl: 1.5rem;
-        --radius-lg: 1rem;
-        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
 
     /* ── Pager Tabs ── */
     .pager-tabs-wrap {
@@ -759,8 +383,8 @@
         position: relative;
     }
     .pager-tab svg { opacity: 0.7; flex-shrink: 0; }
-    .pager-tab:hover { background: #f8fafc; color: var(--primary); }
-    .pager-tab.active { background: var(--primary); color: white; box-shadow: 0 4px 14px var(--primary-glow); }
+    .pager-tab:hover { background: #f8fafc; color: #4f46e5; }
+    .pager-tab.active { background: #4f46e5; color: white; box-shadow: 0 4px 14px rgba(79,70,229,0.25); }
     .pager-tab.active svg { opacity: 1; }
     .tab-badge {
         background: #ef4444;
@@ -775,13 +399,8 @@
     .pager-tab.active .tab-badge { background: rgba(255,255,255,0.25); }
 
     /* ── Panel visibility ── */
-    .pager-panel { display: none; }
-    .pager-panel.active { display: block; animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-    @keyframes fadeUp {
-        0% { opacity: 0; transform: translateY(18px) scale(0.985); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
+    .pager-panel { display: none; animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+    .pager-panel.active { display: block; }
 
     /* ── Matrix Table ── */
     .permissions-matrix-wrapper {
@@ -802,12 +421,12 @@
     .col-ctrl { flex: 1; display: flex; justify-content: flex-start; align-items: center; }
     .col-req-ctrl { flex: 0 0 200px; display: flex; justify-content: flex-start; align-items: center; }
     .col-stat { flex: 0 0 160px; display: flex; justify-content: flex-end; }
-    .m-avatar { position: relative; width: 48px; height: 48px; border-radius: 16px; padding: 3px; background: #e2e8f0; flex-shrink: 0; }
+    .m-avatar { position: relative; width: 48px; height: 48px; border-radius: 16px; padding: 3px; background: linear-gradient(135deg, #e2e8f0, #f8fafc); flex-shrink: 0; }
     .m-avatar img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; }
     .m-pulse { position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; }
-    .m-pulse.online { background: #059669; animation: soft-pulse 2s infinite; }
+    .m-pulse.online { background: #10b981; animation: soft-pulse 2s infinite; }
     .m-pulse.offline { background: #cbd5e1; }
-    @keyframes soft-pulse { 0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(5, 150, 105, 0); } 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); } }
+    @keyframes soft-pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
     .m-identity { display: flex; flex-direction: column; gap: 2px; }
     .m-name { margin: 0; font-size: 0.95rem; font-weight: 850; color: var(--text-heading); letter-spacing: -0.01em; }
     .m-handle { font-size: 0.75rem; color: var(--accent); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
@@ -822,7 +441,7 @@
     .normal-toggle input:checked + .toggle-slider { background-color: var(--primary); }
     .normal-toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
     .badge-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; }
-    .badge-status.authorized { background: #f0fdf4; color: #059669; border: 1px solid #dcfce7; }
+    .badge-status.authorized { background: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; }
     .badge-status.revoked { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
     .badge-status i { width: 14px; height: 14px; }
     .syncing-row { opacity: 0.5; pointer-events: none; background: #f8fafc !important; }
@@ -849,8 +468,8 @@
         animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .reg-card:hover {
-        border-color: rgba(5, 150, 105,0.2);
-        box-shadow: 0 8px 28px rgba(5, 150, 105,0.08);
+        border-color: rgba(79,70,229,0.2);
+        box-shadow: 0 8px 28px rgba(79,70,229,0.08);
         transform: translateY(-2px);
     }
 
@@ -865,7 +484,7 @@
         width: 52px;
         height: 52px;
         border-radius: 18px;
-        background: #059669;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
         color: white;
         display: flex;
         align-items: center;
@@ -873,11 +492,11 @@
         font-size: 1.3rem;
         font-weight: 900;
         flex-shrink: 0;
-        box-shadow: 0 6px 16px rgba(5, 150, 105,0.25);
+        box-shadow: 0 6px 16px rgba(99,102,241,0.25);
     }
 
     .reg-name { font-size: 0.97rem; font-weight: 850; color: #0f172a; letter-spacing: -0.01em; }
-    .reg-username { font-size: 0.75rem; color: #059669; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .reg-username { font-size: 0.75rem; color: #4f46e5; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
     .reg-time { font-size: 0.72rem; color: #94a3b8; font-weight: 600; margin-top: 4px; }
 
     .reg-details {
@@ -898,55 +517,14 @@
         font-weight: 700;
         white-space: nowrap;
     }
-    .reg-pill.role { background: #eef2ff; color: #065f46; border: 1px solid #c7d2fe; }
-    .reg-pill.dept { background: #f0fdf4; color: #065f46; border: 1px solid #bbf7d0; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+    .reg-pill.role { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+    .reg-pill.dept { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
     .reg-pill.rank { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 
     .reg-actions {
         display: flex;
         gap: 0.6rem;
         flex-shrink: 0;
-    }
-
-    .reg-select-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-    .reg-select {
-        padding: 0.55rem 2.2rem 0.55rem 1rem;
-        font-family: inherit;
-        font-size: 0.82rem;
-        font-weight: 800;
-        color: #334155;
-        background-color: #f8fafc;
-        border: 1px solid #cbd5e1;
-        border-radius: 12px;
-        outline: none;
-        cursor: pointer;
-        appearance: none;
-        -webkit-appearance: none;
-        transition: all 0.25s ease;
-    }
-    .reg-select:hover, .reg-select:focus {
-        border-color: #0ea5e9;
-        background-color: white;
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
-        transform: translateY(-1px);
-    }
-    .reg-select-icon {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-        color: #64748b;
-        display: flex;
-        align-items: center;
-        transition: color 0.25s ease;
-    }
-    .reg-select:focus + .reg-select-icon,
-    .reg-select:hover + .reg-select-icon {
-        color: #059669;
     }
 
     .reg-btn {
@@ -964,13 +542,13 @@
         letter-spacing: 0.01em;
     }
     .reg-btn.approve {
-        background: #059669;
+        background: #10b981;
         color: white;
-        box-shadow: 0 4px 12px rgba(5, 150, 105,0.25);
+        box-shadow: 0 4px 12px rgba(16,185,129,0.25);
     }
     .reg-btn.approve:hover {
         background: #059669;
-        box-shadow: 0 6px 20px rgba(5, 150, 105,0.35);
+        box-shadow: 0 6px 20px rgba(16,185,129,0.35);
         transform: translateY(-1px);
     }
     .reg-btn.decline {
@@ -999,7 +577,7 @@
         width: 80px;
         height: 80px;
         background: #f0fdf4;
-        color: #059669;
+        color: #10b981;
         border-radius: 24px;
         display: flex;
         align-items: center;
@@ -1034,57 +612,7 @@
 
         // Show/hide search vault (only relevant for matrix tabs)
         const sv = document.getElementById('searchVaultWrap');
-        if (sv) sv.style.display = (tab !== 'registrations' && tab !== 'delegation' && tab !== 'departments') ? '' : 'none';
-
-        // Remember active tab
-        localStorage.setItem('active_permissions_tab', tab);
-    }
-
-    function toggleDepartmentStatus(checkbox) {
-        const row = checkbox.closest('.m-row');
-        const dept = row.getAttribute('data-department');
-        const value = checkbox.checked ? 1 : 0;
-        row.classList.add('syncing-row');
-
-        fetch('{{ route("admin.permissions.toggle_department", [], false) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ department: dept, value: value })
-        })
-        .then(r => r.json())
-        .then(data => {
-            row.classList.remove('syncing-row');
-            if (!data.success) {
-                checkbox.checked = !checkbox.checked;
-                alert('Failed to update department status: ' + data.message);
-            } else {
-                const label = checkbox.closest('.toggle-group-wrap')?.querySelector('.t-main');
-                if (label) label.textContent = checkbox.checked ? 'Allowed' : 'Blocked';
-                
-                const badge = row.querySelector('.col-stat .badge-status');
-                if (badge) {
-                    const wantActive = checkbox.checked;
-                    badge.classList.toggle('authorized', wantActive);
-                    badge.classList.toggle('revoked', !wantActive);
-                    const icon = badge.querySelector('i[data-lucide]');
-                    if (icon) {
-                        icon.setAttribute('data-lucide', wantActive ? 'shield-check' : 'shield-alert');
-                        if (window.lucide) lucide.createIcons({ nodes: [icon] });
-                    }
-                    badge.childNodes[badge.childNodes.length - 1].textContent =
-                        ' ' + (wantActive ? 'ACTIVE' : 'DISABLED');
-                }
-            }
-        })
-        .catch(() => {
-            row.classList.remove('syncing-row');
-            checkbox.checked = !checkbox.checked;
-            alert('A system error occurred.');
-        });
+        if (sv) sv.style.display = (tab !== 'registrations') ? '' : 'none';
     }
 
     /* ── Personnel Filter ── */
@@ -1143,149 +671,6 @@
         });
     }
 
-    /* ── Delegation Toggle (AJAX) ── */
-    function toggleDelegationState(checkbox) {
-        const row = checkbox.closest('.m-row');
-        const userId = row.getAttribute('data-user-id');
-        const isChecked = checkbox.checked;
-        
-        // Temporarily disable checkboxes during sync
-        const allSwitches = document.querySelectorAll('.delegation-toggle-switch');
-        allSwitches.forEach(s => s.disabled = true);
-        row.classList.add('syncing-row');
-
-        const delegatedValue = isChecked ? userId : '';
-
-        // Prepare request
-        fetch('{{ route("admin.settings.update", [], false) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ delegated_approver_id: delegatedValue })
-        })
-        .then(res => {
-            allSwitches.forEach(s => s.disabled = false);
-            row.classList.remove('syncing-row');
-
-            if (res.ok) {
-                // Reset all other switches
-                allSwitches.forEach(s => {
-                    const otherRow = s.closest('.m-row');
-                    const otherLabel = otherRow.querySelector('.toggle-text .t-main');
-                    const otherBadge = otherRow.querySelector('.col-stat .badge-status');
-                    
-                    if (s !== checkbox) {
-                        s.checked = false;
-                        if (otherLabel) otherLabel.textContent = 'Inactive';
-                        if (otherBadge) {
-                            otherBadge.className = 'badge-status revoked';
-                            otherBadge.innerHTML = '<i data-lucide="shield-alert"></i> STANDBY';
-                        }
-                    } else {
-                        s.checked = isChecked;
-                        if (otherLabel) otherLabel.textContent = isChecked ? 'Active' : 'Inactive';
-                        if (otherBadge) {
-                            otherBadge.className = isChecked ? 'badge-status authorized' : 'badge-status revoked';
-                            otherBadge.innerHTML = isChecked 
-                                ? '<i data-lucide="shield-check"></i> DELEGATED' 
-                                : '<i data-lucide="shield-alert"></i> STANDBY';
-                        }
-                    }
-                });
-
-                if (window.lucide) lucide.createIcons();
-
-                const msg = isChecked ? 'Authority delegated successfully.' : 'Delegation authority revoked successfully.';
-                if (typeof showToast === 'function') {
-                    showToast(msg, 'success');
-                } else {
-                    Swal.fire({ icon: 'success', title: 'Success', text: msg, confirmButtonColor: '#059669' });
-                }
-            } else {
-                checkbox.checked = !isChecked;
-                alert('A system error occurred while updating delegation.');
-            }
-        })
-        .catch(() => {
-            allSwitches.forEach(s => s.disabled = false);
-            row.classList.remove('syncing-row');
-            checkbox.checked = !isChecked;
-            alert('A network error occurred.');
-        });
-    }
-
-    function generateDelegationOtp() {
-        const revocationInput = document.getElementById('delegation-revocation-time');
-        const revocationTime = revocationInput ? revocationInput.value : '';
-
-        fetch('{{ route("admin.delegation.generate-otp", [], false) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ revocation_time: revocationTime })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('otp-display-container').style.display = 'block';
-                document.getElementById('active-otp-code').textContent = data.otp;
-                
-                // Update expiry display text dynamically
-                const expiryEl = document.getElementById('otp-expiry-time');
-                if (expiryEl) {
-                    if (data.expiry_text === 'Active (Never Expires)') {
-                        expiryEl.innerHTML = 'Active (Never Expires)';
-                        expiryEl.style.color = '#059669';
-                    } else {
-                        expiryEl.innerHTML = 'Revocation Scheduled: <span style="color: #ef4444;">' + data.expiry_text + '</span>';
-                    }
-                }
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'OTP Generated',
-                    text: 'The delegation OTP code is ' + data.otp + '. Give this code to any Store Officer to claim delegation. The code can only be used once.',
-                    confirmButtonColor: '#059669'
-                });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#059669' });
-            }
-        })
-        .catch(() => {
-            Swal.fire({ icon: 'error', title: 'System Error', text: 'Failed to generate delegation OTP.', confirmButtonColor: '#059669' });
-        });
-    }
-
-    function revokeDelegationOtp() {
-        fetch('{{ route("admin.delegation.revoke-otp", [], false) }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('otp-display-container').style.display = 'none';
-                Swal.fire({
-                    icon: 'success',
-                    title: 'OTP Revoked',
-                    text: 'Delegation OTP has been revoked successfully.',
-                    confirmButtonColor: '#059669'
-                }).then(() => {
-                    window.location.reload();
-                });
-            }
-        });
-    }
-
     /* ── Decline Confirmation ── */
     function confirmDecline(btn) {
         const form = btn.closest('.decline-form');
@@ -1322,26 +707,6 @@
     document.addEventListener('submit', async function(e) {
         const form = e.target;
         if (form.action && (form.action.includes('approve-registration') || form.action.includes('reject-registration'))) {
-            const isApprove = form.action.includes('approve-registration');
-            
-            if (isApprove) {
-                const roleSelect = form.querySelector('select[name="role"]');
-                if (!roleSelect || !roleSelect.value) {
-                    e.preventDefault();
-                    if (typeof showToast === 'function') {
-                        showToast('Alert', 'Please select a role to assign before approving.', 'error');
-                    } else {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Role Required',
-                            text: 'Please select a role to assign before approving.',
-                            confirmButtonColor: '#059669'
-                        });
-                    }
-                    return;
-                }
-            }
-
             e.preventDefault();
 
             // Disable buttons inside the card to prevent double clicks
@@ -1360,37 +725,22 @@
                     }
                 });
 
-                if (!response.ok) {
-                    let errMsg = 'Server validation or processing failed.';
-                    try {
-                        const errData = await response.json();
-                        if (errData && errData.errors && errData.errors.role) {
-                            errMsg = errData.errors.role[0];
-                        } else if (errData && errData.message) {
-                            errMsg = errData.message;
-                        }
-                    } catch (e) {}
-                    throw new Error(errMsg);
-                }
-
                 const html = await response.text();
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
-
+                // Swap out the Requisitioners matrix body
+                const newReqs = doc.getElementById('requisitionersBody');
+                const currentReqs = document.getElementById('requisitionersBody');
+                if (newReqs && currentReqs) {
+                    currentReqs.innerHTML = newReqs.innerHTML;
+                }
 
                 // Swap out the Dept Heads matrix body
                 const newDept = doc.getElementById('deptHeadsBody');
                 const currentDept = document.getElementById('deptHeadsBody');
                 if (newDept && currentDept) {
                     currentDept.innerHTML = newDept.innerHTML;
-                }
-
-                // Swap out the Director Generals matrix body
-                const newDG = doc.getElementById('directorGeneralsBody');
-                const currentDG = document.getElementById('directorGeneralsBody');
-                if (newDG && currentDG) {
-                    currentDG.innerHTML = newDG.innerHTML;
                 }
 
                 // Swap out the pending registrations list
@@ -1431,20 +781,19 @@
                         icon: 'success',
                         title: 'Success',
                         text: message,
-                        confirmButtonColor: '#059669'
+                        confirmButtonColor: '#4f46e5'
                     });
                 }
             } catch (err) {
                 console.error(err);
-                const errMsg = err.message || 'An error occurred while processing the request.';
                 if (typeof showToast === 'function') {
-                    showToast('Error', errMsg, 'error');
+                    showToast('Error', 'An error occurred while processing the request.', 'error');
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'System Error',
-                        text: errMsg,
-                        confirmButtonColor: '#059669'
+                        text: 'An error occurred while processing the request.',
+                        confirmButtonColor: '#4f46e5'
                     });
                 }
                 if (buttons) {
@@ -1455,12 +804,12 @@
     });
 
     function pollPendingRegistrations() {
-        fetch('{{ route("api.admin.pending-registrations", [], false) }}', {
-            credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' }
-        })
+        fetch('{{ route("api.admin.pending-registrations", [], false) }}')
             .then(res => {
-                if (res.status === 200) return res.json();
+                const contentType = res.headers.get("content-type");
+                if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
+                    return res.json();
+                }
                 return null;
             })
             .then(data => {
@@ -1474,15 +823,7 @@
                     const newIds = Array.from(temp.querySelectorAll('.reg-card')).map(card => card.id).join(',');
                     
                     if (currentIds !== newIds) {
-                        const pagControls = panel.querySelector('.table-pagination');
                         panel.innerHTML = data.html;
-                        if (pagControls) {
-                            panel.appendChild(pagControls);
-                        }
-                        if (window.tablePaginators) {
-                            const p = window.tablePaginators.find(x => x.panelId === 'panel-registrations');
-                            if (p) p.refresh();
-                        }
                         if (window.lucide) {
                             lucide.createIcons();
                         }
@@ -1512,364 +853,20 @@
             .catch(() => {});
     }
 
-    function pollStoreOfficers() {
-        // Only run when Store Officers tab is active
-        const tab = document.getElementById('tab-store-officers');
-        if (!tab || !tab.classList.contains('active')) return;
-
-        // Skip if any row is currently in a save/sync state
-        if (document.querySelector('.syncing-row')) return;
-
-        fetch('{{ route("api.admin.store-officers", [], false) }}', {
-            credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' }
-        })
-        .then(res => {
-            if (res.status === 200) return res.json();
-            return null;
-        })
-        .then(data => {
-            if (!data || !data.success || !Array.isArray(data.users)) return;
-
-            const body = document.getElementById('storeOfficersBody');
-            if (!body) return;
-
-            // Build a lookup of incoming users by id
-            const incoming = {};
-            data.users.forEach(u => { incoming[u.id] = u; });
-
-            // ── 1. Update / remove existing rows ──────────────────────
-            const existingRows = body.querySelectorAll('.m-row[data-user-id]');
-            const seenIds = new Set();
-
-            existingRows.forEach(row => {
-                const id = parseInt(row.dataset.userId, 10);
-                seenIds.add(id);
-
-                if (!incoming[id]) {
-                    // User was removed — fade out and delete
-                    row.style.transition = 'opacity 0.4s, max-height 0.4s';
-                    row.style.opacity = '0';
-                    row.style.overflow = 'hidden';
-                    row.style.maxHeight = row.offsetHeight + 'px';
-                    setTimeout(() => {
-                        row.style.maxHeight = '0';
-                        setTimeout(() => row.remove(), 400);
-                    }, 10);
-                    return;
-                }
-
-                const u = incoming[id];
-
-                // Online pulse
-                const pulse = row.querySelector('.m-pulse');
-                if (pulse) {
-                    const shouldBeOnline = u.is_active;
-                    const isOnline = pulse.classList.contains('online');
-                    if (shouldBeOnline !== isOnline) {
-                        pulse.classList.toggle('online', shouldBeOnline);
-                        pulse.classList.toggle('offline', !shouldBeOnline);
-                    }
-                }
-
-                // Status badge
-                const badge = row.querySelector('.badge-status');
-                if (badge) {
-                    const wantActive = u.is_active;
-                    const hasActive = badge.classList.contains('authorized');
-                    if (wantActive !== hasActive) {
-                        badge.classList.toggle('authorized', wantActive);
-                        badge.classList.toggle('revoked', !wantActive);
-                        const icon = badge.querySelector('i[data-lucide]');
-                        if (icon) {
-                            icon.setAttribute('data-lucide', wantActive ? 'shield-check' : 'shield-alert');
-                            if (window.lucide) lucide.createIcons({ nodes: [icon] });
-                        }
-                        badge.childNodes[badge.childNodes.length - 1].textContent =
-                            ' ' + (wantActive ? 'AUTHORIZED' : 'SUSPENDED');
-                    }
-                }
-
-                // Permission checkboxes (only if not actively being toggled)
-                const permMap = {
-                    'can_add_inventory':     0,
-                    'can_operate_logistics': 1,
-                    'can_generate_reports':  2,
-                    'can_verify_stock':      3,
-                    'can_make_requisition':  4,
-                };
-                const checkboxes = row.querySelectorAll('.normal-toggle input[type="checkbox"]');
-                Object.entries(permMap).forEach(([key, idx]) => {
-                    const cb = checkboxes[idx];
-                    if (cb && !cb.disabled && document.activeElement !== cb) {
-                        const should = u[key];
-                        if (cb.checked !== should) {
-                            cb.checked = should;
-                            // Silently update the adjacent label text if present
-                            const tMain = cb.closest('.toggle-group-wrap')?.querySelector('.t-main');
-                            if (tMain && tMain.textContent.trim() !== '') {
-                                // Only update non-empty t-main labels (Add/Edit Items etc. have empty labels)
-                            }
-                        }
-                    }
-                });
-            });
-
-            // ── 2. Add brand-new rows ──────────────────────────────────
-            data.users.forEach(u => {
-                if (seenIds.has(u.id)) return; // already exists
-
-                const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>`;
-                const avatarSrc = u.avatar || defaultAvatar;
-
-                const roleLabelMap = {
-                    'Main Admin': 'Head of Admin(Authorizer)',
-                    'Sub Main Admin': 'Delegators(Authorizer)',
-                    'Officer':    'Store Officer',
-                    'Dept Head HR': 'Dept Head HR',
-                    'Head of Welfare': 'Head of Welfare',
-                };
-                const roleLabel = roleLabelMap[u.role] || u.role;
-
-                const deptBadge = u.department
-                    ? `<span class="badge-dept" style="font-size:0.65rem;background:#f0fdf4;color:#065f46;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(6, 95, 70,0.1);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${u.department}">${u.department}</span>`
-                    : '';
-
-                const perms = [
-                    ['can_add_inventory',     'Add/Edit Items',     'Toggle Inventory Entry'],
-                    ['can_operate_logistics', 'Confirm Collection', 'Toggle Logistics Operations'],
-                    ['can_generate_reports',  'View Reports',       'Toggle Analytics Access'],
-                    ['can_verify_stock',      'Stock Checks',       'Toggle Stock Verification'],
-                    ['can_make_requisition',  'Place Requisition',  'Allow this store officer to place requisition requests'],
-                ];
-
-                const toggleCols = perms.map(([key, label, title]) => `
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="${title}">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this,'${key}')" ${u[key] ? 'checked' : ''}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">${label}</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>`).join('');
-
-                const html = `
-                <div class="m-row" data-user-id="${u.id}" style="opacity:0;transition:opacity 0.4s;">
-                    <div class="col-id">
-                        <div class="m-avatar">
-                            <img src="${avatarSrc}" alt="">
-                            <span class="m-pulse ${u.is_active ? 'online' : 'offline'}"></span>
-                        </div>
-                        <div class="m-identity">
-                            <h4 class="m-name">${u.name}</h4>
-                            <div class="m-handle" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">
-                                <span>@ ${u.username}</span>
-                                <span class="badge-role" style="font-size:0.65rem;background:#eef2ff;color:#065f46;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(67,56,202,0.1);">${roleLabel}</span>
-                                ${deptBadge}
-                            </div>
-                        </div>
-                    </div>
-                    ${toggleCols}
-                    <div class="col-stat">
-                        <div class="badge-status ${u.is_active ? 'authorized' : 'revoked'}">
-                            <i data-lucide="${u.is_active ? 'shield-check' : 'shield-alert'}"></i>
-                            ${u.is_active ? 'AUTHORIZED' : 'SUSPENDED'}
-                        </div>
-                    </div>
-                </div>`;
-
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = html.trim();
-                const newRow = wrapper.firstElementChild;
-                body.appendChild(newRow);
-                // Trigger fade-in
-                requestAnimationFrame(() => { newRow.style.opacity = '1'; });
-                if (window.lucide) lucide.createIcons({ nodes: [newRow] });
-            });
-
-            // ── 3. Handle empty state ──────────────────────────────────
-            const hasRows = body.querySelectorAll('.m-row[data-user-id]').length > 0;
-            const emptyEl = body.querySelector('.m-empty-state');
-            if (!hasRows && !emptyEl) {
-                body.innerHTML = '<div class="m-empty-state" style="padding:3rem;text-align:center;color:#94a3b8;font-weight:600;background:white;">No store officers registered.</div>';
-            } else if (hasRows && emptyEl) {
-                emptyEl.remove();
-            }
-
-            if (window.tablePaginators) {
-                const p = window.tablePaginators.find(x => x.panelId === 'panel-store-officers');
-                if (p) p.refresh();
-            }
-        })
-        .catch(() => {});
-    }
-
-    // Start polling every 15 seconds
-    let _permsPollPaused = document.hidden;
-    document.addEventListener('visibilitychange', () => { _permsPollPaused = document.hidden; });
-    setInterval(() => { if (!_permsPollPaused) pollPendingRegistrations(); }, 15000);
-    setInterval(() => { if (!_permsPollPaused) pollStoreOfficers(); }, 15000);
+    // Start polling every 10 seconds
+    setInterval(pollPendingRegistrations, 10000);
 
     document.addEventListener('DOMContentLoaded', () => {
-        // General Pagination Helper for all Tabs
-        window.tablePaginators = [];
-        function initializeTablePagination(panelId, rowSelector, rowsPerPage) {
-            const panel = document.getElementById(panelId);
-            if (!panel) return;
-
-            const controlsWrapper = panel.querySelector('.table-pagination');
-            if (!controlsWrapper) return;
-
-            const startSpan = controlsWrapper.querySelector('.pag-start');
-            const endSpan = controlsWrapper.querySelector('.pag-end');
-            const totalSpan = controlsWrapper.querySelector('.pag-total');
-            const buttonsContainer = controlsWrapper.querySelector('.pag-buttons');
-
-            let currentPage = 1;
-
-            function refreshPagination() {
-                let rows = Array.from(panel.querySelectorAll(rowSelector));
-                if (panelId === 'panel-role-history') {
-                    rows = Array.from(panel.querySelectorAll('tbody tr'));
-                }
-
-                const totalRows = rows.length;
-                const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-                if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
-
-                const start = (currentPage - 1) * rowsPerPage;
-                const end = Math.min(start + rowsPerPage, totalRows);
-
-                rows.forEach((row, idx) => {
-                    row.style.display = (idx >= start && idx < end) ? '' : 'none';
-                });
-
-                if (startSpan) startSpan.textContent = totalRows === 0 ? 0 : start + 1;
-                if (endSpan) endSpan.textContent = end;
-                if (totalSpan) totalSpan.textContent = totalRows;
-
-                if (buttonsContainer) {
-                    buttonsContainer.innerHTML = '';
-                    controlsWrapper.style.display = 'flex';
-                    if (totalPages <= 1) {
-                        buttonsContainer.style.display = 'none';
-                        return;
-                    }
-                    buttonsContainer.style.display = 'flex';
-
-                    // Prev Button
-                    const prevBtn = document.createElement('button');
-                    prevBtn.type = 'button';
-                    prevBtn.style.padding = '0.5rem 1rem';
-                    prevBtn.style.fontSize = '0.8rem';
-                    prevBtn.style.fontWeight = '700';
-                    prevBtn.style.borderRadius = '10px';
-                    prevBtn.style.background = currentPage === 1 ? '#f1f5f9' : 'white';
-                    prevBtn.style.color = currentPage === 1 ? '#94a3b8' : '#475569';
-                    prevBtn.style.border = '1.5px solid #cbd5e1';
-                    prevBtn.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
-                    prevBtn.style.transition = 'all 0.2s';
-                    prevBtn.disabled = currentPage === 1;
-                    prevBtn.innerHTML = '&larr; Prev';
-                    prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; refreshPagination(); } };
-                    buttonsContainer.appendChild(prevBtn);
-
-                    // Numbers
-                    let startPage = Math.max(1, currentPage - 2);
-                    let endPage = Math.min(totalPages, startPage + 4);
-                    if (endPage - startPage < 4) {
-                        startPage = Math.max(1, endPage - 4);
-                    }
-
-                    for (let i = startPage; i <= endPage; i++) {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.style.width = '36px';
-                        btn.style.height = '36px';
-                        btn.style.display = 'inline-flex';
-                        btn.style.alignItems = 'center';
-                        btn.style.justifyContent = 'center';
-                        btn.style.borderRadius = '10px';
-                        btn.style.fontSize = '0.85rem';
-                        btn.style.fontWeight = '800';
-                        btn.style.cursor = 'pointer';
-                        btn.style.transition = 'all 0.2s';
-                        
-                        if (i === currentPage) {
-                            btn.style.background = 'var(--primary)';
-                            btn.style.color = 'white';
-                            btn.style.border = '1.5px solid var(--primary)';
-                        } else {
-                            btn.style.background = 'white';
-                            btn.style.color = '#475569';
-                            btn.style.border = '1.5px solid #cbd5e1';
-                        }
-
-                        btn.onclick = () => { currentPage = i; refreshPagination(); };
-                        btn.textContent = i;
-                        buttonsContainer.appendChild(btn);
-                    }
-
-                    // Next Button
-                    const nextBtn = document.createElement('button');
-                    nextBtn.type = 'button';
-                    nextBtn.style.padding = '0.5rem 1rem';
-                    nextBtn.style.fontSize = '0.8rem';
-                    nextBtn.style.fontWeight = '700';
-                    nextBtn.style.borderRadius = '10px';
-                    nextBtn.style.background = currentPage === totalPages ? '#f1f5f9' : 'white';
-                    nextBtn.style.color = currentPage === totalPages ? '#94a3b8' : '#475569';
-                    nextBtn.style.border = '1.5px solid #cbd5e1';
-                    nextBtn.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
-                    nextBtn.style.transition = 'all 0.2s';
-                    nextBtn.disabled = currentPage === totalPages;
-                    nextBtn.innerHTML = 'Next &rarr;';
-                    nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; refreshPagination(); } };
-                    buttonsContainer.appendChild(nextBtn);
-                }
-            }
-
-            window.tablePaginators.push({
-                panelId: panelId,
-                refresh: refreshPagination
-            });
-
-            refreshPagination();
-        }
-
-        // Initialize pagination on all panels
-        initializeTablePagination('panel-store-officers', '.m-row', 10);
-        initializeTablePagination('panel-departments', '.m-row', 10);
-        initializeTablePagination('panel-dept-heads', '.m-row', 10);
-        initializeTablePagination('panel-director-generals', '.m-row', 10);
-        initializeTablePagination('panel-registrations', '.reg-card', 10);
-        initializeTablePagination('panel-delegation', '.m-row', 10);
-        initializeTablePagination('panel-role-history', 'tr', 10);
-
-
         if (window.lucide) lucide.createIcons();
 
         // Auto-open tab from server session (after approve/decline redirect)
         const serverTab = '{{ session('open_tab') }}';
-        const savedTab = localStorage.getItem('active_permissions_tab');
-        
-        if (serverTab) {
-            switchTab(serverTab);
-        } else if (savedTab && document.getElementById('tab-' + savedTab)) {
-            switchTab(savedTab);
+        if (serverTab === 'registrations') {
+            switchTab('registrations');
         } else {
             // Fallback: URL hash
             const hash = window.location.hash;
-            if (hash === '#registrations') {
-                switchTab('registrations');
-            } else {
-                switchTab('store-officers');
-            }
+            if (hash === '#registrations') switchTab('registrations');
         }
 
         // Show server-side flash messages as toasts
@@ -1886,4 +883,3 @@
     });
 </script>
 @endsection
-

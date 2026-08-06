@@ -3604,18 +3604,46 @@
             let totalExpected = 0;
 
             const itemsHtml = (batch.items || []).map(i => {
-                const qtyReceived = Number(i.qty || 0);
+                const qtyVal = Number(i.qty || 0);
                 const stockBal = Number(i.stock_balance || 0);
                 const variance = Number(i.variance || 0);
                 const shortfall = variance < 0 ? Math.abs(variance) : 0;
-                const expectedQty = qtyReceived + shortfall;
 
-                totalReceived += qtyReceived;
-                totalShortfall += shortfall;
-                totalExpected += expectedQty;
+                totalReceived += isPartialDelivery ? stockBal : qtyVal;
+                totalShortfall += isPartialDelivery ? shortfall : 0;
+                totalExpected += qtyVal;
 
-                const hasShortfall = shortfall > 0;
+                const hasShortfall = isPartialDelivery && shortfall > 0;
                 const storeLocation = i.store_location || 'Store A';
+
+                let metricsGridHtml = '';
+                if (isPartialDelivery) {
+                    metricsGridHtml = `
+                        <div>
+                            <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Received Qty</div>
+                            <div style="font-size: 1.1rem; font-weight: 900; color: #059669; margin-top: 2px;">${stockBal.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Expected Invoice Qty</div>
+                            <div style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin-top: 2px;">${qtyVal.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Outstanding Deficit</div>
+                            <div style="font-size: 1.1rem; font-weight: 900; color: #ef4444; margin-top: 2px;">-${shortfall.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                        </div>
+                    `;
+                } else {
+                    metricsGridHtml = `
+                        <div>
+                            <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Received Qty</div>
+                            <div style="font-size: 1.1rem; font-weight: 900; color: #059669; margin-top: 2px;">${qtyVal.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Live Stock Balance</div>
+                            <div style="font-size: 1.1rem; font-weight: 900; color: var(--primary); margin-top: 2px;">${stockBal.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
+                        </div>
+                    `;
+                }
 
                 return `
                     <div style="background: var(--bg-card); border-radius: 14px; padding: 1.1rem 1.25rem; margin-bottom: 0.85rem; border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
@@ -3638,31 +3666,16 @@
                                 <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.72rem; font-weight: 850; padding: 3px 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 4px;">
                                     <i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i> Shortfall: ${shortfall} ${i.unit || ''}
                                 </span>
-                            ` : `
+                            ` : (isPartialDelivery ? `
                                 <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.72rem; font-weight: 850; padding: 3px 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 4px;">
                                     <i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Fully Received
                                 </span>
-                            `}
+                            ` : '')}
                         </div>
 
                         <!-- Quantities Metrics Grid -->
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; background: var(--bg-main); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div>
-                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Received Qty</div>
-                                <div style="font-size: 1.1rem; font-weight: 900; color: #059669; margin-top: 2px;">${qtyReceived.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Expected Invoice Qty</div>
-                                <div style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin-top: 2px;">${expectedQty.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Outstanding Deficit</div>
-                                <div style="font-size: 1.1rem; font-weight: 900; color: ${hasShortfall ? '#ef4444' : '#059669'}; margin-top: 2px;">${hasShortfall ? '-' + shortfall.toLocaleString() : '0'} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Live Stock Balance</div>
-                                <div style="font-size: 1.1rem; font-weight: 900; color: var(--primary); margin-top: 2px;">${stockBal.toLocaleString()} <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${i.unit || ''}</span></div>
-                            </div>
+                            ${metricsGridHtml}
                         </div>
 
                         ${(i.remarks || i.discrepancy_explanation) ? `

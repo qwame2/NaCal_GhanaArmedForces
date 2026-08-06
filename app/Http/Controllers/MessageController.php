@@ -12,81 +12,21 @@ class MessageController extends Controller
     public function fetchMessages($userId)
     {
         $authId = auth()->id();
-        $authUser = auth()->user();
         
-        $messages = Message::with('editRequest')->where('is_archived', false)->where(function($q) use ($authId, $userId, $authUser) {
-            // Standard peer-to-peer message query
-            $q->where(function($sq) use ($authId, $userId) {
-                $sq->where('sender_id', $authId)->where('receiver_id', $userId);
-            })->orWhere(function($sq) use ($authId, $userId) {
-                $sq->where('sender_id', $userId)->where('receiver_id', $authId);
-            });
-
-            // ENHANCED COLLABORATION: If viewer is an administrator or delegated approver, also show automated 
-            // messages (SRA/Edit requests) sent from this user to ANY administrator/approver.
-            // This ensures Admin B/Delegate can see and approve requests originally sent to Admin A.
-            if ($authUser && ($authUser->is_admin || $authUser->isDelegatedApprover())) {
-                $adminIds = User::getApproversQuery()->where('registration_status', 'approved')->pluck('id')->toArray();
-                
-                $q->orWhere(function($sq) use ($userId, $adminIds) {
-                    $sq->where('sender_id', $userId)
-                       ->where('is_automated', true)
-                       ->whereIn('receiver_id', $adminIds);
+        $messages = Message::where('is_archived', false)
+            ->where('is_automated', false)
+            ->where(function($q) use ($authId, $userId) {
+                $q->where(function($sq) use ($authId, $userId) {
+                    $sq->where('sender_id', $authId)->where('receiver_id', $userId);
+                })->orWhere(function($sq) use ($authId, $userId) {
+                    $sq->where('sender_id', $userId)->where('receiver_id', $authId);
                 });
-                
-                // Also show automated responses from ANY admin/approver to this user
-                $q->orWhere(function($sq) use ($userId, $adminIds) {
-                    $sq->where('receiver_id', $userId)
-                       ->where('is_automated', true)
-                       ->whereIn('sender_id', $adminIds);
-                });
-            }
-        });
-
-        // Robustly filter out automated messages from the sender's perspective
-        // ENHANCED: Admins should see ALL automated messages in the thread for collaborative oversight
-        $messages->where(function($q) use ($authId, $authUser) {
-            $q->where('is_automated', false)
-              ->orWhere('receiver_id', $authId); // Always show if you are the intended recipient
-            
-            if ($authUser && ($authUser->is_admin || $authUser->isDelegatedApprover())) {
-                $q->orWhere('is_automated', true);
-            }
-        });
-
-        $messages = $messages->orderBy('created_at', 'asc')->get();
-
-        // Deduplicate automated messages by edit_request_id to prevent multi-admin duplication in the UI
-        $groupedAutomated = [];
-        $otherMessages = [];
-
-        foreach ($messages as $msg) {
-            if ($msg->is_automated && $msg->edit_request_id) {
-                $groupedAutomated[$msg->edit_request_id][] = $msg;
-            } else {
-                $otherMessages[] = $msg;
-            }
-        }
-
-        $deduplicatedAutomated = [];
-        foreach ($groupedAutomated as $requestId => $group) {
-            $preferred = null;
-            foreach ($group as $msg) {
-                if ($msg->receiver_id == $authId) {
-                    $preferred = $msg;
-                    break;
-                }
-            }
-            $deduplicatedAutomated[] = $preferred ?: $group[0];
-        }
-
-        $finalMessages = array_merge($otherMessages, $deduplicatedAutomated);
-        usort($finalMessages, function ($a, $b) {
-            return strcmp($a->created_at, $b->created_at) ?: ($a->id <=> $b->id);
-        });
+            })
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         if (ob_get_length()) ob_clean();
-        return response()->json($finalMessages);
+        return response()->json($messages);
     }
 
     public function sendMessage(Request $request)

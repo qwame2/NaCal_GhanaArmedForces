@@ -504,7 +504,7 @@
             </span>
             <h2>Stock Receipts Visualization</h2>
         </div>
-        <div class="vis-sub-label green-label">â— STOCK RECEIPTS â€” TOP {{ $receivedDistribution->count() }} ITEMS</div>
+        <div class="vis-sub-label green-label">&bull; STOCK RECEIPTS &mdash; TOP {{ $receivedDistribution->count() }} ITEMS</div>
         <div id="received-bar-chart"></div>
     </div>
     @endif
@@ -518,7 +518,7 @@
             </span>
             <h2>Issuance Visualization</h2>
         </div>
-        <div class="vis-sub-label orange-label">â— ISSUANCE â€” TOP {{ $issuedDistribution->count() }} ITEMS</div>
+        <div class="vis-sub-label orange-label">&bull; ISSUANCE &mdash; TOP {{ $issuedDistribution->count() }} ITEMS</div>
         <div id="issued-bar-chart"></div>
     </div>
     @endif

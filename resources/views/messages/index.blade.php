@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
 <div class="animate-slide-up" style="height: calc(100vh - 180px); display: flex; gap: 2rem; padding: 1.5rem;">
@@ -31,7 +31,7 @@
                     @else
                         <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);">{{ substr($admin->name, 0, 1) }}</div>
                     @endif
-                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $admin->is_online ? '#059669' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
+                    <div class="online-dot" style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $admin->is_online ? '#059669' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; min-width: 0;">
@@ -39,7 +39,7 @@
                         <div class="unread-badge" id="badge-{{ $admin->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 900; min-width: 18px; height: 18px; border-radius: 9px; align-items: center; justify-content: center; padding: 0 5px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 1.5px solid white; flex-shrink: 0;">0</div>
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-                        <span style="color: var(--primary);">â—</span> Command Center
+                        <span style="color: var(--primary);">&bull;</span> Command Center
                     </div>
                 </div>
             </div>
@@ -64,7 +64,7 @@
                     @else
                         <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-main); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; border: 1px solid var(--border-color);">{{ substr($colleague->name, 0, 1) }}</div>
                     @endif
-                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $colleague->is_online ? '#059669' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
+                    <div class="online-dot" style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $colleague->is_online ? '#059669' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; min-width: 0;">
@@ -294,7 +294,14 @@
             el.classList.remove('active');
         });
         const activeEl = document.getElementById(`user-${userId}`);
-        if (activeEl) activeEl.classList.add('active');
+        if (activeEl) {
+            activeEl.classList.add('active');
+            const userDot = activeEl.querySelector('.online-dot');
+            const statusDot = document.getElementById('statusDot');
+            if (userDot && statusDot) {
+                statusDot.style.background = userDot.style.backgroundColor || userDot.style.background;
+            }
+        }
 
         fetchMessages();
 
@@ -562,7 +569,7 @@
                 onlineStatuses = statuses;
                 Object.keys(statuses).forEach(userId => {
                     const isOnline = statuses[userId];
-                    const dot = document.querySelector(`#user-${userId} div[style*="border-radius: 50%"]`);
+                    const dot = document.querySelector(`#user-${userId} .online-dot`);
                     if (dot) {
                         dot.style.background = isOnline ? '#059669' : '#94a3b8';
                     }

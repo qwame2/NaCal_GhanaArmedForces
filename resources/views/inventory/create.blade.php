@@ -1085,7 +1085,7 @@ jQuery(document).ready(function($) {
                                         <i data-lucide="check-circle" style="width: 12px; color: #059669;"></i>
                                         <span style="color: #059669; font-weight: 800;">Physically Received Qty</span> <span style="color: #ef4444; margin-left: 2px;">*</span>
                                     </label>
-                                    <input type="number" class="row-stock-balance" value="0" style="border-color: #059669; width: 100%;" required>
+                                    <input type="number" class="row-stock-balance" placeholder="0" style="border-color: #059669; width: 100%;" required>
                                 </div>
                             </div>
                         </div>
@@ -1318,7 +1318,10 @@ jQuery(document).ready(function($) {
                 };
 
                 if (selectedDesc) {
-                    stockInput.val(qtyInput.val() || 0);
+                    const status = $('#supplierStatusSelect').val();
+                    if (status !== 'Partial Delivery') {
+                        stockInput.val(qtyInput.val() || 0);
+                    }
                     qtyInput.removeAttr('placeholder');
                     varianceInput.attr('placeholder', '0');
                     updateStatsPanel();

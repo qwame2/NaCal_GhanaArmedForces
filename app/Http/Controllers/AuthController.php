@@ -470,16 +470,18 @@ class AuthController extends Controller
                 // Clean up stale admin "is_online" statuses by checking database session activity.
                 // If an admin has no session activity within the last 5 minutes, reset their status to offline.
                 try {
-                    $activeSessionUserIds = \Illuminate\Support\Facades\DB::table('sessions')
-                        ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
-                        ->whereNotNull('user_id')
-                        ->pluck('user_id')
-                        ->toArray();
+                    if (config('session.driver') === 'database') {
+                        $activeSessionUserIds = \Illuminate\Support\Facades\DB::table('sessions')
+                            ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
+                            ->whereNotNull('user_id')
+                            ->pluck('user_id')
+                            ->toArray();
 
-                    User::where('is_admin', true)
-                        ->where('is_online', true)
-                        ->whereNotIn('id', $activeSessionUserIds)
-                        ->update(['is_online' => false]);
+                        User::where('is_admin', true)
+                            ->where('is_online', true)
+                            ->whereNotIn('id', $activeSessionUserIds)
+                            ->update(['is_online' => false]);
+                    }
                 } catch (\Exception $e) {
                     // Fallback in case the sessions table is not available or configured
                 }

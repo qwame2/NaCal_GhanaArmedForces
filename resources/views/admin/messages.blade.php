@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Communication Hub')
 
@@ -33,7 +33,7 @@
                     @else
                     <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);">{{ substr($user->name, 0, 1) }}</div>
                     @endif
-                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $user->is_online ? '#059669' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
+                    <div class="online-dot" style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $user->is_online ? '#059669' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; min-width: 0;">
@@ -603,7 +603,14 @@
 
         document.querySelectorAll('.network-item').forEach(el => el.classList.remove('active'));
         const activeEl = document.getElementById(`user-${userId}`);
-        if (activeEl) activeEl.classList.add('active');
+        if (activeEl) {
+            activeEl.classList.add('active');
+            const userDot = activeEl.querySelector('.online-dot');
+            const statusDot = document.getElementById('statusDot');
+            if (userDot && statusDot) {
+                statusDot.style.background = userDot.style.backgroundColor || userDot.style.background;
+            }
+        }
 
         fetchMessages();
 
@@ -863,7 +870,7 @@
                 onlineStatuses = statuses;
                 Object.keys(statuses).forEach(userId => {
                     const isOnline = statuses[userId];
-                    const dot = document.querySelector(`#user-${userId} div[style*="border-radius: 50%"]`);
+                    const dot = document.querySelector(`#user-${userId} .online-dot`);
                     if (dot) {
                         dot.style.background = isOnline ? '#059669' : '#94a3b8';
                     }

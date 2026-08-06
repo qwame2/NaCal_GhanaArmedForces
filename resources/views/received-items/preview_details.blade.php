@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'SRA Receipt Review & Oversight')
 
@@ -193,12 +193,29 @@
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 30%;">Description</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Store Location</th>
-                            <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">{{ $isDiscrepancy ? 'Received Qty (Actual)' : 'Received Qty' }}</th>
+                            @php
+                                $isPartial = ($batch['supplier_status'] ?? '') === 'Partial Delivery';
+                            @endphp
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">
+                                @if($isPartial)
+                                    Expected / Invoice Qty
+                                @elseif($isDiscrepancy)
+                                    Received Qty (Actual)
+                                @else
+                                    Received Qty
+                                @endif
+                            </th>
                             @if($isDiscrepancy)
                                 <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Book Qty (Ledger)</th>
                                 <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Discrepancy</th>
                             @else
-                                <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Stock Bal.</th>
+                                <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">
+                                    @if($isPartial)
+                                        Physically Received Qty
+                                    @else
+                                        Stock Bal.
+                                    @endif
+                                </th>
                             @endif
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Total System</th>
                             <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 20%;">Remarks</th>
@@ -292,7 +309,7 @@
                                 </td>
                             @else
                                 <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
-                                    {{ number_format(collect($items)->sum('stock_balance')) }} <span style="font-size: 0.7rem; font-weight: 600;">total bal.</span>
+                                    {{ number_format(collect($items)->sum('stock_balance')) }} <span style="font-size: 0.7rem; font-weight: 600;">{{ $isPartial ? 'phys. received' : 'total bal.' }}</span>
                                 </td>
                             @endif
                             <td style="padding: 1rem 1.5rem;"></td>
@@ -319,12 +336,24 @@
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Description</th>
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Store Location</th>
-                                <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Received Qty</th>
+                                <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">
+                                    @if($isPartial)
+                                        Expected / Invoice Qty
+                                    @else
+                                        Received Qty
+                                    @endif
+                                </th>
                                 @if($isDiscrepancy)
                                     <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Book Qty</th>
                                     <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Discrepancy</th>
                                 @else
-                                    <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Stock Bal.</th>
+                                    <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">
+                                        @if($isPartial)
+                                            Physically Received Qty
+                                        @else
+                                            Stock Bal.
+                                        @endif
+                                    </th>
                                 @endif
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Total System</th>
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
