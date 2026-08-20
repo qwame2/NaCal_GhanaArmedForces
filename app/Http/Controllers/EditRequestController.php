@@ -824,11 +824,17 @@ class EditRequestController extends Controller
                         'unit' => $unit
                     ]);
 
-                    $stockItems = \App\Models\InventoryItem::where('description', $cartItem['description'])
+                    $stockItems = \App\Models\InventoryItem::where(\DB::raw('TRIM(description)'), trim($cartItem['description']))
                         ->whereHas('batch', function ($q) use ($cartItem) {
-                            $q->where('ledge_category', $cartItem['category']);
+                            $q->where('supplier_status', '!=', 'System Draft')
+                              ->whereIn('approval_status', ['approved', 'pending_auditor_admin'])
+                              ->where('ledge_category', $cartItem['category']);
                         })
-                        ->where('qty', '>', 0)
+                        ->where(function($query) {
+                            $query->where('qty', '>', 0)
+                                  ->orWhere('stock_balance', '>', 0)
+                                  ->orWhere('book_qty', '>', 0);
+                        })
                         ->orderBy('created_at', 'asc')
                         ->orderBy('id', 'asc')
                         ->get();
@@ -836,15 +842,25 @@ class EditRequestController extends Controller
                     foreach ($stockItems as $inventoryItem) {
                         if ($qtyToIssue <= 0) break;
 
-                        $available = floatval($inventoryItem->qty);
-                        $stockBal = floatval($inventoryItem->stock_balance);
-                        $take = min($available, $qtyToIssue);
+                        $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
+                        $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
+                        
+                        $takeQty = min($availableQty, $qtyToIssue);
+                        $takeStock = min($availableStock, $qtyToIssue);
 
-                        $inventoryItem->qty = $available - $take;
-                        $inventoryItem->stock_balance = $stockBal - $take;
+                        if (!is_null($inventoryItem->book_qty)) {
+                            $availableBook = floatval(str_replace(',', '', $inventoryItem->book_qty));
+                            $takeBook = min($availableBook, $qtyToIssue);
+                            $inventoryItem->book_qty = max(0, $availableBook - $takeBook);
+                        } else {
+                            $takeBook = 0;
+                        }
+
+                        $inventoryItem->qty = max(0, $availableQty - $takeQty);
+                        $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
                         $inventoryItem->save();
 
-                        $qtyToIssue -= $take;
+                        $qtyToIssue -= max($takeQty, $takeStock, $takeBook);
                     }
 
                     if ($qtyToIssue > 0) {
@@ -956,6 +972,9 @@ class EditRequestController extends Controller
                     if ($room > 0) {
                         $refill = min($room, $remainingToRefill);
                         $invItem->qty = $currentQty + $refill;
+                        if (!is_null($invItem->book_qty)) {
+                            $invItem->book_qty = floatval($invItem->book_qty) + $refill;
+                        }
                         $invItem->save();
                         $remainingToRefill -= $refill;
                     }
@@ -966,6 +985,9 @@ class EditRequestController extends Controller
                     $latestItem = $inventoryItems->last();
                     $latestItem->qty = floatval($latestItem->qty) + $remainingToRefill;
                     $latestItem->stock_balance = floatval($latestItem->stock_balance) + $remainingToRefill;
+                    if (!is_null($latestItem->book_qty)) {
+                        $latestItem->book_qty = floatval($latestItem->book_qty) + $remainingToRefill;
+                    }
                     $latestItem->save();
                 }
 
@@ -1282,6 +1304,32 @@ class EditRequestController extends Controller
     }
 
     /**
+     * Display the dedicated Rollback SRA entry page.
+     */
+    public function showRollbackPage(Request $request, $id)
+    {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $editReq = EditRequest::findOrFail($id);
+        $data = json_decode($editReq->payload, true);
+        while (is_string($data)) {
+            $decoded = json_decode($data, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $data = $decoded;
+            } else {
+                break;
+            }
+        }
+        if (!is_array($data)) $data = [];
+
+        $selectedItems = $request->input('selected_items', []);
+
+        return view('edit-requests.rollback_page', compact('editReq', 'data', 'selectedItems'));
+    }
+
+    /**
      * Admin rolls back a pending SRA entry with field-level correction hints.
      * Marks the edit_request as 'rollback', stores flagged fields, and notifies the user.
      */
@@ -1299,15 +1347,30 @@ class EditRequestController extends Controller
 
         $editReq = EditRequest::findOrFail($id);
         $editReq->status         = 'rollback';
+
+        $flaggedFieldsKeys = $request->input('flagged_fields_keys', []);
+        $flaggedInput = $request->input('flagged_fields', []);
+        $flaggedFields = [];
+        
+        if (!empty($flaggedFieldsKeys)) {
+            foreach ($flaggedFieldsKeys as $key) {
+                $note = $flaggedInput[$key] ?? '';
+                $flaggedFields[$key] = !empty(trim($note)) ? trim($note) : 'Please review and correct this field.';
+            }
+        } else {
+            foreach ($flaggedInput as $field => $note) {
+                $flaggedFields[$field] = !empty(trim($note)) ? trim($note) : 'Please review and correct this field.';
+            }
+        }
+
         $editReq->rollback_fields = json_encode([
-            'flagged' => $request->input('flagged_fields', []),
+            'flagged' => $flaggedFields,
             'note'    => $request->input('general_note', ''),
             'items'   => $request->input('flagged_items', []),
         ]);
         $editReq->save();
 
         // Build field list summary for the message
-        $flaggedFields = $request->input('flagged_fields', []);
         $generalNote   = trim($request->input('general_note', ''));
         $fieldListHtml = '';
         if (!empty($flaggedFields)) {
@@ -1462,7 +1525,10 @@ class EditRequestController extends Controller
         ]);
 
         if (ob_get_length()) ob_clean();
-        return response()->json(['success' => true]);
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        return redirect()->route('admin.messages')->with('success', 'Rollback request submitted successfully.');
     }
 
     public function itemEntryIndex(\Illuminate\Http\Request $request)

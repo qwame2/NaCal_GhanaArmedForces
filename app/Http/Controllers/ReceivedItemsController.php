@@ -336,7 +336,7 @@ class ReceivedItemsController extends Controller
         // Shift to querying individual items for a more detailed "Received Items" report
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type', 'inventory_batches.approval_status as batch_approval_status');
+            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type', 'inventory_batches.approval_status as batch_approval_status', 'inventory_batches.auditor_status as batch_auditor_status', 'inventory_batches.admin_status as batch_admin_status');
 
         // Date filter
         if ($request->has('date_from') && $request->date_from) {

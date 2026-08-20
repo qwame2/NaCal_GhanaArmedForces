@@ -2010,5 +2010,126 @@ class ApiTest extends TestCase
         $this->assertEquals('completed', $resetReq->fresh()->status);
         $this->assertNull(session('pending_password_reset_username'));
     }
+
+    public function test_direct_issuance_reduces_stock_balance(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'registration_status' => 'approved']);
+        $storeOfficer = User::factory()->create(['role' => 'Store Officer', 'registration_status' => 'approved']);
+
+        // Create inventory batch and item
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'B',
+            'supplier_name' => 'Test Supplier',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now(),
+            'arrival_date' => now(),
+            'recorded_by' => $storeOfficer->id,
+            'approval_status' => 'approved',
+            'supplier_status' => 'Received',
+        ]);
+
+        $inventoryItem = \App\Models\InventoryItem::create([
+            'batch_id' => $batch->id,
+            'description' => 'Direct Issue Item',
+            'unit' => 'PACK',
+            'stock_balance' => 50,
+            'qty' => 50,
+            'variance' => 0,
+        ]);
+
+        // Submit direct issuance request
+        $response = $this->actingAs($storeOfficer)->postJson('/issue-items/store', [
+            'issuance_date' => now()->format('Y-m-d'),
+            'beneficiary' => 'Test Dept',
+            'authority' => 'Admin auth',
+            'issuance_type' => 'Permanent',
+            'items' => [
+                [
+                    'description' => 'Direct Issue Item',
+                    'category' => 'B',
+                    'unit' => 'PACK',
+                    'qty' => 10,
+                ]
+            ]
+        ]);
+
+        $response->assertStatus(200);
+
+        // Verify edit request was created
+        $editReq = \App\Models\EditRequest::where('request_type', 'issue_submission')->first();
+        $this->assertNotNull($editReq);
+        $this->assertEquals('pending', $editReq->status);
+
+        // Verify stock has not been reduced yet
+        $this->assertEquals(50, (float)$inventoryItem->fresh()->stock_balance);
+
+        // Approve edit request
+        $response = $this->actingAs($admin)->postJson("/edit-requests/{$editReq->id}/process", [
+            'status' => 'approved'
+        ]);
+
+        $response->assertStatus(200);
+
+        // Verify stock has been reduced
+        $this->assertEquals(40, (float)$inventoryItem->fresh()->stock_balance);
+        $this->assertEquals(40, (float)$inventoryItem->fresh()->qty);
+    }
+
+    public function test_issuance_decrements_book_qty(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'registration_status' => 'approved']);
+        $storeOfficer = User::factory()->create(['role' => 'Store Officer', 'registration_status' => 'approved']);
+
+        // Create inventory batch and item with non-null book_qty
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'B',
+            'supplier_name' => 'Test Supplier',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now(),
+            'arrival_date' => now(),
+            'recorded_by' => $storeOfficer->id,
+            'approval_status' => 'approved',
+            'supplier_status' => 'Received',
+        ]);
+
+        $inventoryItem = \App\Models\InventoryItem::create([
+            'batch_id' => $batch->id,
+            'description' => 'Discrepancy Pen',
+            'unit' => 'PACK',
+            'stock_balance' => 20,
+            'qty' => 20,
+            'book_qty' => 90,
+            'variance' => -70,
+        ]);
+
+        // Submit direct issuance request for 10 units
+        $response = $this->actingAs($storeOfficer)->postJson('/issue-items/store', [
+            'issuance_date' => now()->format('Y-m-d'),
+            'beneficiary' => 'Test Dept',
+            'authority' => 'Admin auth',
+            'issuance_type' => 'Permanent',
+            'items' => [
+                [
+                    'description' => 'Discrepancy Pen',
+                    'category' => 'B',
+                    'unit' => 'PACK',
+                    'qty' => 10,
+                ]
+            ]
+        ]);
+        $response->assertStatus(200);
+
+        $editReq = \App\Models\EditRequest::where('request_type', 'issue_submission')->orderBy('id', 'desc')->first();
+        $response = $this->actingAs($admin)->postJson("/edit-requests/{$editReq->id}/process", [
+            'status' => 'approved'
+        ]);
+        $response->assertStatus(200);
+
+        // Verify book_qty decreased by 10 (90 -> 80), and stock_balance decreased by 10 (20 -> 10)
+        $inventoryItem->refresh();
+        $this->assertEquals(80, (float)$inventoryItem->book_qty);
+        $this->assertEquals(10, (float)$inventoryItem->stock_balance);
+        $this->assertEquals(10, (float)$inventoryItem->qty);
+    }
 }
 

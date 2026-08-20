@@ -417,8 +417,29 @@
                                     $batchStatus = $item->batch_approval_status ?? $item->batch?->approval_status ?? ($item->is_pending_creation ? 'pending_auditor_admin' : '');
                                 @endphp
                                 @if($batchStatus === 'pending_auditor_admin')
-                                    <span style="font-size: 0.65rem; font-weight: 800; color: #d97706; background: rgba(217, 119, 6, 0.1); padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; cursor: help;" title="Saved in database, pending SRA verification and signature approval by Authorizer and Auditor">
-                                        <i data-lucide="clock" style="width: 10px; height: 10px;"></i> Pending SRA Approval
+                                    @php
+                                        $auditorStatus = $item->batch_auditor_status ?? $item->batch?->auditor_status ?? 'pending';
+                                        $adminStatus = $item->batch_admin_status ?? $item->batch?->admin_status ?? 'pending';
+
+                                        if (!empty($item->is_pending_creation)) {
+                                            $approvalText = 'Pending SRA Approval from Auth and Auditor';
+                                            $tooltipText = 'Saved in database, pending SRA verification by Authorizer and Auditor';
+                                        } elseif ($auditorStatus === 'pending' && $adminStatus === 'pending') {
+                                            $approvalText = 'Pending SRA Approval from Auth and Auditor';
+                                            $tooltipText = 'Saved in database, pending SRA verification by Authorizer and Auditor';
+                                        } elseif ($auditorStatus === 'pending') {
+                                            $approvalText = 'Pending SRA Approval from Auditor';
+                                            $tooltipText = 'Saved in database, pending SRA verification by Auditor';
+                                        } elseif ($adminStatus === 'pending') {
+                                            $approvalText = 'Pending SRA Approval from Auth';
+                                            $tooltipText = 'Saved in database, pending SRA verification by Authorizer';
+                                        } else {
+                                            $approvalText = 'Pending SRA Approval';
+                                            $tooltipText = 'Saved in database, pending SRA verification by Authorizer and Auditor';
+                                        }
+                                    @endphp
+                                    <span style="font-size: 0.65rem; font-weight: 800; color: #d97706; background: rgba(217, 119, 6, 0.1); padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; cursor: help;" title="{{ $tooltipText }}">
+                                        <i data-lucide="clock" style="width: 10px; height: 10px;"></i> {{ $approvalText }}
                                     </span>
                                 @endif
                             </div>
@@ -622,6 +643,7 @@
                         <h4 style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.04em;">No Records Discovered</h4>
                         <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; font-weight: 500;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
 
+                        @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head']))
                         <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                             <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.85rem 1.75rem; border-radius: 14px; text-decoration: none; font-size: 0.95rem; color: var(--text-main); font-weight: 800; transition: all 0.3s; border: 1.5px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; background: var(--bg-card);">
                                 <i data-lucide="refresh-ccw" style="width: 18px;"></i>
@@ -632,6 +654,7 @@
                                 New Inventory Entry
                             </button>
                         </div>
+                        @endif
                     </div>
                 </div>
             </td>

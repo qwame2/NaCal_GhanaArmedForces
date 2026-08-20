@@ -1630,6 +1630,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'preview'])->name('sra.preview');
     Route::get('/api/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'previewApi'])->name('api.sra.preview');
     Route::post('/sra-creation/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processSraCreation'])->name('sra-creation.process');
+    Route::get('/sra-creation/{id}/rollback', [\App\Http\Controllers\EditRequestController::class, 'showRollbackPage'])->name('sra-creation.rollback.show');
     Route::post('/sra-creation/{id}/rollback', [\App\Http\Controllers\EditRequestController::class, 'rollbackSraEntry'])->name('sra-creation.rollback');
     Route::post('/received-items/{id}/process-sra-review', [\App\Http\Controllers\ReceivedItemsController::class, 'processSraReview'])->name('receiveditems.process-sra-review');
     Route::get('/api/sra-rollback/{id}', function ($id) {

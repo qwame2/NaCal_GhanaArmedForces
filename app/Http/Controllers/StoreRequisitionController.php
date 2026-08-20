@@ -1301,7 +1301,8 @@ class StoreRequisitionController extends Controller
                                         })
                                         ->where(function($query) {
                                             $query->where('qty', '>', 0)
-                                                ->orWhere('stock_balance', '>', 0);
+                                                ->orWhere('stock_balance', '>', 0)
+                                                ->orWhere('book_qty', '>', 0);
                                         })
                                         ->orderBy('created_at', 'asc')
                                         ->orderBy('id', 'asc')
@@ -1316,11 +1317,19 @@ class StoreRequisitionController extends Controller
                                         $takeQty = min($availableQty, $qtyToDeduct);
                                         $takeStock = min($availableStock, $qtyToDeduct);
 
+                                        if (!is_null($inventoryItem->book_qty)) {
+                                            $availableBook = floatval(str_replace(',', '', $inventoryItem->book_qty));
+                                            $takeBook = min($availableBook, $qtyToDeduct);
+                                            $inventoryItem->book_qty = max(0, $availableBook - $takeBook);
+                                        } else {
+                                            $takeBook = 0;
+                                        }
+
                                         $inventoryItem->qty = max(0, $availableQty - $takeQty);
                                         $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
                                         $inventoryItem->save();
 
-                                        $qtyToDeduct -= max($takeQty, $takeStock);
+                                        $qtyToDeduct -= max($takeQty, $takeStock, $takeBook);
                                     }
                                 }
 
@@ -1349,7 +1358,8 @@ class StoreRequisitionController extends Controller
                                         })
                                         ->where(function($query) {
                                             $query->where('qty', '>', 0)
-                                                ->orWhere('stock_balance', '>', 0);
+                                                ->orWhere('stock_balance', '>', 0)
+                                                ->orWhere('book_qty', '>', 0);
                                         })
                                         ->orderBy('created_at', 'asc')
                                         ->orderBy('id', 'asc')
@@ -1364,11 +1374,19 @@ class StoreRequisitionController extends Controller
                                         $takeQty = min($availableQty, $qtyToDeduct);
                                         $takeStock = min($availableStock, $qtyToDeduct);
 
+                                        if (!is_null($inventoryItem->book_qty)) {
+                                            $availableBook = floatval(str_replace(',', '', $inventoryItem->book_qty));
+                                            $takeBook = min($availableBook, $qtyToDeduct);
+                                            $inventoryItem->book_qty = max(0, $availableBook - $takeBook);
+                                        } else {
+                                            $takeBook = 0;
+                                        }
+
                                         $inventoryItem->qty = max(0, $availableQty - $takeQty);
                                         $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
                                         $inventoryItem->save();
 
-                                        $qtyToDeduct -= max($takeQty, $takeStock);
+                                        $qtyToDeduct -= max($takeQty, $takeStock, $takeBook);
                                     }
                                 }
                             }
