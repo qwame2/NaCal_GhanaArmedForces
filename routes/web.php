@@ -226,6 +226,7 @@ Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->n
 Route::post('/forgot-password', [AuthController::class, 'sendPasswordRequest'])->name('password.email');
 Route::get('/reset-password', [AuthController::class, 'showResetWithOtp'])->name('password.reset.otp');
 Route::post('/reset-password', [AuthController::class, 'resetWithOtp'])->name('password.update.otp');
+Route::post('/clear-rejected-reset', [AuthController::class, 'clearRejectedReset'])->name('password.clear-rejected');
 
 
 

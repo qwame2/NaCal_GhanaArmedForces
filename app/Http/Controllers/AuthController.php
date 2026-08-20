@@ -1084,4 +1084,19 @@ class AuthController extends Controller
         return back()->with('error', $errorMessage)->withInput();
     }
 
+    /**
+     * Clear the rejected status of the latest password reset request, allowing a new request.
+     */
+    public function clearRejectedReset(Request $request)
+    {
+        $username = $request->input('username');
+        if ($username) {
+            \App\Models\PasswordResetRequest::where('username', $username)
+                ->where('status', 'rejected')
+                ->update(['status' => 'completed']);
+            
+            session()->forget('pending_password_reset_username');
+        }
+        return redirect()->route('password.request')->with('success', 'Your recovery status has been cleared. You can now submit a new recovery request.');
+    }
 }

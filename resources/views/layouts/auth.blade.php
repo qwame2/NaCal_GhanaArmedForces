@@ -3,14 +3,19 @@
     $finalRejectedUsername = isset($rejected_username) ? $rejected_username : session('pending_password_reset_username');
     $finalRejectedMessage = isset($rejected_message) ? $rejected_message : '';
 
-    if (!$finalRejectedReset && $finalRejectedUsername) {
+    if ($finalRejectedUsername) {
         $latestRequest = \App\Models\PasswordResetRequest::where('username', $finalRejectedUsername)
             ->orderBy('created_at', 'desc')
             ->first();
         if ($latestRequest && $latestRequest->status === 'rejected') {
             $finalRejectedReset = true;
-            $finalRejectedMessage = "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution.";
-        } else {
+            $userObj = \App\Models\User::where('username', $finalRejectedUsername)->first();
+            if ($userObj && ($userObj->is_admin || $userObj->role === 'Head of Stores' || $userObj->role === 'Main Admin')) {
+                $finalRejectedMessage = "Alert: Your password reset request has been rejected by the IT Administrator. Please contact IT Command Center for resolution.";
+            } else {
+                $finalRejectedMessage = "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution.";
+            }
+        } else if (!$finalRejectedReset) {
             session()->forget('pending_password_reset_username');
         }
     }
@@ -115,6 +120,14 @@
             <p style="color: #475569; font-size: 0.9rem; font-weight: 600; line-height: 1.65; margin: 0 0 1.5rem;">
                 {{ $finalRejectedMessage }}
             </p>
+            <form action="{{ route('password.clear-rejected') }}" method="POST" style="margin: 0; display: inline-block; width: 100%;">
+                @csrf
+                <input type="hidden" name="username" value="{{ $finalRejectedUsername }}">
+                <button type="submit" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border: none; padding: 0.85rem 2rem; border-radius: 16px; font-size: 0.85rem; font-weight: 800; cursor: pointer; letter-spacing: 0.02em; box-shadow: 0 8px 20px rgba(15,23,42,0.15); transition: all 0.2s ease; width: 100%;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    Submit New Request
+                </button>
+            </form>
         </div>
     </div>
     @endif

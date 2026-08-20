@@ -1986,5 +1986,29 @@ class ApiTest extends TestCase
             ->where('description', 'like', "%{$headOfStores->username}%")
             ->exists());
     }
+
+    public function test_head_of_stores_can_clear_rejected_reset_status(): void
+    {
+        $headOfStores = User::factory()->create(['role' => 'Head of Stores', 'registration_status' => 'approved']);
+
+        // 1. Create a rejected password reset request
+        $resetReq = \App\Models\PasswordResetRequest::create([
+            'user_id' => $headOfStores->id,
+            'username' => $headOfStores->username,
+            'status' => 'rejected',
+        ]);
+
+        // 2. Submit clear-rejected form
+        $response = $this->post('/clear-rejected-reset', [
+            'username' => $headOfStores->username,
+        ]);
+
+        // 3. Assert redirected to forgot password
+        $response->assertRedirect('/forgot-password');
+        
+        // 4. Assert request is now completed/archived
+        $this->assertEquals('completed', $resetReq->fresh()->status);
+        $this->assertNull(session('pending_password_reset_username'));
+    }
 }
 
