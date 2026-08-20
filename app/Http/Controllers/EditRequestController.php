@@ -465,11 +465,24 @@ class EditRequestController extends Controller
                         }
                     }
                     // Set batch for later use in notifications & route to Auditor and Admin for SRA review
+                    // Set batch for later use in notifications & route to Auditor and Admin for SRA review
                     $batch = \App\Models\InventoryBatch::find($editReq->item_id);
                     if ($batch) {
-                        $batch->approval_status = 'pending_auditor_admin';
-                        $batch->auditor_status = 'pending';
-                        $batch->admin_status = 'pending';
+                        $isDiscrepancyBatch = $batch->items()->whereNotNull('book_qty')->exists();
+
+                        if ($isDiscrepancyBatch) {
+                            $batch->approval_status = 'approved';
+                            $batch->auditor_status = 'approved';
+                            $batch->auditor_approved_by = auth()->id();
+                            $batch->auditor_approved_at = now();
+                            $batch->admin_status = 'approved';
+                            $batch->admin_approved_by = auth()->id();
+                            $batch->admin_approved_at = now();
+                        } else {
+                            $batch->approval_status = 'pending_auditor_admin';
+                            $batch->auditor_status = 'pending';
+                            $batch->admin_status = 'pending';
+                        }
 
                         $initialSraNo = 'SRA-' . str_pad($batch->id, 6, '0', STR_PAD_LEFT);
                         $currentSraNo = 'SRA-' . str_pad($editReq->id, 6, '0', STR_PAD_LEFT);
@@ -485,14 +498,21 @@ class EditRequestController extends Controller
                         }
 
                         $batch->save();
-                        \App\Models\InventoryBatch::sendSraReviewNotifications($batch);
+
+                        if (!$isDiscrepancyBatch) {
+                            \App\Models\InventoryBatch::sendSraReviewNotifications($batch);
+                        }
                     }
+
+                    $logMsg = isset($isDiscrepancyBatch) && $isDiscrepancyBatch
+                        ? "Personnel added remainder items for discrepancy entry (Approved by Head of Stores, auto-active)."
+                        : "Personnel added remainder items (Approved by Head of Stores, pending Auditor & Admin approval).";
 
                     \App\Models\SystemLog::create([
                         'user_id' => $editReq->user_id,
                         'event_type' => 'INVENTORY',
                         'action' => 'SUPPLEMENT_INVENTORY',
-                        'description' => "Personnel added remainder items (Approved by Head of Stores, pending Auditor & Admin approval).",
+                        'description' => $logMsg,
                         'severity' => 'info',
                         'metadata' => ['batch_id' => $editReq->item_id],
                         'ip_address' => request()->ip()
