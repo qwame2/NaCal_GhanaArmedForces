@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
 <style>
@@ -1008,7 +1008,7 @@
                     unit: unit,
                     store_location: storeLocation || 'Store A',
                     qty: receivedQty,
-                    stock_balance: bookQty,
+                    stock_balance: receivedQty,
                     variance: (parseFloat(receivedQty) || 0) - (parseFloat(bookQty) || 0),
                     remarks: explanation,
                     book_qty: bookQty,

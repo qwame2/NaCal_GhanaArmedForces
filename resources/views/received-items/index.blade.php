@@ -556,9 +556,8 @@
                             @endif
                         </td>
                         @php
-                            $receivedQtyDisplay = is_null($item->book_qty) 
-                                ? ((float)($item->qty ?? 0) + (float)($item->variance ?? 0)) 
-                                : (float)($item->qty ?? 0);
+                            $expectedQty = !is_null($item->book_qty) ? (float)$item->book_qty : (float)($item->qty ?? 0);
+                            $receivedQtyDisplay = $expectedQty + (float)($item->variance ?? 0);
                         @endphp
                         <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($receivedQtyDisplay) }}</td>
                         <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ number_format((float)(!is_null($item->book_qty) ? $item->book_qty : ($item->stock_balance ?? 0))) }}</td>
@@ -2653,7 +2652,8 @@
     const filterForm = document.getElementById('filterForm');
     const searchInput = document.getElementById('searchInput');
     const supplierInput = document.getElementById('supplierInput');
-    const dateInput = document.getElementById('dateInput');
+    const dateFromInput = document.getElementById('dateFromInput');
+    const dateToInput = document.getElementById('dateToInput');
     const resultsContainer = document.getElementById('resultsContainer');
 
     let debounceTimer;
@@ -2693,7 +2693,7 @@
                 if (!isSilent) resultsContainer.style.opacity = '1';
             })
             .catch(error => {
-                /* console print removed */
+                console.error("Search error:", error);
                 if (!isSilent) resultsContainer.style.opacity = '1';
             });
     }
@@ -2701,11 +2701,12 @@
     // Background Sync Engine (Silent Pulse) removed as per user request
 
     if (searchInput) {
-        [searchInput, supplierInput, dateInput].forEach(input => {
+        [searchInput, supplierInput, dateFromInput, dateToInput].forEach(input => {
             if (input) {
-                input.addEventListener('input', () => {
+                const eventType = input.type === 'date' ? 'change' : 'input';
+                input.addEventListener(eventType, () => {
                     clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(performSearch, 400);
+                    debounceTimer = setTimeout(performSearch, eventType === 'change' ? 100 : 400);
                 });
             }
         });

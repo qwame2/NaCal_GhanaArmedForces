@@ -1471,6 +1471,55 @@ class ApiTest extends TestCase
         $resp->assertSee('Baseline Unique Paper Item 99');
     }
 
+    public function test_received_items_search_filter()
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+        ]);
+
+        $batch1 = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'A',
+            'supplier_name' => 'Supplier ABC',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => now()->format('Y-m-d'),
+            'approval_status' => 'approved',
+        ]);
+        $batch1->items()->create([
+            'description' => 'Target Search Item 123',
+            'unit' => 'BOX',
+            'qty' => 10,
+            'stock_balance' => 10,
+            'variance' => 0,
+        ]);
+
+        $batch2 = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'A',
+            'supplier_name' => 'Supplier XYZ',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => now()->format('Y-m-d'),
+            'approval_status' => 'approved',
+        ]);
+        $batch2->items()->create([
+            'description' => 'Other Random Pen Item 456',
+            'unit' => 'BOX',
+            'qty' => 10,
+            'stock_balance' => 10,
+            'variance' => 0,
+        ]);
+
+        // Search for 'Target Search Item 123'
+        $resp = $this->actingAs($officer)->get(route('receiveditems', ['search' => 'Target']));
+        $resp->assertStatus(200);
+        $resp->assertSee('Target Search Item 123');
+        $resp->assertDontSee('Other Random Pen Item 456');
+    }
+
     public function test_remainder_submission_appears_in_item_entry_approval_panel()
     {
         $headOfStores = User::factory()->create([

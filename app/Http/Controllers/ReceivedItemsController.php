@@ -473,7 +473,7 @@ class ReceivedItemsController extends Controller
             // Calculate exact sum based on search term directly across inventory
             $sumQuery = clone $query;
             $searchSum = $sumQuery->sum('inventory_items.stock_balance');
-            $searchQtySum = $sumQuery->selectRaw("SUM(CASE WHEN inventory_items.book_qty IS NULL THEN inventory_items.qty + COALESCE(inventory_items.variance, 0) ELSE inventory_items.qty END) as total_qty")->value('total_qty') ?? 0;
+            $searchQtySum = $sumQuery->select(\DB::raw("SUM(COALESCE(inventory_items.book_qty, inventory_items.qty) + COALESCE(inventory_items.variance, 0)) as total_qty"))->value('total_qty') ?? 0;
 
             // Sum all quantities issued through approved/partially_approved requisitions
             $searchIssuedQtySum = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
