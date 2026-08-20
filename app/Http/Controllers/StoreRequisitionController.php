@@ -1637,7 +1637,15 @@ class StoreRequisitionController extends Controller
             if ($isStoresHead) {
                 $query->awaitingHeadOfStoresReview();
             } else {
-                $query->where('status', 'pending');
+                $query->where(function($q) {
+                    $q->where(function($q2) {
+                        $q2->where('status', 'pending')
+                           ->where('origin_admin_status', 'pending');
+                    })->orWhere(function($q2) {
+                        $q2->where('status', 'pending')
+                           ->where('alternative_status', 'proposed');
+                    });
+                });
             }
         } elseif ($statusFilter === 'approved') {
             if ($isStoresHead) {
@@ -1878,21 +1886,12 @@ class StoreRequisitionController extends Controller
             $userName = auth()->user()->name;
 
             // Pending: only this HOD's own department awaiting their review
-            $pendingCount = StoreRequisition::whereIn('department', $depts)
-                ->where(function($q) {
-                    $q->where(function($q2) {
-                        $q2->where('status', 'pending')
-                           ->where('origin_admin_status', 'pending');
-                    })->orWhere(function($q2) {
-                        $q2->where('status', 'pending')
-                           ->where('alternative_status', 'proposed');
-                    });
-                })
-                ->count();
-
-            // Also include sponsored users' pending requests
-            $pendingCount += StoreRequisition::whereHas('requester', function($sq) {
-                    $sq->where('sponsored_by', auth()->id());
+            // Pending: HOD's own department or sponsored users awaiting their review (deduplicated)
+            $pendingCount = StoreRequisition::where(function($q) use ($depts) {
+                    $q->whereIn('department', $depts)
+                      ->orWhereHas('requester', function($sq) {
+                          $sq->where('sponsored_by', auth()->id());
+                      });
                 })
                 ->where(function($q) {
                     $q->where(function($q2) {
