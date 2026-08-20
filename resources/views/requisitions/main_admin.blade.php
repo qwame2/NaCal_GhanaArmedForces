@@ -3255,7 +3255,7 @@
         if (!_mainAdminPollPaused && !isModalOpen) {
             pollMainAdminRequisitions();
         }
-    }, 12000);
+    }, 3000);
 
 
     function toggleWorkflowCategory(code, card) {

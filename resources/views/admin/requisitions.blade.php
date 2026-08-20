@@ -1556,8 +1556,8 @@
             window.location.href = `{{ url('/admin/requisitions') }}/${openId}/review`;
         }
 
-        // Start polling every 10 seconds
-        setInterval(pollStoreRequisitions, 10000);
+        // Start polling every 3 seconds
+        setInterval(pollStoreRequisitions, 3000);
     });
 </script>
 <script src="{{ asset('js/apexcharts.js') }}"></script>
