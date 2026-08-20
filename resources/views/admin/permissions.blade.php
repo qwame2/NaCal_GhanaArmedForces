@@ -603,6 +603,18 @@
 </style>
 
 <script>
+    /* ── Initialize select2 for role dropdowns ── */
+    function initRoleSelects() {
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $('.select2-assign-role').select2({
+                placeholder: '-- Assign Role --',
+                allowClear: false,
+                minimumResultsForSearch: 6,
+                width: '360px'
+            });
+        }
+    }
+
     /* ── Tab Switcher ── */
     function switchTab(tab) {
         document.querySelectorAll('.pager-tab').forEach(t => t.classList.remove('active'));
@@ -717,6 +729,27 @@
             }
 
             try {
+                // If approving, make sure a role is selected
+                if (form.action.includes('approve-registration')) {
+                    const roleSelect = form.querySelector('select[name="role"]');
+                    if (roleSelect && !roleSelect.value) {
+                        if (buttons) {
+                            buttons.forEach(btn => btn.disabled = false);
+                        }
+                        if (typeof showToast === 'function') {
+                            showToast('Role Required', 'Please assign a role before approving.', 'warning');
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Role Required',
+                                text: 'Please select a role to assign to this user before approving.',
+                                confirmButtonColor: '#4f46e5'
+                            });
+                        }
+                        return;
+                    }
+                }
+
                 const response = await fetch(form.action, {
                     method: 'POST',
                     body: new FormData(form),
@@ -724,6 +757,19 @@
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 });
+
+                if (!response.ok) {
+                    let errMsg = 'Failed to process request.';
+                    try {
+                        const errData = await response.json();
+                        if (errData && errData.message) {
+                            errMsg = errData.message;
+                        } else if (errData && errData.errors) {
+                            errMsg = Object.values(errData.errors).flat().join('\n');
+                        }
+                    } catch (e) {}
+                    throw new Error(errMsg);
+                }
 
                 const html = await response.text();
                 const parser = new DOMParser();
@@ -748,6 +794,7 @@
                 const currentRegs = document.getElementById('panel-registrations');
                 if (newRegs && currentRegs) {
                     currentRegs.innerHTML = newRegs.innerHTML;
+                    initRoleSelects();
                 }
 
                 // Update tab badges
@@ -786,15 +833,29 @@
                 }
             } catch (err) {
                 console.error(err);
-                if (typeof showToast === 'function') {
-                    showToast('Error', 'An error occurred while processing the request.', 'error');
-                } else {
+                if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        icon: 'error',
-                        title: 'System Error',
-                        text: 'An error occurred while processing the request.',
-                        confirmButtonColor: '#4f46e5'
+                        title: '<span style="font-size: 1.5rem; font-weight: 900; color: #0f172a;">Warning</span>',
+                        html: `
+                            <div style="color: #64748b; font-size: 0.95rem; font-weight: 600; line-height: 1.6; margin-bottom: 10px; text-align: left;">
+                                ${err.message || 'An error occurred while processing the request.'}
+                            </div>
+                        `,
+                        icon: 'warning',
+                        iconColor: '#f59e0b',
+                        confirmButtonColor: '#4f46e5',
+                        confirmButtonText: '<span style="font-weight: 800; padding: 6px 16px;">OK</span>',
+                        background: '#ffffff',
+                        backdrop: 'rgba(15, 23, 42, 0.6)',
+                        padding: '2rem',
+                        customClass: {
+                            popup: 'premium-popup'
+                        }
                     });
+                } else if (typeof showToast === 'function') {
+                    showToast('Error', err.message || 'An error occurred while processing the request.', 'error');
+                } else {
+                    alert(err.message || 'An error occurred while processing the request.');
                 }
                 if (buttons) {
                     buttons.forEach(btn => btn.disabled = false);
@@ -827,6 +888,7 @@
                         if (window.lucide) {
                             lucide.createIcons();
                         }
+                        initRoleSelects();
                     }
                 }
                 
@@ -858,6 +920,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();
+        initRoleSelects();
 
         // Auto-open tab from server session (after approve/decline redirect)
         const serverTab = '{{ session('open_tab') }}';

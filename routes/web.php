@@ -1254,6 +1254,45 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             })
             ->count();
 
+        $isStoresHeadCheck = ($user->isMainAdminOrSub() || $user->role === 'Head of Stores' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
+        if (!$isStoresHeadCheck) {
+            $isBackup = ($user->isDepartmentHead() && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
+            if ($isBackup) {
+                if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
+                    $isStoresHeadCheck = true;
+                }
+            }
+        }
+
+        $dept = $user->department;
+        $depts = [$dept];
+        $dLower = strtolower(trim($dept ?? ''));
+        if (in_array($dLower, ['hr', 'human resource', 'human resource management department', 'human resources'])) {
+            $depts = ['HR', 'Human Resource', 'Human Resource Management Department', 'Human Resources'];
+        } elseif (in_array($dLower, ['welfare', 'welfare department'])) {
+            $depts = ['Welfare', 'Welfare Department'];
+        } elseif (in_array($dLower, ['stores', 'store', 'stores department', 'store department'])) {
+            $depts = ['Stores', 'Store', 'Stores Department', 'Store Department'];
+        }
+
+        if ($isStoresHeadCheck) {
+            $mainStoreRequisitionsCount = \App\Models\StoreRequisition::awaitingHeadOfStoresReview()->count();
+        } else {
+            $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
+                ->where(function($q) use ($depts, $authId) {
+                    $q->whereIn('department', $depts)
+                      ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
+                      ->orWhereHas('requester', function($sq) use ($authId) {
+                          $sq->where('sponsored_by', $authId);
+                      });
+                })
+                ->where(function($q) {
+                    $q->where('origin_admin_status', 'pending')
+                      ->orWhere('alternative_status', 'proposed');
+                })
+                ->count();
+        }
+
         return response()->json([
             'messages' => $messages,
             'password_requests' => $passwordRequests,
@@ -1262,6 +1301,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             'pending_registrations' => $pendingRegistrations,
             'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
             'pending_rollbacks' => $pendingRollbacks,
+            'main_requisitions' => $mainStoreRequisitionsCount,
         ]);
     })->name('api.admin.sidebar-counts');
 
@@ -1296,10 +1336,50 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             })
             ->count();
 
+        $isStoresHeadCheck = ($user->isMainAdminOrSub() || $user->role === 'Head of Stores' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
+        if (!$isStoresHeadCheck) {
+            $isBackup = ($user->isDepartmentHead() && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
+            if ($isBackup) {
+                if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
+                    $isStoresHeadCheck = true;
+                }
+            }
+        }
+
+        $dept = $user->department;
+        $depts = [$dept];
+        $dLower = strtolower(trim($dept ?? ''));
+        if (in_array($dLower, ['hr', 'human resource', 'human resource management department', 'human resources'])) {
+            $depts = ['HR', 'Human Resource', 'Human Resource Management Department', 'Human Resources'];
+        } elseif (in_array($dLower, ['welfare', 'welfare department'])) {
+            $depts = ['Welfare', 'Welfare Department'];
+        } elseif (in_array($dLower, ['stores', 'store', 'stores department', 'store department'])) {
+            $depts = ['Stores', 'Store', 'Stores Department', 'Store Department'];
+        }
+
+        if ($isStoresHeadCheck) {
+            $mainStoreRequisitionsCount = \App\Models\StoreRequisition::awaitingHeadOfStoresReview()->count();
+        } else {
+            $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
+                ->where(function($q) use ($depts, $authId) {
+                    $q->whereIn('department', $depts)
+                      ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
+                      ->orWhereHas('requester', function($sq) use ($authId) {
+                          $sq->where('sponsored_by', $authId);
+                      });
+                })
+                ->where(function($q) {
+                    $q->where('origin_admin_status', 'pending')
+                      ->orWhere('alternative_status', 'proposed');
+                })
+                ->count();
+        }
+
         return response()->json([
             'approved_requisitions' => $approvedRequisitions,
             'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
             'pending_rollbacks' => $pendingRollbacks,
+            'main_requisitions' => $mainStoreRequisitionsCount,
         ]);
     })->name('api.personnel.sidebar-counts');
 

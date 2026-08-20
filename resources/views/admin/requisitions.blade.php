@@ -1385,12 +1385,71 @@
         });
     }
 
-    function cleanHtmlForComparison(element) {
-        if (!element) return '';
-        const clone = element.cloneNode(true);
-        // Remove all icon elements and SVG expansions to prevent false change detection
-        clone.querySelectorAll('svg, i, [data-lucide]').forEach(el => el.remove());
-        return clone.innerHTML.replace(/\s+/g, ' ').trim();
+    function morphNodes(currentNode, newNode) {
+        if (currentNode.nodeType === Node.TEXT_NODE && newNode.nodeType === Node.TEXT_NODE) {
+            if (currentNode.nodeValue !== newNode.nodeValue) {
+                currentNode.nodeValue = newNode.nodeValue;
+            }
+            return;
+        }
+
+        if (currentNode.nodeType !== Node.ELEMENT_NODE || newNode.nodeType !== Node.ELEMENT_NODE) {
+            return;
+        }
+
+        if (newNode.hasAttribute('data-lucide')) {
+            const newIcon = newNode.getAttribute('data-lucide');
+            if (currentNode.getAttribute('data-lucide') === newIcon && currentNode.querySelector('svg')) {
+                return;
+            }
+        }
+
+        if (currentNode.tagName !== newNode.tagName) {
+            currentNode.replaceWith(newNode.cloneNode(true));
+            return;
+        }
+
+        const currentAttrs = currentNode.attributes;
+        const newAttrs = newNode.attributes;
+
+        for (let i = currentAttrs.length - 1; i >= 0; i--) {
+            const attrName = currentAttrs[i].name;
+            if (!newNode.hasAttribute(attrName)) {
+                currentNode.removeAttribute(attrName);
+            }
+        }
+
+        for (let i = 0; i < newAttrs.length; i++) {
+            const attrName = newAttrs[i].name;
+            const attrValue = newAttrs[i].value;
+            if (currentNode.getAttribute(attrName) !== attrValue) {
+                currentNode.setAttribute(attrName, attrValue);
+            }
+        }
+
+        const currentChildren = Array.from(currentNode.childNodes);
+        const newChildren = Array.from(newNode.childNodes);
+
+        const maxLength = Math.max(currentChildren.length, newChildren.length);
+        for (let i = 0; i < maxLength; i++) {
+            const currentChild = currentChildren[i];
+            const newChild = newChildren[i];
+
+            if (!currentChild && newChild) {
+                currentNode.appendChild(newChild.cloneNode(true));
+            } else if (currentChild && !newChild) {
+                currentChild.remove();
+            } else if (currentChild && newChild) {
+                if (newChild.nodeType === Node.ELEMENT_NODE && newChild.hasAttribute('data-lucide')) {
+                    const newIcon = newChild.getAttribute('data-lucide');
+                    if (currentChild.nodeType === Node.ELEMENT_NODE && 
+                        (currentChild.getAttribute('data-lucide') === newIcon || currentChild.tagName === 'SVG')) {
+                        continue;
+                    }
+                }
+                morphNodes(currentChild, newChild);
+            }
+        }
     }
 
     async function pollStoreRequisitions() {
@@ -1412,7 +1471,6 @@
             }
         }
 
-        // Merge existing window location search params (like page, sorting, etc.)
         const urlParams = new URLSearchParams(window.location.search);
         for (const [key, value] of urlParams.entries()) {
             if (!searchParams.has(key)) {
@@ -1430,66 +1488,29 @@
             });
             const data = await response.json();
 
-            // Controller returns rows + pagination keys (not a single html key)
             const newHtml = data.html || ((data.rows || '') + (data.pagination || ''));
             if (!newHtml) return;
 
             const parser = new DOMParser();
             const doc = parser.parseFromString(newHtml, 'text/html');
 
-            const currentRows = Array.from(container.querySelectorAll('.req-table-row'));
-            const newRows = Array.from(doc.querySelectorAll('.req-table-row'));
-
-            const currentIds = currentRows.map(r => r.getAttribute('data-type') + '-' + r.getAttribute('data-id')).join(',');
-            const newIds = newRows.map(r => r.getAttribute('data-type') + '-' + r.getAttribute('data-id')).join(',');
-
-            const currentPagination = container.querySelector('.ajax-req-page-btn');
-            const newPagination = doc.querySelector('.ajax-req-page-btn');
-            const paginationMismatch = (currentPagination && !newPagination) || (!currentPagination && newPagination);
-
-            if (currentIds !== newIds || paginationMismatch) {
-                container.innerHTML = newHtml;
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-                bindPaginationClicks();
-            } else {
-                newRows.forEach((newRow, idx) => {
-                    const currentRow = currentRows[idx];
-                    if (!currentRow) return;
-
-                    const newStatus = newRow.getAttribute('data-status');
-                    const currentStatus = currentRow.getAttribute('data-status');
-                    const newCollected = newRow.getAttribute('data-collected');
-                    const currentCollected = currentRow.getAttribute('data-collected');
-
-                    if (newStatus !== currentStatus || newCollected !== currentCollected || cleanHtmlForComparison(newRow) !== cleanHtmlForComparison(currentRow)) {
-                        currentRow.innerHTML = newRow.innerHTML;
-                        currentRow.className = newRow.className;
-                        currentRow.setAttribute('data-status', newStatus);
-                        if (newRow.hasAttribute('data-collected')) {
-                            currentRow.setAttribute('data-collected', newCollected);
-                        } else {
-                            currentRow.removeAttribute('data-collected');
-                        }
-                        currentRow.setAttribute('style', newRow.getAttribute('style') || '');
-                        
-                        if (window.lucide) {
-                            window.lucide.createIcons();
-                        }
-                    }
-                });
-
-                // Update pagination if it exists and changed
-                const currentPag = container.querySelector('.ajax-req-page-btn')?.closest('div');
-                const newPag = doc.querySelector('.ajax-req-page-btn')?.closest('div');
-                if (currentPag && newPag) {
-                    if (currentPag.innerText.replace(/\s+/g, ' ').trim() !== newPag.innerText.replace(/\s+/g, ' ').trim()) {
-                        currentPag.innerHTML = newPag.innerHTML;
-                        bindPaginationClicks();
-                    }
+            const currentChildren = Array.from(container.childNodes);
+            const newChildren = Array.from(doc.body.childNodes);
+            
+            const maxLength = Math.max(currentChildren.length, newChildren.length);
+            for (let i = 0; i < maxLength; i++) {
+                const currentChild = currentChildren[i];
+                const newChild = newChildren[i];
+                if (!currentChild && newChild) {
+                    container.appendChild(newChild.cloneNode(true));
+                } else if (currentChild && !newChild) {
+                    currentChild.remove();
+                } else if (currentChild && newChild) {
+                    morphNodes(currentChild, newChild);
                 }
             }
+
+            bindPaginationClicks();
 
             if (data.stats) {
                 updateStats(data.stats);

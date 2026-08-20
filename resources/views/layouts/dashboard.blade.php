@@ -1698,7 +1698,7 @@
                         }
                     }
 
-                    // Rollback Request Badges (Silent update without full-page refresh)
+                     // Rollback Request Badges (Silent update without full-page refresh)
                     const countRollbacks = data.pending_rollbacks !== undefined ? data.pending_rollbacks : 0;
                     ['sidebar-badge-rollback-requests', 'sidebar-badge-rollback-requests-2'].forEach(badgeId => {
                         const badgeRb = document.getElementById(badgeId);
@@ -1711,6 +1711,18 @@
                             }
                         }
                     });
+
+                    // Review & Approve Requests Badge
+                    const badgeMainReqs = document.getElementById('sidebar-badge-main-reqs');
+                    if (badgeMainReqs) {
+                        const countMainReqs = data.main_requisitions || 0;
+                        if (countMainReqs > 0) {
+                            badgeMainReqs.textContent = countMainReqs;
+                            badgeMainReqs.style.display = 'flex';
+                        } else {
+                            badgeMainReqs.style.display = 'none';
+                        }
+                    }
 
                     if (typeof window.checkApprovedCollectionPopover === 'function') {
                         window.checkApprovedCollectionPopover();

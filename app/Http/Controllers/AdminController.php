@@ -112,6 +112,9 @@ class AdminController extends Controller
         $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
 
         if (!$isAuthorized) {
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized access.'], 403);
+            }
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -128,7 +131,28 @@ class AdminController extends Controller
                 ->where('registration_status', 'approved')
                 ->count();
             if ($activeCount >= 2) {
-                return back()->with('error', 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.');
+                $errorMsg = 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.';
+                if ($request->ajax()) {
+                    return response()->json(['success' => false, 'message' => $errorMsg], 422);
+                }
+                return back()->with('error', $errorMsg);
+            }
+        }
+
+        // Prevent duplicate Department Heads for the same department
+        if ($role === 'Department Head' && !empty($user->department)) {
+            $existingHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+                ->where('department', $user->department)
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->where('id', '!=', $user->id)
+                ->first();
+            if ($existingHead) {
+                $conflictMsg = "Department Conflict: {$existingHead->name} (@{$existingHead->username}) is already the active Department Head for the '{$user->department}' department. Only one head per department is allowed. Please deactivate the existing head first, or assign this user as a Requisitioner instead.";
+                if ($request->ajax()) {
+                    return response()->json(['success' => false, 'message' => $conflictMsg], 422);
+                }
+                return back()->with('error', $conflictMsg);
             }
         }
 
@@ -380,6 +404,22 @@ class AdminController extends Controller
                 ->count();
             if ($activeCount >= 2) {
                 return back()->with('error', 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.');
+            }
+        }
+
+        // Prevent duplicate Department Heads for the same department
+        if ($request->role === 'Department Head' && $user->role !== 'Department Head') {
+            $targetDepartment = $request->department ?? $user->department;
+            if (!empty($targetDepartment)) {
+                $existingHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+                    ->where('department', $targetDepartment)
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->where('id', '!=', $user->id)
+                    ->first();
+                if ($existingHead) {
+                    return back()->with('error', "Department Conflict: {$existingHead->name} (@{$existingHead->username}) is already the active Department Head for the '{$targetDepartment}' department. Only one head per department is allowed. Please deactivate the existing head first.");
+                }
             }
         }
 

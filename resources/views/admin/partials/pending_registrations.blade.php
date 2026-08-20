@@ -19,6 +19,9 @@
         height: 58px !important;
         top: 1px !important;
     }
+    .select2-container--default .select2-results > .select2-results__options {
+        max-height: 450px !important;
+    }
 </style>
 
 @if($pendingUsers->count() === 0)
@@ -95,7 +98,7 @@
             <div class="reg-actions">
                 <form action="{{ route('admin.users.approve_registration', $req->id) }}" method="POST" style="display:inline-flex; align-items:center; gap:0.6rem;">
                     @csrf
-                    <div class="reg-select-wrapper" style="min-width: 280px;">
+                    <div class="reg-select-wrapper" style="min-width: 360px;">
                         <select name="role" required class="reg-select select2-assign-role" style="width: 100%;">
                             @php
                                 $currentRole = $req->role ?? '';
@@ -135,7 +138,7 @@
                     placeholder: '-- Assign Role --',
                     allowClear: false,
                     minimumResultsForSearch: 6,
-                    width: '280px'
+                    width: '360px'
                 });
             }, 50);
         }

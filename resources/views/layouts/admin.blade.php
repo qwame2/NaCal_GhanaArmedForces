@@ -1944,6 +1944,7 @@
                     updateBadge('sidebar-badge-requisitions', data.pending_requisitions);
                     updateBadge('sidebar-badge-registrations', data.pending_registrations);
                     updateBadge('sidebar-badge-item-entry-approval', data.pending_item_entry_approvals);
+                    updateBadge('sidebar-badge-main-reqs', data.main_requisitions);
 
                     // Also update the global header message badge if it exists
                     const globalUnreadBadge = document.getElementById('global-unread-badge');
