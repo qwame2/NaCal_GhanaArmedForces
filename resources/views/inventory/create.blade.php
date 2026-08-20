@@ -21,6 +21,9 @@
         background: rgba(5, 150, 105, 0.08) !important;
         color: var(--primary-hover) !important;
     }
+    .select2-search__field {
+        text-transform: uppercase !important;
+    }
 </style>
 <div class="animate-slide-up" id="newEntryPageContainer">
     <!-- Header Section -->
@@ -314,6 +317,11 @@
 
 <script>
 jQuery(document).ready(function($) {
+    // Automatically convert any text typed in Select2 search boxes to uppercase
+    $(document).on('input', '.select2-search__field', function() {
+        this.value = this.value.toUpperCase();
+    });
+
     const urlParams = new URLSearchParams(window.location.search);
     window.urlParams = urlParams;
     window.originalRollbackPayload = null;
@@ -767,6 +775,9 @@ jQuery(document).ready(function($) {
         let validationFailed = false;
         let invalidItemName = '';
 
+        // Temporarily enable disabled inputs so jQuery can serialize their values
+        $('.item-entry-row input, .item-entry-row select, .item-entry-row textarea').prop('disabled', false);
+
         $('.item-entry-row').each(function() {
             const desc = ($(this).find('.item-select-dynamic').val() || '').trim();
             const unit = ($(this).find('.row-unit').val() || '').trim();
@@ -775,7 +786,7 @@ jQuery(document).ready(function($) {
                 invalidItemName = desc || 'Unnamed Item';
             }
 
-            items.push({
+            const itemObj = {
                 description: desc,
                 serial_number: $(this).find('.row-serial-number').val() || null,
                 unit: unit,
@@ -785,7 +796,18 @@ jQuery(document).ready(function($) {
                 variance: $(this).find('.row-variance').val() || '0',
                 remarks: $(this).find('.row-remarks').val(),
                 ledge_category: $(this).find('.row-ledge-category').val()
-            });
+            };
+
+            const itemId = $(this).attr('data-item-id');
+            if (itemId) {
+                itemObj.id = itemId;
+            }
+            const origDesc = $(this).attr('data-original-desc');
+            if (origDesc) {
+                itemObj.original_description = origDesc;
+            }
+
+            items.push(itemObj);
         });
 
         if (validationFailed) {
@@ -806,13 +828,42 @@ jQuery(document).ready(function($) {
         const supplierName = isDonor ? null : supplierOrDonorName;
 
         if (window.originalRollbackPayload && window.originalRollbackPayload.items) {
-            const currentDescriptions = items.map(i => i.description.trim().toUpperCase());
-            window.originalRollbackPayload.items.forEach(origItem => {
-                const origDesc = (origItem.description || '').trim().toUpperCase();
-                if (!currentDescriptions.includes(origDesc)) {
-                    items.push(JSON.parse(JSON.stringify(origItem)));
+            // Build the final merged items array starting from originalRollbackPayload items
+            const finalItems = JSON.parse(JSON.stringify(window.originalRollbackPayload.items));
+
+            items.forEach(userItem => {
+                let matchIdx = -1;
+
+                // 1. Try matching by ID first
+                if (userItem.id) {
+                    matchIdx = finalItems.findIndex(i => String(i.id) === String(userItem.id));
+                }
+
+                // 2. Try matching by stored original_description
+                if (matchIdx === -1 && userItem.original_description) {
+                    const searchDesc = userItem.original_description.trim().toUpperCase();
+                    matchIdx = finalItems.findIndex(i => (i.description || '').trim().toUpperCase() === searchDesc);
+                }
+
+                // 3. Fallback to current user description
+                if (matchIdx === -1) {
+                    const userDesc = (userItem.description || '').trim().toUpperCase();
+                    matchIdx = finalItems.findIndex(i => (i.description || '').trim().toUpperCase() === userDesc);
+                }
+
+                if (matchIdx !== -1) {
+                    // Retain the ID if the original item had one and the new one doesn't
+                    if (finalItems[matchIdx].id && !userItem.id) {
+                        userItem.id = finalItems[matchIdx].id;
+                    }
+                    finalItems[matchIdx] = userItem;
+                } else {
+                    finalItems.push(userItem);
                 }
             });
+
+            items.length = 0;
+            items.push(...finalItems);
         }
 
         const payload = {
@@ -1273,8 +1324,13 @@ jQuery(document).ready(function($) {
                         }
                         $unitInput.val(unitVal).trigger('change');
                     } else {
-                        // Brand new item: clear choices to let officer pick/type
-                        $unitInput.val(null).trigger('change');
+                        // Preserve current unit value if already selected, don't clear it
+                        const existingUnit = $unitInput.val();
+                        if (!existingUnit && window.isPrefillingRollback) {
+                            // Keep value during rollback
+                        } else if (!existingUnit) {
+                            $unitInput.val(null).trigger('change');
+                        }
                     }
                 } else if (prevData && prevData.unit) {
                     const unitVal = prevData.unit;
@@ -1284,7 +1340,10 @@ jQuery(document).ready(function($) {
                     }
                     $unitInput.val(unitVal).trigger('change');
                 } else {
-                    $unitInput.val(null).trigger('change');
+                    const existingUnit = $unitInput.val();
+                    if (!existingUnit) {
+                        $unitInput.val(null).trigger('change');
+                    }
                 }
 
                 const updateStatsPanel = () => {
@@ -1483,6 +1542,7 @@ jQuery(document).ready(function($) {
                 $(this).find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
                 $(this).find('.row-qty').css({'border-color': '#059669', 'background': 'var(--bg-card)'}).prop('readonly', false);
                 $(this).find('.actual-qty-group').slideDown(300);
+                $(this).find('.row-stock-balance').val('');
                 updateSerialInputs($(this));
             });
         } else {
@@ -1836,6 +1896,7 @@ jQuery(document).ready(function($) {
 
                 // Keep the full original payload intact in window.originalRollbackPayload
                 window.originalRollbackPayload = JSON.parse(JSON.stringify(payload));
+                window.rollbackFlaggedItems = flaggedItems;
 
                 // Filter items to show only the ones selected by the Head of Stores for rollback
                 let renderItems = payload.items || [];
@@ -1848,10 +1909,10 @@ jQuery(document).ready(function($) {
                     <div id="rollback-alert-banner" style="margin-bottom: 2rem; border-radius: 14px; overflow: hidden; border: 2px solid #fca5a5; box-shadow: 0 4px 16px rgba(239,68,68,0.1);">
                         <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 0.85rem 1.1rem; display: flex; align-items: center; gap: 10px;">
                             <svg style="width: 18px; height: 18px; color: white; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                            <span style="font-size: 0.82rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.06em;">Correction Required â€” Admin Rollback</span>
+                            <span style="font-size: 0.82rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.06em;">Correction Required — Admin Rollback</span>
                         </div>
                         <div style="background: #fff5f5; padding: 0.75rem 1.1rem; font-size: 0.82rem; color: #7f1d1d; line-height: 1.6;">
-                            Fields highlighted in <b style="color:#ef4444;">red</b> need to be corrected per the Admin's instructions.
+                            Only fields highlighted in <b style="color:#ef4444;">red</b> can be edited per Admin instructions. All other fields remain locked.
                             ${generalNote ? `<div style="margin-top: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fecaca;"><b>Admin Note:</b> ${generalNote}</div>` : ''}
                         </div>
                     </div>`;
@@ -1869,6 +1930,16 @@ jQuery(document).ready(function($) {
                 }
 
                 window.isPrefillingRollback = true;
+
+                // Ensure items in draft carry over units from server payload if draft unit is missing
+                if (draftState && draftState.items && draftState.items.length > 0) {
+                    draftState.items.forEach((dItem, idx) => {
+                        const originalItem = renderItems[idx];
+                        if (originalItem && (!dItem.unit || dItem.unit === '')) {
+                            dItem.unit = originalItem.unit;
+                        }
+                    });
+                }
 
                 if (draftState && draftState.items && draftState.items.length > 0) {
                     restoreFormState(draftState);
@@ -1943,6 +2014,13 @@ jQuery(document).ready(function($) {
                             const $row = $(this);
                             if (!itm) return;
 
+                            if (itm.description) {
+                                $row.attr('data-original-desc', itm.description);
+                            }
+                            if (itm.id) {
+                                $row.attr('data-item-id', itm.id);
+                            }
+
                             const itemCat = itm.ledge_category || payload.ledge_category;
                             if (itemCat) {
                                 $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
@@ -2013,14 +2091,17 @@ jQuery(document).ready(function($) {
         const RED_BORDER = '2px solid #b91c1c';
         const RED_SHADOW = '0 0 0 4px rgba(185,28,28,0.15)';
 
-        // 1. Highlight global fields (supplier details, dates, etc.)
+        // 0. Lock all general form controls by default during rollback mode
+        $('#ledgeSelect, #supplierNameSelect, #supplierStatusSelect, #arrivalDate, #isDonorCheckbox, #multiQty, .remove-row-btn').prop('disabled', true);
+
+        // 1. Highlight & Enable flagged global fields
         const GLOBAL_FIELD_MAP = {
-            supplier_name:    () => [$('#supplierNameSelect').parent().find('.select2-selection').length ? $('#supplierNameSelect').parent().find('.select2-selection') : $('#supplierNameSelect').closest('.select2-container')],
-            supplier_status:  () => [$('#supplierStatusSelect').parent().find('.select2-selection').length ? $('#supplierStatusSelect').parent().find('.select2-selection') : $('#supplierStatusSelect')],
-            arrival_date:     () => [$('#arrivalDate')],
-            entry_date:       () => [$('#arrivalDate')],
-            ledge_category:   () => [$('#ledgeSelect').parent().find('.select2-selection').length ? $('#ledgeSelect').parent().find('.select2-selection') : $('#ledgeSelect').closest('.select2-container')],
-            acquisition_type: () => [$('#isDonorCheckbox').closest('label')],
+            supplier_name:    () => { $('#supplierNameSelect').prop('disabled', false); return [$('#supplierNameSelect').parent().find('.select2-selection').length ? $('#supplierNameSelect').parent().find('.select2-selection') : $('#supplierNameSelect').closest('.select2-container')]; },
+            supplier_status:  () => { $('#supplierStatusSelect').prop('disabled', false); return [$('#supplierStatusSelect').parent().find('.select2-selection').length ? $('#supplierStatusSelect').parent().find('.select2-selection') : $('#supplierStatusSelect')]; },
+            arrival_date:     () => { $('#arrivalDate').prop('disabled', false); return [$('#arrivalDate')]; },
+            entry_date:       () => { $('#arrivalDate').prop('disabled', false); return [$('#arrivalDate')]; },
+            ledge_category:   () => { $('#ledgeSelect').prop('disabled', false); return [$('#ledgeSelect').parent().find('.select2-selection').length ? $('#ledgeSelect').parent().find('.select2-selection') : $('#ledgeSelect').closest('.select2-container')]; },
+            acquisition_type: () => { $('#isDonorCheckbox').prop('disabled', false); return [$('#isDonorCheckbox').closest('label')]; },
         };
 
         Object.keys(GLOBAL_FIELD_MAP).forEach(key => {
@@ -2047,24 +2128,39 @@ jQuery(document).ready(function($) {
             }
         });
 
-        // 2. Highlight row-specific fields (only for rows whose description matches flaggedItems, if flaggedItems is not empty)
+        // 2. Lock item row controls by default and enable ONLY flagged row inputs
         const hasFlaggedItems = flaggedItems && flaggedItems.length > 0;
 
         $('.item-entry-row').each(function() {
             const $row = $(this);
             const descVal = ($row.find('.item-select-dynamic').val() || '').trim();
 
-            // If flaggedItems list exists, only apply row highlights if this item's description matches
+            // Disable all fields in the row by default
+            $row.find('input, select, textarea').prop('disabled', true);
+
+            // If flaggedItems list exists, only apply row highlights & unlock if description matches
             if (hasFlaggedItems && !flaggedItems.includes(descVal)) {
                 return;
             }
 
             const rowFieldsMap = {
-                item_description: () => $row.find('.item-select-dynamic').parent().find('.select2-selection').length ? $row.find('.item-select-dynamic').parent().find('.select2-selection') : $row.find('.item-select-dynamic').closest('.select2-container'),
-                item_qty:         () => $row.find('.row-qty'),
-                item_unit:        () => $row.find('.row-unit').parent().find('.select2-selection').length ? $row.find('.row-unit').parent().find('.select2-selection') : $row.find('.row-unit').closest('.select2-container'),
-                item_remarks:     () => $row.find('.row-remarks'),
-                item_serial_number: () => $row.find('.serial-inputs-container'),
+                item_description: () => { 
+                    const $descSel = $row.find('.item-select-dynamic');
+                    $descSel.prop('disabled', false); 
+                    // Enable user custom tag input
+                    $descSel.on('select2:select', function(e) {
+                        const val = e.params.data.id;
+                        if ($descSel.find('option[value="' + val + '"]').length === 0) {
+                            $descSel.append(new Option(val, val, true, true));
+                        }
+                        $descSel.val(val).trigger('change');
+                    });
+                    return $descSel.parent().find('.select2-selection').length ? $descSel.parent().find('.select2-selection') : $descSel.closest('.select2-container'); 
+                },
+                item_qty:         () => { $row.find('.row-qty').prop('disabled', false); return $row.find('.row-qty'); },
+                item_unit:        () => { $row.find('.row-unit').prop('disabled', false); return $row.find('.row-unit').parent().find('.select2-selection').length ? $row.find('.row-unit').parent().find('.select2-selection') : $row.find('.row-unit').closest('.select2-container'); },
+                item_remarks:     () => { $row.find('.row-remarks').prop('disabled', false); return $row.find('.row-remarks'); },
+                item_serial_number: () => { $row.find('.row-serial-number, .serial-input-item, .rim-input-item').prop('disabled', false); return $row.find('.serial-inputs-container'); },
             };
 
             Object.keys(rowFieldsMap).forEach(key => {

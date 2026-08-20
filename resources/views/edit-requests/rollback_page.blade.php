@@ -639,7 +639,7 @@
                             <div class="rb-note-wrap" id="rbnote-item_description">
                                 <input type="text" name="flagged_fields[item_description]" class="rb-note-input"
                                        placeholder="{{ !empty($selectedItems) ? 'Correction required for: ' . implode(', ', $selectedItems) : 'e.g. Correct description is...' }}"
-                                       disabled>
+                                       disabled style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                             </div>
                         </div>
 
@@ -657,7 +657,7 @@
                             </div>
                             <div class="rb-note-wrap" id="rbnote-supplier_name">
                                 <input type="text" name="flagged_fields[supplier_name]" class="rb-note-input"
-                                       placeholder="e.g. Correct supplier is..." disabled>
+                                       placeholder="e.g. Correct supplier is..." disabled style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                             </div>
                         </div>
 
@@ -696,7 +696,7 @@
                 <span id="rbActionCount">0 fields flagged</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <a href="{{ route('sra.preview', $editReq->id) }}" class="rb-btn-cancel">
+                <a href="{{ route('dashboard') }}" class="rb-btn-cancel">
                     <i data-lucide="x" style="width:15px;height:15px;"></i>
                     Cancel
                 </a>

@@ -269,6 +269,52 @@ class ReceivedItemsController extends Controller
             'request_type' => $req->request_type
         ];
 
+        // Format previous state for rollback/resubmitted creation requests
+        $isRollbackFlow = in_array($req->status, ['rollback', 'resubmitted']);
+        if ($isRollbackFlow && ($req->request_type === 'sra_creation' || $req->request_type === 'discrepancy_creation')) {
+            $origPayload = $req->original_payload;
+            if (empty($origPayload)) {
+                $origPayload = $req->payload;
+            }
+            while (is_string($origPayload)) {
+                $decoded = json_decode($origPayload, true);
+                if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {
+                    $origPayload = $decoded;
+                } else {
+                    break;
+                }
+            }
+            if (is_array($origPayload) && !empty($origPayload)) {
+                $origItems = $origPayload['items'] ?? [];
+                if (!empty($origItems)) {
+                    $origDescriptions = collect($origItems)->pluck('description')->filter()->unique()->toArray();
+                    $origSums = \App\Models\InventoryItem::whereIn('description', $origDescriptions)
+                        ->selectRaw('description, SUM(stock_balance) as total')
+                        ->groupBy('description')
+                        ->pluck('total', 'description')
+                        ->toArray();
+                    foreach ($origItems as &$origItem) {
+                        $origItem['total_in_system'] = floatval($origSums[$origItem['description'] ?? ''] ?? 0);
+                    }
+                    unset($origItem);
+                }
+
+                $response['previous_batch'] = [
+                    'id' => $req->item_id,
+                    'ledge_category' => $origPayload['ledge_category'] ?? $data['ledge_category'] ?? 'A',
+                    'supplier_name' => $origPayload['supplier_name'] ?? $data['supplier_name'] ?? '',
+                    'supplier_status' => $origPayload['supplier_status'] ?? $data['supplier_status'] ?? '',
+                    'donor_name' => $origPayload['donor_name'] ?? $data['donor_name'] ?? null,
+                    'acquisition_type' => $origPayload['acquisition_type'] ?? $data['acquisition_type'] ?? 'Supplier',
+                    'delivery_person' => $origPayload['delivery_person'] ?? $data['delivery_person'] ?? '',
+                    'delivery_phone' => $origPayload['delivery_phone'] ?? $data['delivery_phone'] ?? '',
+                    'arrival_date' => $origPayload['arrival_date'] ?? $data['arrival_date'] ?? '',
+                    'items' => $origItems
+                ];
+                $response['previous_ledge_name'] = $ledgeMap[$response['previous_batch']['ledge_category']] ?? $response['previous_batch']['ledge_category'];
+            }
+        }
+
         if ($req->request_type === 'edit_submission') {
             $originalBatch = \App\Models\InventoryBatch::with('items')->find($req->item_id);
             if ($originalBatch) {
@@ -427,7 +473,7 @@ class ReceivedItemsController extends Controller
             // Calculate exact sum based on search term directly across inventory
             $sumQuery = clone $query;
             $searchSum = $sumQuery->sum('inventory_items.stock_balance');
-            $searchQtySum = $sumQuery->sum('inventory_items.qty');
+            $searchQtySum = $sumQuery->selectRaw("SUM(CASE WHEN inventory_items.book_qty IS NULL THEN inventory_items.qty + COALESCE(inventory_items.variance, 0) ELSE inventory_items.qty END) as total_qty")->value('total_qty') ?? 0;
 
             // Sum all quantities issued through approved/partially_approved requisitions
             $searchIssuedQtySum = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')

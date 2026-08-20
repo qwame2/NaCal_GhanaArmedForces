@@ -1697,6 +1697,21 @@
                             badgeItemEntry.style.display = 'none';
                         }
                     }
+
+                    // Rollback Request Badges (Silent update without full-page refresh)
+                    const countRollbacks = data.pending_rollbacks !== undefined ? data.pending_rollbacks : 0;
+                    ['sidebar-badge-rollback-requests', 'sidebar-badge-rollback-requests-2'].forEach(badgeId => {
+                        const badgeRb = document.getElementById(badgeId);
+                        if (badgeRb) {
+                            if (countRollbacks > 0) {
+                                badgeRb.textContent = countRollbacks;
+                                badgeRb.style.display = 'flex';
+                            } else {
+                                badgeRb.style.display = 'none';
+                            }
+                        }
+                    });
+
                     if (typeof window.checkApprovedCollectionPopover === 'function') {
                         window.checkApprovedCollectionPopover();
                     }

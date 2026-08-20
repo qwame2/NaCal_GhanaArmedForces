@@ -399,7 +399,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    // Silent Auto-Refresh Function for Rollback Queue
     let isPollingRollback = false;
 
     window.pollRollbackQueueSilently = function(manual = false) {
@@ -435,17 +434,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentWrapper = document.getElementById('rollbackQueueWrapper');
             if (newWrapper && currentWrapper) {
                 currentWrapper.innerHTML = newWrapper.innerHTML;
-
-                // Subtle blinking flash animation to signify live sync
-                currentWrapper.classList.remove('rb-flash-sync');
-                void currentWrapper.offsetWidth; // Trigger reflow
-                currentWrapper.classList.add('rb-flash-sync');
             }
 
             if (typeof lucide !== 'undefined') lucide.createIcons();
         })
         .catch(err => {
-            console.error("Silent rollback poll error:", err);
+            console.error("Rollback refresh error:", err);
         })
         .finally(() => {
             isPollingRollback = false;
@@ -454,11 +448,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     };
-
-    // Auto-Poll every 8 seconds
-    setInterval(function() {
-        pollRollbackQueueSilently(false);
-    }, 8000);
 });
 </script>
 @endpush

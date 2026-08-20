@@ -1243,6 +1243,17 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         $pendingRequisitions = \App\Models\StoreRequisition::awaitingHeadOfStoresReview()->count();
         $pendingRegistrations = \App\Models\User::where('registration_status', 'pending')->count();
 
+        $user = auth()->user();
+        $authId = auth()->id();
+        $isStoresHead = ($user->role === 'Head of Stores' || $user->role === 'Dept. Head (Stores)' || (method_exists($user, 'isDepartmentHead') && $user->isDepartmentHead() && in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE'])));
+        
+        $pendingRollbacks = \App\Models\EditRequest::when(!$isStoresHead, function($q) use ($authId) {
+                $q->where('user_id', $authId)->where('status', 'rollback');
+            }, function($q) {
+                $q->whereIn('status', ['rollback', 'resubmitted']);
+            })
+            ->count();
+
         return response()->json([
             'messages' => $messages,
             'password_requests' => $passwordRequests,
@@ -1250,6 +1261,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             'pending_requisitions' => $pendingRequisitions,
             'pending_registrations' => $pendingRegistrations,
             'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
+            'pending_rollbacks' => $pendingRollbacks,
         ]);
     })->name('api.admin.sidebar-counts');
 
@@ -1259,9 +1271,12 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        if (auth()->user()->role === 'Requisitioner') {
+        $user = auth()->user();
+        $authId = auth()->id();
+
+        if ($user->role === 'Requisitioner') {
             // Requisitioners: only their own approved reqs awaiting collection
-            $approvedRequisitions = \App\Models\StoreRequisition::where('requested_by', auth()->id())
+            $approvedRequisitions = \App\Models\StoreRequisition::where('requested_by', $authId)
                 ->whereIn('status', ['approved', 'partially_approved'])
                 ->whereNull('collected_at')
                 ->count();
@@ -1272,9 +1287,19 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->count();
         }
 
+        $isStoresHead = ($user->role === 'Head of Stores' || $user->role === 'Dept. Head (Stores)' || (method_exists($user, 'isDepartmentHead') && $user->isDepartmentHead() && in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE'])));
+
+        $pendingRollbacks = \App\Models\EditRequest::when(!$isStoresHead, function($q) use ($authId) {
+                $q->where('user_id', $authId)->where('status', 'rollback');
+            }, function($q) {
+                $q->whereIn('status', ['rollback', 'resubmitted']);
+            })
+            ->count();
+
         return response()->json([
             'approved_requisitions' => $approvedRequisitions,
             'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
+            'pending_rollbacks' => $pendingRollbacks,
         ]);
     })->name('api.personnel.sidebar-counts');
 

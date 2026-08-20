@@ -1425,8 +1425,7 @@ class ApiTest extends TestCase
 
         $viewResp = $this->actingAs($officer)->get(route('stores.rollback-requests'));
         $viewResp->assertStatus(200);
-        $viewResp->assertSee('Correction Submitted');
-        $viewResp->assertSee('disabled');
+        $viewResp->assertDontSee('RB-' . str_pad($editReq->id, 5, '0', STR_PAD_LEFT));
     }
 
     public function test_baseline_filter_shows_discrepancy_and_baseline_items()

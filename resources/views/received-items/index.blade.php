@@ -555,7 +555,12 @@
                                 <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">-</span>
                             @endif
                         </td>
-                        <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format((float)($item->qty ?? 0)) }}</td>
+                        @php
+                            $receivedQtyDisplay = is_null($item->book_qty) 
+                                ? ((float)($item->qty ?? 0) + (float)($item->variance ?? 0)) 
+                                : (float)($item->qty ?? 0);
+                        @endphp
+                        <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($receivedQtyDisplay) }}</td>
                         <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ number_format((float)(!is_null($item->book_qty) ? $item->book_qty : ($item->stock_balance ?? 0))) }}</td>
                         <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
                             <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#059669' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">

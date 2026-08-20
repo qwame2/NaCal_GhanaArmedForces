@@ -60,6 +60,8 @@
                             REQ-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
                             @if($isRemainder)
                                 <span style="font-size: 0.65rem; background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 7px; border-radius: 6px; font-weight: 850; margin-left: 4px; text-transform: uppercase;">REMAINDER</span>
+                            @elseif($req->status === 'resubmitted')
+                                <span style="font-size: 0.65rem; background: rgba(5, 150, 105, 0.12); color: #059669; border: 1px solid rgba(5, 150, 105, 0.3); padding: 2px 7px; border-radius: 6px; font-weight: 850; margin-left: 4px; text-transform: uppercase;">CORRECTED</span>
                             @endif
                         </td>
                         <td style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">

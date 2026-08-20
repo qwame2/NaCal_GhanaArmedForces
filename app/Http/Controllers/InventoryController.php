@@ -301,10 +301,12 @@ class InventoryController extends Controller
                 // Divert to staged approval process
                 $payloadData = $validated;
                 $payloadData['is_discrepancy'] = true;
+                $origPayload = null;
                 if ($request->has('rollback_id') && !empty($request->rollback_id)) {
                     $payloadData['rollback_id'] = $request->rollback_id;
                     $origRollback = \App\Models\EditRequest::find($request->rollback_id);
                     if ($origRollback) {
+                        $origPayload = $origRollback->original_payload ?: $origRollback->payload;
                         $origRollback->update(['status' => 'resubmitted']);
                     }
                 }
@@ -315,7 +317,8 @@ class InventoryController extends Controller
                     'request_type' => 'discrepancy_creation',
                     'reason' => 'Discrepancy Entry Submission',
                     'status' => 'pending',
-                    'payload' => json_encode($payloadData)
+                    'payload' => json_encode($payloadData),
+                    'original_payload' => $origPayload
                 ]);
 
                 // Send Approval Request to all Admins & Delegated Approver
@@ -513,21 +516,38 @@ class InventoryController extends Controller
                 $payloadData = $validated;
                 if ($request->has('rollback_id') && !empty($request->rollback_id)) {
                     $payloadData['rollback_id'] = $request->rollback_id;
-                    $origRollback = \App\Models\EditRequest::find($request->rollback_id);
-                    if ($origRollback) {
-                        $origRollback->update(['status' => 'resubmitted']);
+                    $editReq = \App\Models\EditRequest::find($request->rollback_id);
+                    if ($editReq) {
+                        $origPayload = $editReq->original_payload ?: $editReq->payload;
+                        $editReq->update([
+                            'reason' => 'Correction submission for rolled back entry',
+                            'status' => 'resubmitted',
+                            'payload' => json_encode($payloadData),
+                            'original_payload' => $origPayload
+                        ]);
+                    } else {
+                        $editReq = \App\Models\EditRequest::create([
+                            'user_id' => auth()->id(),
+                            'item_id' => 0,
+                            'item_type' => 'batch_creation',
+                            'request_type' => 'sra_creation',
+                            'reason' => 'Correction submission for rolled back entry',
+                            'status' => 'resubmitted',
+                            'payload' => json_encode($payloadData),
+                            'original_payload' => null
+                        ]);
                     }
+                } else {
+                    $editReq = \App\Models\EditRequest::create([
+                        'user_id' => auth()->id(),
+                        'item_id' => 0,
+                        'item_type' => 'batch_creation',
+                        'request_type' => 'sra_creation',
+                        'reason' => 'New Inventory Entry Submission',
+                        'status' => 'pending',
+                        'payload' => json_encode($payloadData)
+                    ]);
                 }
-
-                $editReq = \App\Models\EditRequest::create([
-                    'user_id' => auth()->id(),
-                    'item_id' => 0, // Fallback for creation requests
-                    'item_type' => 'batch_creation',
-                    'request_type' => 'sra_creation',
-                    'reason' => $request->has('rollback_id') ? 'Correction submission for rolled back entry' : 'New Inventory Entry Submission',
-                    'status' => 'pending',
-                    'payload' => json_encode($payloadData)
-                ]);
 
                 // Send Approval Request to all Admins & Delegated Approver
                 $admins = \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->get();

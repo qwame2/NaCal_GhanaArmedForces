@@ -12,7 +12,36 @@
     $createdAt = $data['created_at'] ?? 'N/A';
     $ledgeName = $data['ledge_name'] ?? ($batch['ledge_category'] ?? 'N/A');
     $items = $batch['items'] ?? [];
-    
+
+    // Filter items in the main table to only show modified items for rollback/resubmitted reviews
+    $isRollbackFlow = in_array($status, ['rollback', 'resubmitted']);
+    if ($isRollbackFlow && isset($data['previous_batch']['items'])) {
+        $filteredItems = [];
+        foreach ($items as $idx => $item) {
+            $isQtyChanged = false;
+            $isStockChanged = false;
+            $isDescChanged = false;
+            $isRemarksChanged = false;
+
+            $prevItem = collect($data['previous_batch']['items'])->firstWhere('id', $item['id'] ?? null);
+            if (!$prevItem && isset($data['previous_batch']['items'][$idx])) {
+                $prevItem = $data['previous_batch']['items'][$idx];
+            }
+
+            if ($prevItem) {
+                if (floatval($item['qty'] ?? 0) !== floatval($prevItem['qty'] ?? 0)) $isQtyChanged = true;
+                if (floatval($item['stock_balance'] ?? 0) !== floatval($prevItem['stock_balance'] ?? 0)) $isStockChanged = true;
+                if (trim($item['description'] ?? '') !== trim($prevItem['description'] ?? '')) $isDescChanged = true;
+                if (trim($item['remarks'] ?? '') !== trim($prevItem['remarks'] ?? '')) $isRemarksChanged = true;
+            }
+
+            if ($isQtyChanged || $isStockChanged || $isDescChanged || $isRemarksChanged) {
+                $filteredItems[] = $item;
+            }
+        }
+        $items = $filteredItems;
+    }
+
     // Check if it has any discrepancies (book_qty differs from qty or is set)
     $isDiscrepancy = false;
     foreach ($items as $item) {
@@ -247,11 +276,11 @@
                             <td style="padding: 1rem 1.5rem; text-align: center;">
                                 <input type="checkbox" class="item-rollback-checkbox" data-desc="{{ $item['description'] ?? '' }}" style="width: 16px; height: 16px; cursor: pointer; accent-color: #ef4444;" onchange="updateRollbackBtn();">
                             </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; {!! $isDescChanged ? 'background: rgba(5,150,105, 0.1); border-left: 3px solid #059669;' : '' !!}">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; {!! $isDescChanged ? 'background: rgba(59, 130, 246, 0.08); border-left: 3px solid #2563eb;' : '' !!}">
                                 <div>{{ $item['description'] ?? '' }}</div>
                                 <div class="item-sns-display" data-sns="{{ $item['serial_number'] ?? '' }}"></div>
                                 @if($isDescChanged)
-                                    <div style="font-size: 0.65rem; color: #059669; margin-top: 4px;">Modified</div>
+                                    <div style="font-size: 0.65rem; color: #2563eb; margin-top: 4px; font-weight: 800;">Modified</div>
                                 @endif
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
@@ -268,7 +297,7 @@
                                     {{ $stLoc }}
                                 </span>
                             </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isQtyChanged ? '#059669' : '#0f172a' }}; {!! $isQtyChanged ? 'background: rgba(5,150,105, 0.1); border-left: 2px solid #059669;' : '' !!}">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isQtyChanged ? '#2563eb' : '#0f172a' }}; {!! $isQtyChanged ? 'background: rgba(59, 130, 246, 0.08); border-left: 2px solid #2563eb;' : '' !!}">
                                 {{ number_format($item['qty'] ?? 0) }}
                             </td>
                             @if($isDiscrepancy)
@@ -279,14 +308,14 @@
                                     {{ $displayVariance }}
                                 </td>
                             @else
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isStockChanged ? '#059669' : '#059669' }}; {!! $isStockChanged ? 'background: rgba(5,150,105, 0.1); border-left: 2px solid #059669;' : '' !!}">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isStockChanged ? '#2563eb' : '#0f172a' }}; {!! $isStockChanged ? 'background: rgba(59, 130, 246, 0.08); border-left: 2px solid #2563eb;' : '' !!}">
                                     {{ number_format($item['stock_balance'] ?? 0) }}
                                 </td>
                             @endif
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0284c7; text-align: right;">
                                 {{ number_format($item['total_in_system'] ?? 0) }}
                             </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; {!! $isRemarksChanged ? 'background: rgba(5,150,105, 0.1); border-left: 2px solid #059669;' : '' !!}">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; {!! $isRemarksChanged ? 'background: rgba(59, 130, 246, 0.08); border-left: 2px solid #2563eb;' : '' !!}">
                                 {{ $item['remarks'] ?: '-- No specific notes --' }}
                             </td>
                         </tr>
@@ -320,8 +349,8 @@
             </div>
         </div>
 
-        <!-- Original Entry state block (Only for edit request types) -->
-        @if($requestType === 'edit_submission' && isset($data['previous_batch']))
+        <!-- Original Entry state block (Only for edit request types or rollback flows) -->
+        @if(($requestType === 'edit_submission' || in_array($status, ['rollback', 'resubmitted'])) && isset($data['previous_batch']))
             @php
                 $prevItems = $data['previous_batch']['items'] ?? [];
             @endphp
@@ -360,14 +389,38 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($prevItems as $prevItem)
+                            @foreach($prevItems as $prevIdx => $prevItem)
                             @php
                                 $prevVarianceVal = floatval($prevItem['qty'] ?? 0) - floatval($prevItem['book_qty'] ?? 0);
+                                
+                                $isPrevQtyChanged = false;
+                                $isPrevStockChanged = false;
+                                $isPrevDescChanged = false;
+                                $isPrevRemarksChanged = false;
+
+                                // Match by ID or by index
+                                $matchingCorrItem = null;
+                                if (isset($prevItem['id'])) {
+                                    $matchingCorrItem = collect($items)->firstWhere('id', $prevItem['id']);
+                                }
+                                if (!$matchingCorrItem && isset($items[$prevIdx])) {
+                                    $matchingCorrItem = $items[$prevIdx];
+                                }
+
+                                if ($matchingCorrItem) {
+                                    if (floatval($matchingCorrItem['qty'] ?? 0) !== floatval($prevItem['qty'] ?? 0)) $isPrevQtyChanged = true;
+                                    if (floatval($matchingCorrItem['stock_balance'] ?? 0) !== floatval($prevItem['stock_balance'] ?? 0)) $isPrevStockChanged = true;
+                                    if (trim($matchingCorrItem['description'] ?? '') !== trim($prevItem['description'] ?? '')) $isPrevDescChanged = true;
+                                    if (trim($matchingCorrItem['remarks'] ?? '') !== trim($prevItem['remarks'] ?? '')) $isPrevRemarksChanged = true;
+                                }
                             @endphp
                             <tr style="border-bottom: 1px solid #fee2e2;">
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #7f1d1d;">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #7f1d1d; {!! $isPrevDescChanged ? 'background: rgba(239, 68, 68, 0.08); border-left: 3px solid #dc2626;' : '' !!}">
                                     <div>{{ $prevItem['description'] ?? '' }}</div>
                                     <div class="item-sns-display" data-sns="{{ $prevItem['serial_number'] ?? '' }}"></div>
+                                    @if($isPrevDescChanged)
+                                        <div style="font-size: 0.65rem; color: #dc2626; margin-top: 4px; font-weight: 800;">Original Value</div>
+                                    @endif
                                 </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #991b1b;">
                                     {{ $prevItem['unit'] ?? 'Package Types' }}
@@ -383,7 +436,7 @@
                                         {{ $stPrevLoc }}
                                     </span>
                                 </td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #991b1b; text-align: right;">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: {{ $isPrevQtyChanged ? '#dc2626' : '#991b1b' }}; text-align: right; {!! $isPrevQtyChanged ? 'background: rgba(239, 68, 68, 0.08); border-left: 2px solid #dc2626;' : '' !!}">
                                     {{ number_format($prevItem['qty'] ?? 0) }}
                                 </td>
                                 @if($isDiscrepancy)
@@ -392,14 +445,14 @@
                                     </td>
                                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #991b1b; text-align: right;">--</td>
                                 @else
-                                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #991b1b; text-align: right;">
+                                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: {{ $isPrevStockChanged ? '#dc2626' : '#991b1b' }}; text-align: right; {!! $isPrevStockChanged ? 'background: rgba(239, 68, 68, 0.08); border-left: 2px solid #dc2626;' : '' !!}">
                                         {{ number_format($prevItem['stock_balance'] ?? 0) }}
                                     </td>
                                 @endif
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #991b1b; text-align: right;">
                                     {{ number_format($prevItem['total_in_system'] ?? 0) }}
                                 </td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #b91c1c; font-style: italic; max-width: 200px; word-break: break-word;">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #b91c1c; font-style: italic; max-width: 200px; word-break: break-word; {!! $isPrevRemarksChanged ? 'background: rgba(239, 68, 68, 0.08); border-left: 2px solid #dc2626;' : '' !!}">
                                     {{ $prevItem['remarks'] ?: '-- No specific notes --' }}
                                 </td>
                             </tr>
@@ -422,7 +475,7 @@
         </div>
 
         <!-- Administrative Review Actions Panel -->
-        @if($status === 'pending')
+        @if($status === 'pending' || $status === 'resubmitted')
         <div class="actions-panel" style="background: white; border: 1px solid var(--border-color); padding: 1.75rem 2.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 24px; box-shadow: var(--shadow-luxe); margin-top: 2rem;">
             <button onclick="window.rollbackEntry({{ $reqId }})" style="margin-right: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
                 <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
@@ -436,10 +489,31 @@
             </button>
         </div>
         @else
-        <div style="margin-top: 2rem; padding: 1.75rem; background: {{ $status === 'approved' ? 'rgba(5,150,105, 0.08)' : 'rgba(239, 68, 68, 0.08)' }}; border-radius: 24px; border: 1.5px solid {{ $status === 'approved' ? '#059669' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; gap: 1rem; box-shadow: var(--shadow-luxe);">
-            <div style="font-weight: 950; color: {{ $status === 'approved' ? '#059669' : '#ef4444' }}; text-transform: uppercase; font-size: 1rem; display: flex; align-items: center; gap: 8px; letter-spacing: 0.05em;">
-                <i data-lucide="{{ $status === 'approved' ? 'check-circle' : 'alert-circle' }}" style="width: 22px; height: 22px;"></i>
-                Oversight Decision: {{ $status === 'approved' ? 'APPROVED & SAVED' : 'REJECTED' }}
+        @php
+            $boxBg = 'rgba(239, 68, 68, 0.08)';
+            $boxBorder = '#ef4444';
+            $boxText = '#ef4444';
+            $boxIcon = 'alert-circle';
+            $decisionText = 'REJECTED';
+
+            if ($status === 'approved' || $status === 'completed') {
+                $boxBg = 'rgba(5, 150, 105, 0.08)';
+                $boxBorder = '#059669';
+                $boxText = '#059669';
+                $boxIcon = 'check-circle';
+                $decisionText = 'APPROVED & SAVED';
+            } elseif ($status === 'rollback') {
+                $boxBg = 'rgba(245, 158, 11, 0.08)';
+                $boxBorder = '#f59e0b';
+                $boxText = '#d97706';
+                $boxIcon = 'rotate-ccw';
+                $decisionText = 'ROLLED BACK FOR CORRECTION';
+            }
+        @endphp
+        <div style="margin-top: 2rem; padding: 1.75rem; background: {{ $boxBg }}; border-radius: 24px; border: 1.5px solid {{ $boxBorder }}; display: flex; align-items: center; justify-content: center; gap: 1rem; box-shadow: var(--shadow-luxe);">
+            <div style="font-weight: 950; color: {{ $boxText }}; text-transform: uppercase; font-size: 1rem; display: flex; align-items: center; gap: 8px; letter-spacing: 0.05em;">
+                <i data-lucide="{{ $boxIcon }}" style="width: 22px; height: 22px;"></i>
+                Oversight Decision: {{ $decisionText }}
             </div>
         </div>
         @endif

@@ -1347,6 +1347,9 @@ class EditRequestController extends Controller
 
         $editReq = EditRequest::findOrFail($id);
         $editReq->status         = 'rollback';
+        if (empty($editReq->original_payload)) {
+            $editReq->original_payload = $editReq->payload;
+        }
 
         $flaggedFieldsKeys = $request->input('flagged_fields_keys', []);
         $flaggedInput = $request->input('flagged_fields', []);
@@ -1355,10 +1358,16 @@ class EditRequestController extends Controller
         if (!empty($flaggedFieldsKeys)) {
             foreach ($flaggedFieldsKeys as $key) {
                 $note = $flaggedInput[$key] ?? '';
+                if (in_array($key, ['item_description', 'supplier_name'])) {
+                    $note = strtoupper($note);
+                }
                 $flaggedFields[$key] = !empty(trim($note)) ? trim($note) : 'Please review and correct this field.';
             }
         } else {
             foreach ($flaggedInput as $field => $note) {
+                if (in_array($field, ['item_description', 'supplier_name'])) {
+                    $note = strtoupper($note);
+                }
                 $flaggedFields[$field] = !empty(trim($note)) ? trim($note) : 'Please review and correct this field.';
             }
         }
@@ -1528,7 +1537,7 @@ class EditRequestController extends Controller
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json(['success' => true]);
         }
-        return redirect()->route('admin.messages')->with('success', 'Rollback request submitted successfully.');
+        return redirect()->route('dashboard')->with('success', 'Rollback request submitted successfully.');
     }
 
     public function itemEntryIndex(\Illuminate\Http\Request $request)
@@ -1550,7 +1559,7 @@ class EditRequestController extends Controller
                 $q->where('item_type', 'batch_creation')
                   ->orWhere('request_type', 'remainder_submission');
             })
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'resubmitted'])
             ->orderBy('created_at', 'desc')
             ->paginate(15, ['*'], 'pending_page');
 
@@ -1612,12 +1621,8 @@ class EditRequestController extends Controller
             ->whereIn('status', ['rollback', 'resubmitted']);
 
         if (!auth()->user()->isMainAdminOrSub() && auth()->user()->role !== 'Head of Stores') {
-            $query->where(function($q) {
-                $q->where('user_id', auth()->id())
-                  ->orWhereHas('user', function($uq) {
-                      $uq->where('department', auth()->user()->department);
-                  });
-            });
+            $query->where('user_id', auth()->id())
+                  ->where('status', 'rollback');
         }
 
         $rollbacks = $query->orderBy('updated_at', 'desc')->paginate(15);
