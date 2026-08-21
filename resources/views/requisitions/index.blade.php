@@ -1604,6 +1604,20 @@
             padding: 0 4px;
             border: 2px solid #0f172a;
         }
+
+        /* Bubble Bounce/Pulse Animation when item is added while minimized */
+        @keyframes bubble-added-pulse {
+            0% { transform: scale(1); }
+            20% { transform: scale(1.25); }
+            40% { transform: scale(0.95); }
+            60% { transform: scale(1.1); }
+            80% { transform: scale(0.98); }
+            100% { transform: scale(1); }
+        }
+
+        .floating-cart-bubble.bubble-pulse {
+            animation: bubble-added-pulse 0.6s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -1998,9 +2012,18 @@
             }, 1200);
 
             // Re-render & persist
-            isCartBarMinimized = false;
             saveCartToStorage();
             updateCartUI();
+
+            // Trigger bubble pulse micro-animation if minimized
+            if (isCartBarMinimized) {
+                const floatingBubble = document.getElementById('floating-cart-bubble');
+                if (floatingBubble) {
+                    floatingBubble.classList.remove('bubble-pulse');
+                    void floatingBubble.offsetWidth; // trigger reflow
+                    floatingBubble.classList.add('bubble-pulse');
+                }
+            }
         }
 
         function updateCartUI() {
