@@ -761,6 +761,9 @@
                                             </optgroup>
                                         </select>
                                     </div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-top: 6px; padding-left: 4px; line-height: 1.25;">
+                                        <span style="color: var(--primary); font-weight: 800;">Note:</span> Please type your department name and press <strong style="color: var(--text-main);">Enter</strong> if only your department is not found on the dropdown list.
+                                    </div>
                                 </div>
 
                                 <div class="input-modern-group">
@@ -1692,7 +1695,8 @@
         if ($('#selfDeptSelect').length) {
             $('#selfDeptSelect').select2({
                 placeholder: "-- Select Department --",
-                allowClear: true
+                allowClear: true,
+                tags: true
             });
 
             // Listen to select change
