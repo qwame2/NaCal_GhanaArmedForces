@@ -382,7 +382,7 @@
                 container.children('.item-entry-row').each(function() {
                     const $row = $(this);
                     $row.find('.row-book-qty').closest('.form-group').find('label').html(
-                        `<i data-lucide="book-open" style="width: 14px; color: var(--primary);"></i> Book Quantity <span style="color: #ef4444; margin-left: 2px;">*</span>`
+                        `<i data-lucide="book-open" style="width: 14px; color: var(--primary);"></i> Ledger Quantity <span style="color: #ef4444; margin-left: 2px;">*</span>`
                     );
                     $row.find('.row-received-qty').closest('.form-group').find('label').html(
                         `<i data-lucide="check-square" style="width: 14px; color: var(--primary);"></i> Received Quantity <span style="color: #ef4444; margin-left: 2px;">*</span>`
@@ -584,11 +584,11 @@
 
                         <!-- Quantity Analysis Row -->
                         <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
-                            <!-- Book Quantity -->
+                            <!-- Ledger Quantity -->
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                     <i data-lucide="book-open" style="width: 14px; color: var(--primary);"></i>
-                                    Book Quantity <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                    Ledger Quantity <span style="color: #ef4444; margin-left: 2px;">*</span>
                                 </label>
                                 <input type="number" class="row-book-qty form-control" placeholder="Ledger count" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600;" required>
                             </div>
@@ -981,7 +981,7 @@
                 if (!desc) missing.push(`Item Type #${idx}: Description`);
                 if (!unit) missing.push(`Item Type #${idx}: Package Type`);
                 if (!storeLocation) missing.push(`Item Type #${idx}: Store Location`);
-                if (bookQty === '') missing.push(`Item Type #${idx}: Book Quantity`);
+                if (bookQty === '') missing.push(`Item Type #${idx}: Ledger Quantity`);
                 if (receivedQty === '') missing.push(`Item Type #${idx}: Received Quantity`);
 
                 if (isTyre) {
