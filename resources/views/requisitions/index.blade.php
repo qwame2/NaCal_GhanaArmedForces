@@ -2028,7 +2028,11 @@
 
         function updateCartUI() {
             const cartCountBadge = document.getElementById('cart-header-count');
-            if (cartCountBadge) cartCountBadge.textContent = cart.length;
+            
+            // Calculate total quantity of all items in the cart
+            const totalQty = cart.reduce((sum, item) => sum + (parseFloat(item.quantity_requested) || 0), 0);
+
+            if (cartCountBadge) cartCountBadge.textContent = totalQty;
 
             const stickyCount = document.getElementById('sticky-cart-count');
             const stickyBar = document.getElementById('sticky-cart-bar');
@@ -2040,7 +2044,7 @@
             }
 
             if (stickyCount && stickyBar) {
-                stickyCount.textContent = cart.length;
+                stickyCount.textContent = totalQty;
                 if (cart.length > 0 && !isCartBarMinimized) {
                     stickyBar.classList.add('active');
                 } else {
@@ -2049,7 +2053,7 @@
             }
 
             if (floatingBubble && bubbleCount) {
-                bubbleCount.textContent = cart.length;
+                bubbleCount.textContent = totalQty;
                 if (cart.length > 0 && isCartBarMinimized) {
                     floatingBubble.classList.add('active');
                 } else {

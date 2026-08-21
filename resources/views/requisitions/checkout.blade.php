@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
     @php
@@ -645,6 +645,16 @@
             <div class="cart-item-list" id="cart-items-container">
                 <!-- Dynamically loaded -->
             </div>
+
+            <!-- Cart Summary Panel -->
+            <div id="cart-summary-panel" class="cart-summary-panel" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 2px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; color: var(--text-main); font-family: inherit;">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+                    Unique Products: <strong id="summary-unique-count" style="color: var(--text-main); font-size: 0.95rem;">0</strong>
+                </div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+                    Total Quantity: <strong id="summary-total-qty" style="color: var(--store-orange, #f97316); font-size: 1.15rem; font-weight: 900;">0</strong>
+                </div>
+            </div>
         </section>
 
         <!-- --- COLUMN 2: IDENTIFICATION FORM --- -->
@@ -786,7 +796,18 @@
 
             mainLayout.style.display = 'grid';
             emptyState.style.display = 'none';
+            
+            // Calculate total quantity of items in checkout list
+            const totalQty = cart.reduce((sum, item) => sum + (parseFloat(item.quantity_requested) || 0), 0);
+            
+            // Display unique items count in the header to match the visible sections
             countLabel.textContent = cart.length;
+
+            // Display both unique products count and total quantity in the summary panel
+            const summaryUnique = document.getElementById('summary-unique-count');
+            const summaryTotal = document.getElementById('summary-total-qty');
+            if (summaryUnique) summaryUnique.textContent = cart.length;
+            if (summaryTotal) summaryTotal.textContent = totalQty;
 
             container.innerHTML = cart.map((item, idx) => `
                 <div class="cart-item-card">
