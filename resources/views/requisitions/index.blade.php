@@ -1535,6 +1535,75 @@
             50% { transform: scale(1.15); }
             100% { transform: scale(1); }
         }
+
+        /* Minimize Sticky Cart & FAB Bubble */
+        .minimize-cart-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.85);
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .minimize-cart-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .floating-cart-bubble {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--store-orange);
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            box-shadow: 0 10px 25px var(--store-orange-glow);
+            z-index: 999;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            transform: translateY(100px) scale(0.8);
+            pointer-events: none;
+        }
+
+        .floating-cart-bubble.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .floating-cart-bubble:hover {
+            background: var(--store-orange-hover);
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 12px 30px var(--store-orange-glow);
+        }
+
+        .cart-bubble-count {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid #0f172a;
+        }
     </style>
 </head>
 <body>
@@ -1798,10 +1867,23 @@
                 <i data-lucide="shopping-bag" class="cart-icon-pulse"></i>
                 <span>You have selected <strong id="sticky-cart-count">0</strong> items</span>
             </div>
-            <button id="sticky-cart-btn" class="sticky-cart-btn">
-                <span>View My Request</span>
-                <i data-lucide="arrow-right" style="width: 16px;"></i>
-            </button>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button id="sticky-cart-btn" class="sticky-cart-btn">
+                    <span>View My Request</span>
+                    <i data-lucide="arrow-right" style="width: 16px;"></i>
+                </button>
+                <button id="minimize-cart-btn" class="minimize-cart-btn" title="Minimize/Hide">
+                    <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Cart Bubble (FAB) when minimized -->
+    <div id="floating-cart-bubble" class="floating-cart-bubble" title="Restore Request Bar">
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+            <i data-lucide="shopping-bag" style="width: 24px; height: 24px;"></i>
+            <div id="cart-bubble-count" class="cart-bubble-count">0</div>
         </div>
     </div>
 
@@ -1813,6 +1895,7 @@
 
         let currentCategoryId = 'all';
         let searchQuery = '';
+        let isCartBarMinimized = false;
 
         function filterCatalog() {
             const query = searchQuery.toLowerCase().trim();
@@ -1915,6 +1998,7 @@
             }, 1200);
 
             // Re-render & persist
+            isCartBarMinimized = false;
             saveCartToStorage();
             updateCartUI();
         }
@@ -1925,12 +2009,28 @@
 
             const stickyCount = document.getElementById('sticky-cart-count');
             const stickyBar = document.getElementById('sticky-cart-bar');
+            const floatingBubble = document.getElementById('floating-cart-bubble');
+            const bubbleCount = document.getElementById('cart-bubble-count');
+
+            if (cart.length === 0) {
+                isCartBarMinimized = false;
+            }
+
             if (stickyCount && stickyBar) {
                 stickyCount.textContent = cart.length;
-                if (cart.length > 0) {
+                if (cart.length > 0 && !isCartBarMinimized) {
                     stickyBar.classList.add('active');
                 } else {
                     stickyBar.classList.remove('active');
+                }
+            }
+
+            if (floatingBubble && bubbleCount) {
+                bubbleCount.textContent = cart.length;
+                if (cart.length > 0 && isCartBarMinimized) {
+                    floatingBubble.classList.add('active');
+                } else {
+                    floatingBubble.classList.remove('active');
                 }
             }
         }
@@ -1996,6 +2096,24 @@
             const stickyCartBtn = document.getElementById('sticky-cart-btn');
             if (stickyCartBtn) {
                 stickyCartBtn.addEventListener('click', handleCartCheckout);
+            }
+
+            const minimizeCartBtn = document.getElementById('minimize-cart-btn');
+            if (minimizeCartBtn) {
+                minimizeCartBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isCartBarMinimized = true;
+                    updateCartUI();
+                });
+            }
+
+            const floatingCartBubble = document.getElementById('floating-cart-bubble');
+            if (floatingCartBubble) {
+                floatingCartBubble.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isCartBarMinimized = false;
+                    updateCartUI();
+                });
             }
 
             @if(session('show_profile_modal') || empty(auth()->user()->name) || auth()->user()->name === auth()->user()->username || empty(auth()->user()->phone) || empty(auth()->user()->role) || empty(auth()->user()->service_number))
