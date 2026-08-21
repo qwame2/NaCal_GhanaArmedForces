@@ -167,9 +167,9 @@
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                             <i data-lucide="activity" style="width: 14px; color: var(--primary);"></i>
-                            Delivery Status <span style="color: #ef4444; margin-left: 2px;">*</span>
+                            Delivery Status
                         </label>
-                        <select id="supplierStatusSelect" style="width: 100%;" required>
+                        <select id="supplierStatusSelect" style="width: 100%;">
                             <option value=""></option>
                             <option value="Full Delivery">Full Delivery</option>
                             <option value="Partial Delivery">Partial Delivery</option>
@@ -950,7 +950,6 @@
             const deliveryStatus = $('#supplierStatusSelect').val();
             if (!ledge) missing.push("Category Section");
             if (!dateCollected) missing.push("Date Collected");
-            if (!deliveryStatus) missing.push("Delivery Status");
 
             if (deliveryPhone && deliveryPhone.toUpperCase() !== 'N/A' && !/^\d{10}$/.test(deliveryPhone)) {
                 missing.push("Contact Person Number (must be a 10-digit number or N/A)");

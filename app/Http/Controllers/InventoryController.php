@@ -236,7 +236,7 @@ class InventoryController extends Controller
         $validated = $request->validate([
             'ledge_category' => 'required|string',
             'supplier_name' => 'nullable|string',
-            'supplier_status' => 'required|string',
+            'supplier_status' => 'nullable|string',
             'donor_name' => 'nullable|string',
             'acquisition_type' => 'required|string',
             'driver_name' => 'nullable|string',
