@@ -44,6 +44,12 @@
         Registration Requests
         <span class="tab-badge" id="reg-badge" style="display: {{ $pendingUsers->count() > 0 ? 'inline-block' : 'none' }}">{{ $pendingUsers->count() }}</span>
     </button>
+
+    <button class="pager-tab" id="tab-all-users" onclick="switchTab('all-users')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="19" cy="8" r="3"/><path d="M22 14a5 5 0 0 0-5-5"/></svg>
+        All Users
+        <span class="tab-badge" style="background: rgba(99,102,241,0.2); color: #4f46e5; font-size: 0.65rem; font-weight: 900; padding: 2px 7px; border-radius: 99px; margin-left: 2px; line-height: 1.4;">{{ $allUsers->count() }}</span>
+    </button>
 </div>
 
 {{-- ── Panel: Store Officers ── --}}
@@ -243,7 +249,7 @@
 
             <div class="m-body" id="deptHeadsBody">
                 @forelse($deptHeads as $user)
-                <div class="m-row" data-user-id="{{ $user->id }}">
+                <div class="m-row" data-user-id="{{ $user->id }}" data-current-dept="{{ $user->department }}">
                     <div class="col-id">
                         <div class="m-avatar">
                             <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
@@ -253,7 +259,7 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <select onchange="changeUserRole(this)" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; border: 1px solid rgba(67, 56, 202, 0.1); cursor: pointer; outline: none; text-transform: uppercase; max-width: 150px;">
+                                <select onchange="changeUserRole(this)" data-current-role="{{ $user->role }}" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; border: 1px solid rgba(67, 56, 202, 0.1); cursor: pointer; outline: none; text-transform: uppercase; max-width: 150px;">
                                     <option value="Requisitioner" {{ $user->role === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
                                     <option value="Officer" {{ $user->role === 'Officer' ? 'selected' : '' }}>Store Officer</option>
                                     <option value="Department Head" {{ in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare']) ? 'selected' : '' }}>Departmental Head</option>
@@ -322,6 +328,151 @@
     @include('admin.partials.pending_registrations')
 </div>
 
+{{-- ── Panel: All Users ── --}}
+<div id="panel-all-users" class="pager-panel">
+
+    {{-- Filter Bar --}}
+    <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+
+        {{-- Search --}}
+        <div style="position: relative; flex: 1; min-width: 220px;">
+            <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #4f46e5; opacity: 0.6; width: 14px; pointer-events:none;"></i>
+            <input type="text" id="allUsersSearch" placeholder="Search by name or username…" oninput="filterAllUsers()"
+                style="width: 100%; padding: 0.55rem 1rem 0.55rem 2.2rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 600; color: #0f172a; outline: none; background: #f8fafc; box-sizing: border-box; transition: border-color 0.2s; font-family: inherit;"
+                onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+
+        {{-- Role Filter --}}
+        <div style="position: relative;">
+            <i data-lucide="shield" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #4f46e5; opacity: 0.55; width: 13px; pointer-events:none;"></i>
+            <select id="allUsersRoleFilter" onchange="filterAllUsers()"
+                style="padding: 0.55rem 2rem 0.55rem 2rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.82rem; font-weight: 700; color: #334155; background: #f8fafc; cursor: pointer; outline: none; appearance: none; min-width: 160px; font-family: inherit; transition: border-color 0.2s;"
+                onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+                <option value="">All Roles</option>
+                <option value="Officer">Store Officer</option>
+                <option value="Requisitioner">Requisitioner</option>
+                <option value="Main Admin">Head of Admin</option>
+                <option value="Sub Main Admin">Delegator</option>
+                <option value="Department Head">Dept. Head</option>
+                <option value="Auditor">Auditor</option>
+                <option value="External Auditor">External Auditor</option>
+                <option value="Director General">Director General</option>
+            </select>
+            <i data-lucide="chevron-down" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 13px; pointer-events:none;"></i>
+        </div>
+
+        {{-- Department Filter --}}
+        <div style="position: relative;">
+            <i data-lucide="building-2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #4f46e5; opacity: 0.55; width: 13px; pointer-events:none;"></i>
+            <select id="allUsersDeptFilter" onchange="filterAllUsers()"
+                style="padding: 0.55rem 2rem 0.55rem 2rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.82rem; font-weight: 700; color: #334155; background: #f8fafc; cursor: pointer; outline: none; appearance: none; min-width: 160px; font-family: inherit; transition: border-color 0.2s;"
+                onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+                <option value="">All Departments</option>
+                @foreach($allDepartments as $dept)
+                    <option value="{{ strtolower($dept) }}">{{ $dept }}</option>
+                @endforeach
+            </select>
+            <i data-lucide="chevron-down" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 13px; pointer-events:none;"></i>
+        </div>
+
+        {{-- Status Filter --}}
+        <div style="position: relative;">
+            <i data-lucide="activity" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #4f46e5; opacity: 0.55; width: 13px; pointer-events:none;"></i>
+            <select id="allUsersStatusFilter" onchange="filterAllUsers()"
+                style="padding: 0.55rem 2rem 0.55rem 2rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.82rem; font-weight: 700; color: #334155; background: #f8fafc; cursor: pointer; outline: none; appearance: none; min-width: 140px; font-family: inherit; transition: border-color 0.2s;"
+                onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <i data-lucide="chevron-down" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 13px; pointer-events:none;"></i>
+        </div>
+
+        {{-- Results count --}}
+        <span id="allUsersCount" style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; margin-left: auto; white-space: nowrap; padding-left: 0.5rem;">{{ $allUsers->count() }} users</span>
+    </div>
+
+    {{-- Users Matrix --}}
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table" id="allUsersTable" style="min-width: 860px;">
+
+            {{-- Header --}}
+            <div class="m-header">
+                <div style="flex: 0 0 320px; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">User</div>
+                <div style="flex: 0 0 200px; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Department</div>
+                <div style="flex: 1; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Role</div>
+                <div style="flex: 0 0 140px; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Status</div>
+            </div>
+
+            {{-- Rows --}}
+            <div id="allUsersBody">
+                @forelse($allUsers as $user)
+                <div class="all-users-row m-row"
+                    data-user-id="{{ $user->id }}"
+                    data-name="{{ strtolower($user->name) }}"
+                    data-username="{{ strtolower($user->username) }}"
+                    data-role="{{ $user->role }}"
+                    data-dept="{{ strtolower($user->department ?? '') }}"
+                    data-current-dept="{{ $user->department }}"
+                    data-status="{{ $user->is_active ? 'active' : 'inactive' }}">
+
+                    {{-- Identity (same as other panels) --}}
+                    <div style="flex: 0 0 320px; display: flex; align-items: center; gap: 1.25rem;">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle">@ {{ $user->username }}</div>
+                        </div>
+                    </div>
+
+                    {{-- Department --}}
+                    <div style="flex: 0 0 200px;">
+                        @if($user->department)
+                            <span style="display: inline-flex; align-items: center; font-size: 0.7rem; background: #f0fdf4; color: #15803d; padding: 3px 10px; border-radius: 8px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21,128,61,0.12); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">{{ $user->department }}</span>
+                        @else
+                            <span style="font-size: 0.78rem; color: #cbd5e1; font-weight: 600;">—</span>
+                        @endif
+                    </div>
+
+                    {{-- Role Dropdown --}}
+                    <div style="flex: 1; display: flex; align-items: center;">
+                        <select onchange="changeUserRole(this)" data-current-role="{{ $user->role }}"
+                            style="font-size: 0.75rem; background: #eef2ff; color: #4338ca; padding: 5px 10px; border-radius: 8px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67,56,202,0.12); cursor: pointer; outline: none; max-width: 220px; transition: border-color 0.2s;"
+                            onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='rgba(67,56,202,0.12)'">
+                            <option value="Requisitioner"    {{ $user->role === 'Requisitioner'    ? 'selected' : '' }}>Requisitioner</option>
+                            <option value="Officer"          {{ $user->role === 'Officer'          ? 'selected' : '' }}>Store Officer</option>
+                            <option value="Department Head"  {{ in_array($user->role, ['Department Head','Dept Head HR','Head of Welfare']) ? 'selected' : '' }}>Departmental Head</option>
+                            <option value="Main Admin"       {{ $user->role === 'Main Admin'       ? 'selected' : '' }}>Head of Admin (Authorizer)</option>
+                            <option value="Sub Main Admin"   {{ $user->role === 'Sub Main Admin'   ? 'selected' : '' }}>Delegator (Authorizer)</option>
+                            <option value="Auditor"          {{ $user->role === 'Auditor'          ? 'selected' : '' }}>Auditor</option>
+                            <option value="External Auditor" {{ $user->role === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
+                            <option value="Director General" {{ $user->role === 'Director General' ? 'selected' : '' }}>Director General</option>
+                        </select>
+                    </div>
+
+                    {{-- Status --}}
+                    <div style="flex: 0 0 140px; display: flex; justify-content: flex-end;">
+                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $user->is_active ? 'ACTIVE' : 'INACTIVE' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No approved users found.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
 <style>
     .swal-cancel-dark {
         background-color: #f1f5f9 !important;
@@ -333,6 +484,26 @@
     .swal-cancel-dark:hover {
         background-color: #e2e8f0 !important;
         color: #0f172a !important;
+    }
+
+    .swal2-html-container .select2-container--default .select2-selection--single {
+        height: 42px !important;
+        border-radius: 8px !important;
+        border: 1.5px solid #cbd5e1 !important;
+        display: flex !important;
+        align-items: center !important;
+        background-color: #ffffff !important;
+    }
+    .swal2-html-container .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 40px !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+        padding-left: 10px !important;
+        text-align: left !important;
+    }
+    .swal2-html-container .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
     }
 
     /* ── Search Vault ── */
@@ -625,19 +796,49 @@
         document.getElementById('tab-' + tab).classList.add('active');
         document.getElementById('panel-' + tab).classList.add('active');
 
-        // Show/hide search vault (only relevant for matrix tabs)
+        // Show/hide search vault (only relevant for matrix tabs, not registrations/all-users)
         const sv = document.getElementById('searchVaultWrap');
-        if (sv) sv.style.display = (tab !== 'registrations') ? '' : 'none';
+        if (sv) sv.style.display = (tab !== 'registrations' && tab !== 'all-users') ? '' : 'none';
     }
 
-    /* ── Personnel Filter ── */
+    /* ── Personnel Filter (Store Officers / Requisitioners / Dept Heads) ── */
     function filterPersonnel() {
         const term = document.getElementById('personnelSearch').value.toLowerCase();
-        document.querySelectorAll('.m-row').forEach(row => {
-            const name     = row.querySelector('.m-name').textContent.toLowerCase();
-            const username = row.querySelector('.m-handle').textContent.toLowerCase();
+        // Only filter rows that are NOT in the all-users table
+        document.querySelectorAll('#panel-store-officers .m-row, #panel-requisitioners .m-row, #panel-dept-heads .m-row').forEach(row => {
+            const name     = (row.querySelector('.m-name')?.textContent || '').toLowerCase();
+            const username = (row.querySelector('.m-handle')?.textContent || '').toLowerCase();
             row.style.display = (name.includes(term) || username.includes(term)) ? 'flex' : 'none';
         });
+    }
+
+    /* ── All Users Filter ── */
+    function filterAllUsers() {
+        const search       = (document.getElementById('allUsersSearch')?.value || '').toLowerCase().trim();
+        const roleFilter   = (document.getElementById('allUsersRoleFilter')?.value || '').toLowerCase();
+        const deptFilter   = (document.getElementById('allUsersDeptFilter')?.value || '').toLowerCase();
+        const statusFilter = (document.getElementById('allUsersStatusFilter')?.value || '').toLowerCase();
+
+        let visible = 0;
+        document.querySelectorAll('.all-users-row').forEach(row => {
+            const name     = row.dataset.name     || '';
+            const username = row.dataset.username || '';
+            const role     = (row.dataset.role   || '').toLowerCase();
+            const dept     = row.dataset.dept    || '';
+            const status   = row.dataset.status  || '';
+
+            const matchSearch = !search       || name.includes(search) || username.includes(search);
+            const matchRole   = !roleFilter   || role   === roleFilter;
+            const matchDept   = !deptFilter   || dept   === deptFilter;
+            const matchStatus = !statusFilter || status === statusFilter;
+
+            const show = matchSearch && matchRole && matchDept && matchStatus;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        const countEl = document.getElementById('allUsersCount');
+        if (countEl) countEl.textContent = visible + ' user' + (visible !== 1 ? 's' : '');
     }
 
     /* ── Keyboard Shortcut ── */
@@ -689,51 +890,168 @@
     function changeUserRole(selectElement) {
         const row = selectElement.closest('.m-row');
         const userId = row.getAttribute('data-user-id');
+        const oldRole = selectElement.getAttribute('data-current-role') || '';
         const newRole = selectElement.value;
-        row.classList.add('syncing-row');
 
-        fetch('{{ route("admin.permissions.update_role", [], false) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
+        // If they select the same role, do nothing
+        if (oldRole === newRole) return;
+
+        const userName = row.querySelector('.m-name').textContent.trim();
+        const currentDept = row.getAttribute('data-current-dept') || '';
+
+        // Helper to map values to human-friendly labels
+        function getFriendlyRoleName(roleVal) {
+            const map = {
+                'Officer': 'Store Officer',
+                'Requisitioner': 'Requisition Officer',
+                'Main Admin': 'Head of Admin',
+                'Sub Main Admin': 'Delegator',
+                'Department Head': 'Departmental Head',
+                'Dept Head HR': 'Departmental Head',
+                'Head of Welfare': 'Departmental Head',
+                'Auditor': 'Auditor',
+                'External Auditor': 'External Auditor',
+                'Director General': 'Director General'
+            };
+            return map[roleVal] || roleVal;
+        }
+
+        const oldFriendly = getFriendlyRoleName(oldRole);
+        const newFriendly = getFriendlyRoleName(newRole);
+
+        const needsDept = (newRole === 'Requisitioner' || newRole === 'Department Head' || newRole === 'Dept Head HR' || newRole === 'Head of Welfare');
+        const allDepartmentsList = @json($allDepartments);
+
+        let deptDropdownHtml = '';
+        if (needsDept) {
+            let deptOptionsHtml = '<option value="">-- Select Department --</option>';
+            allDepartmentsList.forEach(dept => {
+                const isSelected = dept.toLowerCase() === currentDept.toLowerCase() ? 'selected' : '';
+                deptOptionsHtml += `<option value="${dept}" ${isSelected}>${dept}</option>`;
+            });
+
+            deptDropdownHtml = `
+                <div style="margin-top: 15px; text-align: left;">
+                    <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Assign Department</label>
+                    <div style="width: 100%;">
+                        <select id="swalDeptSelect" style="width: 100%;">
+                            ${deptOptionsHtml}
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        Swal.fire({
+            title: `<span style="font-weight:900;color:#0f172a;">Change Role?</span>`,
+            html: `
+                <div style="text-align: left; font-size: 0.95rem; color: #334155; line-height: 1.6;">
+                    <p style="margin-bottom: 12px; font-weight: 600;">
+                        Are you sure you want to change <strong>${userName}</strong>’s role from <strong>${oldFriendly}</strong> to <strong>${newFriendly}</strong>?
+                    </p>
+                    ${deptDropdownHtml}
+                    <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 12px; color: #b45309; font-size: 0.82rem; font-weight: 600; display: flex; gap: 8px; align-items: flex-start; margin-top: 15px;">
+                        <span>⚠️</span>
+                        <span><strong>Please note:</strong> This action will be permanently recorded in the audit log and may be reviewed by authorized auditors.</span>
+                    </div>
+                </div>
+            `,
+            icon: 'warning',
+            iconColor: '#f59e0b',
+            showCancelButton: true,
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#f1f5f9',
+            confirmButtonText: 'Yes, Change',
+            cancelButtonText: 'No, Cancel',
+            background: 'white',
+            customClass: {
+                cancelButton: 'swal-cancel-dark'
             },
-            body: JSON.stringify({ user_id: userId, role: newRole })
-        })
-        .then(async r => {
-            const data = await r.json();
-            if (!r.ok) {
-                throw new Error(data.message || 'Failed to update role.');
+            didOpen: () => {
+                if (needsDept && typeof $ !== 'undefined' && $.fn.select2) {
+                    $('#swalDeptSelect').select2({
+                        placeholder: '-- Select Department --',
+                        allowClear: false,
+                        dropdownParent: $('.swal2-container'),
+                        width: '100%'
+                    });
+                }
+            },
+            preConfirm: () => {
+                if (needsDept) {
+                    const deptVal = $('#swalDeptSelect').val();
+                    if (!deptVal) {
+                        Swal.showValidationMessage('Please select a department');
+                        return false;
+                    }
+                    return { department: deptVal };
+                }
+                return {};
             }
-            return data;
-        })
-        .then(data => {
-            row.classList.remove('syncing-row');
-            Swal.fire({
-                icon: 'success',
-                title: 'Role Updated',
-                text: data.message || 'User role has been updated successfully.',
-                confirmButtonColor: '#4f46e5',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
-                window.location.reload();
-            });
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        })
-        .catch(err => {
-            row.classList.remove('syncing-row');
-            Swal.fire({
-                icon: 'error',
-                title: 'Update Failed',
-                text: err.message || 'A system error occurred.',
-                confirmButtonColor: '#ef4444'
-            }).then(() => {
-                window.location.reload();
-            });
+        }).then((result) => {
+            if (result.isConfirmed) {
+                row.classList.add('syncing-row');
+
+                const selectedDept = result.value ? result.value.department : null;
+                const payload = {
+                    user_id: userId,
+                    role: newRole
+                };
+                if (selectedDept) {
+                    payload.department = selectedDept;
+                }
+
+                fetch('{{ route("admin.permissions.update_role", [], false) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(async r => {
+                    const data = await r.json();
+                    if (!r.ok) {
+                        throw new Error(data.message || 'Failed to update role.');
+                    }
+                    return data;
+                })
+                .then(data => {
+                    row.classList.remove('syncing-row');
+                    selectElement.setAttribute('data-current-role', newRole);
+                    if (selectedDept) {
+                        row.setAttribute('data-current-dept', selectedDept);
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Role Updated',
+                        text: data.message || 'User role has been updated successfully.',
+                        confirmButtonColor: '#4f46e5',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                })
+                .catch(err => {
+                    row.classList.remove('syncing-row');
+                    selectElement.value = oldRole;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: err.message || 'A system error occurred.',
+                        confirmButtonColor: '#ef4444'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                });
+            } else {
+                selectElement.value = oldRole;
+            }
         });
     }
 

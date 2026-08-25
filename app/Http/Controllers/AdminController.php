@@ -583,12 +583,7 @@ class AdminController extends Controller
 
         $pendingUsers = User::where('registration_status', 'pending')->orderBy('created_at', 'desc')->get();
 
-        $allDepartments = User::whereNotNull('department')
-            ->where('department', '!=', '')
-            ->distinct()
-            ->pluck('department')
-            ->toArray();
-        sort($allDepartments);
+        $allDepartments = User::getDepartments();
 
         $userCounts = [];
         foreach ($allDepartments as $dept) {
@@ -603,7 +598,11 @@ class AdminController extends Controller
             $disabledDepts = [];
         }
 
-        return view('admin.permissions', compact('storeOfficers', 'requisitioners', 'deptHeads', 'auditors', 'directorGenerals', 'pendingUsers', 'allDepartments', 'userCounts', 'disabledDepts'));
+        $allUsers = User::where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.permissions', compact('storeOfficers', 'requisitioners', 'deptHeads', 'auditors', 'directorGenerals', 'pendingUsers', 'allDepartments', 'userCounts', 'disabledDepts', 'allUsers'));
     }
 
     public function toggleDepartmentPermission(Request $request)
@@ -769,19 +768,19 @@ class AdminController extends Controller
     {
         if (!auth()->user()->is_admin) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
-
-        $request->validate([
+        }        $request->validate([
             'user_id' => 'required|exists:users,id',
-            'role' => 'required|string|in:Main Admin,Sub Main Admin,Department Head,Dept Head HR,Head of Welfare,Requisitioner,Officer,Auditor,External Auditor,Director General'
+            'role' => 'required|string|in:Main Admin,Sub Main Admin,Department Head,Dept Head HR,Head of Welfare,Requisitioner,Officer,Auditor,External Auditor,Director General',
+            'department' => 'nullable|string|max:255'
         ]);
 
         $user = User::findOrFail($request->user_id);
         $oldRole = $user->role;
         $newRole = $request->role;
+        $targetDepartment = $request->filled('department') ? $request->department : $user->department;
 
-        if ($oldRole === $newRole) {
-            return response()->json(['success' => true, 'message' => 'Role is already set to this value.']);
+        if ($oldRole === $newRole && $user->department === $targetDepartment) {
+            return response()->json(['success' => true, 'message' => 'Role and department are already set to these values.']);
         }
 
         // Sub Main Admin count limit (max 2 active Delegators allowed)
@@ -797,7 +796,6 @@ class AdminController extends Controller
 
         // Prevent duplicate Department Heads for the same department
         if (in_array($newRole, ['Department Head', 'Dept Head HR', 'Head of Welfare'])) {
-            $targetDepartment = $user->department;
             if (!empty($targetDepartment)) {
                 $existingHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])
                     ->where('department', $targetDepartment)
@@ -812,7 +810,7 @@ class AdminController extends Controller
         }
 
         // Adjust department based on role if necessary
-        $department = $user->department;
+        $department = $targetDepartment;
         if ($newRole === 'Main Admin') {
             $department = 'Stores';
         } elseif ($newRole === 'Officer') {

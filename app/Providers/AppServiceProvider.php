@@ -460,10 +460,7 @@ class AppServiceProvider extends ServiceProvider
                         $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
                             ->where(function($q) use ($depts) {
                                 $q->whereIn('department', $depts)
-                                  ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
-                                  ->orWhereHas('requester', function($sq) {
-                                      $sq->where('sponsored_by', auth()->id());
-                                  });
+                                  ->orWhereIn('department', ['Audit Department', 'Non Departmental']);
                             })
                             ->where(function($q) {
                                 $q->where('origin_admin_status', 'pending')

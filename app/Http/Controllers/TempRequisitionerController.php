@@ -120,10 +120,7 @@ class TempRequisitionerController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        $accounts = User::where(function($q) use ($head) {
-                $q->where('department', $head->department)
-                  ->orWhere('sponsored_by', $head->id);
-            })
+        $accounts = User::whereIn('department', User::getMatchingDepartments($head->department))
             ->where('registration_status', 'approved')
             ->where('id', '!=', $head->id)
             ->orderBy('name', 'asc')
@@ -156,10 +153,7 @@ class TempRequisitionerController extends Controller
         }
 
         $staff = User::where('id', $id)
-            ->where(function($q) use ($head) {
-                $q->where('department', $head->department)
-                  ->orWhere('sponsored_by', $head->id);
-            })
+            ->whereIn('department', User::getMatchingDepartments($head->department))
             ->where('id', '!=', $head->id)
             ->first();
 
@@ -200,10 +194,7 @@ class TempRequisitionerController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        $pending = User::where(function($q) use ($head) {
-                $q->where('department', $head->department)
-                  ->orWhere('sponsored_by', $head->id);
-            })
+        $pending = User::whereIn('department', User::getMatchingDepartments($head->department))
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->orderBy('created_at', 'desc')
@@ -233,10 +224,7 @@ class TempRequisitionerController extends Controller
         }
 
         $staff = User::where('id', $id)
-            ->where(function($q) use ($head) {
-                $q->where('department', $head->department)
-                  ->orWhere('sponsored_by', $head->id);
-            })
+            ->whereIn('department', User::getMatchingDepartments($head->department))
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->first();
@@ -279,10 +267,7 @@ class TempRequisitionerController extends Controller
         }
 
         $staff = User::where('id', $id)
-            ->where(function($q) use ($head) {
-                $q->where('department', $head->department)
-                  ->orWhere('sponsored_by', $head->id);
-            })
+            ->whereIn('department', User::getMatchingDepartments($head->department))
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->first();
@@ -323,10 +308,7 @@ class TempRequisitionerController extends Controller
         }
 
         // 1. Fetch pending registrations
-        $pending = User::where(function($q) use ($head) {
-                $q->where('department', $head->department)
-                  ->orWhere('sponsored_by', $head->id);
-            })
+        $pending = User::whereIn('department', User::getMatchingDepartments($head->department))
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->orderBy('created_at', 'desc')
@@ -341,10 +323,7 @@ class TempRequisitionerController extends Controller
             ]);
 
         // 2. Fetch approved active accounts
-        $accounts = User::where(function($q) use ($head) {
-                $q->where('department', $head->department)
-                  ->orWhere('sponsored_by', $head->id);
-            })
+        $accounts = User::whereIn('department', User::getMatchingDepartments($head->department))
             ->where('registration_status', 'approved')
             ->where('id', '!=', $head->id)
             ->orderBy('name', 'asc')

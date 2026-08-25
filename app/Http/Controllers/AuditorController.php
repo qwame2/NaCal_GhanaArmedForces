@@ -186,14 +186,7 @@ class AuditorController extends Controller
             ->get();
 
         $pendingDeptRequisitions = \App\Models\StoreRequisition::with(['requester', 'items'])
-            ->where(function($q) {
-                $q->where('department', auth()->user()->department)
-                  ->orWhere('department', 'Audit Department')
-                  ->orWhere('department', 'Audit')
-                  ->orWhereHas('requester', function($sq) {
-                      $sq->where('sponsored_by', auth()->id());
-                  });
-            })
+            ->whereIn('department', \App\Models\User::getMatchingDepartments(auth()->user()->department))
             ->where('origin_admin_status', 'pending')
             ->where('status', 'pending')
             ->orderBy('created_at', 'desc')
@@ -207,20 +200,12 @@ class AuditorController extends Controller
             ->sortByDesc('created_at')
             ->values();
 
-        $pendingStaffRegistrationsCount = \App\Models\User::where(function($q) {
-                $q->where('department', auth()->user()->department)
-                  ->orWhere('sponsored_by', auth()->id());
-            })
+        $pendingStaffRegistrationsCount = \App\Models\User::whereIn('department', \App\Models\User::getMatchingDepartments(auth()->user()->department))
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->count();
 
-        $departmentRequisitions = \App\Models\StoreRequisition::where(function($q) {
-                $q->where('department', auth()->user()->department)
-                  ->orWhereHas('requester', function($sq) {
-                      $sq->where('sponsored_by', auth()->id());
-                  });
-            })
+        $departmentRequisitions = \App\Models\StoreRequisition::whereIn('department', \App\Models\User::getMatchingDepartments(auth()->user()->department))
             ->orderBy('created_at', 'desc')
             ->paginate(15, ['*'], 'dept_reqs_page')
             ->withQueryString();

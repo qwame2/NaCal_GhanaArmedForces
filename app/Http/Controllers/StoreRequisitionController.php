@@ -1612,14 +1612,8 @@ class StoreRequisitionController extends Controller
             ->orderByRaw("CASE WHEN priority = 'urgent' THEN 1 WHEN priority = 'normal' THEN 2 WHEN priority = 'low' THEN 3 ELSE 4 END")
             ->orderBy('created_at', 'desc');
 
-        // Apply department scoping for originating heads
         if (!$isStoresHead) {
-            $query->where(function($q) use ($depts) {
-                $q->whereIn('department', $depts)
-                  ->orWhereHas('requester', function($sq) {
-                      $sq->where('sponsored_by', auth()->id());
-                  });
-            });
+            $query->whereIn('department', $depts);
         }
 
         $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
@@ -1887,12 +1881,7 @@ class StoreRequisitionController extends Controller
 
             // Pending: only this HOD's own department awaiting their review
             // Pending: HOD's own department or sponsored users awaiting their review (deduplicated)
-            $pendingCount = StoreRequisition::where(function($q) use ($depts) {
-                    $q->whereIn('department', $depts)
-                      ->orWhereHas('requester', function($sq) {
-                          $sq->where('sponsored_by', auth()->id());
-                      });
-                })
+            $pendingCount = StoreRequisition::whereIn('department', $depts)
                 ->where(function($q) {
                     $q->where(function($q2) {
                         $q2->where('status', 'pending')
@@ -1991,7 +1980,7 @@ class StoreRequisitionController extends Controller
         // Check if the stores head is acting as the originating HOD for a Stores department request
         $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $req->origin_admin_status === 'pending' && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
         $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-            || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department' || ($req->requester && $req->requester->sponsored_by === auth()->id())) && $req->origin_admin_status === 'pending')
+            || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department') && $req->origin_admin_status === 'pending')
             || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
             || $isFallbackHOD;
 
@@ -2000,7 +1989,7 @@ class StoreRequisitionController extends Controller
             if (!$isActingAsOriginHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0)) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized Stores Department HOD action.'], 403);
             }
-            if (!$isActingAsOriginHOD && !$this->departmentsMatch($req->department, auth()->user()->department) && $req->department !== 'Audit Department' && !($req->requester && $req->requester->sponsored_by === auth()->id())) {
+            if (!$isActingAsOriginHOD && !$this->departmentsMatch($req->department, auth()->user()->department) && $req->department !== 'Audit Department') {
                 return response()->json(['success' => false, 'message' => 'Unauthorized department access.'], 403);
             }
             if ($req->status !== 'pending' || $req->origin_admin_status !== 'pending') {
@@ -2027,7 +2016,7 @@ class StoreRequisitionController extends Controller
         if ($request->status === 'approved') {
             $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $req->origin_admin_status === 'pending' && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
             $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-                || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department' || ($req->requester && $req->requester->sponsored_by === auth()->id())) && $req->origin_admin_status === 'pending')
+                || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department') && $req->origin_admin_status === 'pending')
                 || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
                 || $isFallbackHOD;
 

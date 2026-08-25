@@ -362,5 +362,83 @@ class User extends Authenticatable implements LdapAuthenticatable
             // Prevent failure if database table is not ready
         }
     }
+
+    public static function getDepartments(): array
+    {
+        $staticDepts = [
+            'Intelligence Department',
+            'Investigations Department',
+            'Forensic Science Department',
+            'Asset recovery & Management Department',
+            'Strategic Intelligence Oversight Department',
+            'Cannabis Regulations Department',
+            'Precursor Diversion Department',
+            'Drug Education & Prevention Department',
+            'Rehabilitation & Social Re-integration Department',
+            'Harm Reduction Department',
+            'Alternative Livelihoods Development Department',
+            'Canine Operations Department',
+            'Accounts & Budget Department',
+            'Payroll & Pension Department',
+            'Research Policy Planning Monitoring & Evaluation Department',
+            'Professional Standards Department',
+            'General Services Department',
+            'ICT Department',
+            'Transport Department',
+            'Procurement Department',
+            'Project Management Department',
+            'Stores',
+            'Human Resource Management Department',
+            'Welfare Department',
+            'Religious Affairs Department',
+            'Internal & External Training Department',
+            'Public Affairs Department',
+            'International Relations Department',
+            'Material Development Department',
+            'Client Service Department',
+            'Audit Department',
+            'External Auditor'
+        ];
+
+        $dbDepts = self::whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->pluck('department')
+            ->toArray();
+
+        $merged = array_unique(array_merge($staticDepts, $dbDepts));
+        sort($merged);
+        return array_values($merged);
+    }
+
+    public static function getMatchingDepartments(?string $department): array
+    {
+        if (empty($department)) {
+            return [];
+        }
+        $dept = strtolower(trim($department));
+        
+        $auditTerms = ['audit', 'audit department', 'internal audit', 'external audit'];
+        if (in_array($dept, $auditTerms)) {
+            return ['Audit Department', 'Audit', 'Internal Audit', 'External Audit'];
+        }
+        
+        $storesTerms = ['stores', 'store', 'stores department', 'store department'];
+        if (in_array($dept, $storesTerms)) {
+            return ['Stores', 'Store', 'Stores Department', 'Store Department'];
+        }
+        
+        $hrTerms = ['hr', 'human resource', 'human resource management department', 'human resources'];
+        if (in_array($dept, $hrTerms)) {
+            return ['HR', 'Human Resource', 'Human Resource Management Department', 'Human Resources'];
+        }
+
+        $welfareTerms = ['welfare', 'welfare department'];
+        if (in_array($dept, $welfareTerms)) {
+            return ['Welfare', 'Welfare Department'];
+        }
+        
+        return [$department];
+    }
 }
 

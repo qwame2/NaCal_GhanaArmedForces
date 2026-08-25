@@ -1279,12 +1279,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $mainStoreRequisitionsCount = \App\Models\StoreRequisition::awaitingHeadOfStoresReview()->count();
         } else {
             $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
-                ->where(function($q) use ($depts, $authId) {
+                ->where(function($q) use ($depts) {
                     $q->whereIn('department', $depts)
-                      ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
-                      ->orWhereHas('requester', function($sq) use ($authId) {
-                          $sq->where('sponsored_by', $authId);
-                      });
+                      ->orWhereIn('department', ['Audit Department', 'Non Departmental']);
                 })
                 ->where(function($q) {
                     $q->where('origin_admin_status', 'pending')
@@ -1361,12 +1358,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $mainStoreRequisitionsCount = \App\Models\StoreRequisition::awaitingHeadOfStoresReview()->count();
         } else {
             $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
-                ->where(function($q) use ($depts, $authId) {
+                ->where(function($q) use ($depts) {
                     $q->whereIn('department', $depts)
-                      ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
-                      ->orWhereHas('requester', function($sq) use ($authId) {
-                          $sq->where('sponsored_by', $authId);
-                      });
+                      ->orWhereIn('department', ['Audit Department', 'Non Departmental']);
                 })
                 ->where(function($q) {
                     $q->where('origin_admin_status', 'pending')
