@@ -952,7 +952,10 @@ class AdminController extends Controller
 
         // Query builder for Received Items
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where(function($q) {
+                $q->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                  ->orWhereNull('inventory_batches.supplier_status');
+            })
             ->select(
                 'inventory_items.*', 
                 'inventory_batches.entry_date', 
