@@ -773,7 +773,7 @@ class AdminController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'role' => 'required|string|in:Main Admin,Sub Main Admin,Department Head,Dept Head HR,Head of Welfare,Requisitioner,Officer,Auditor,Director General'
+            'role' => 'required|string|in:Main Admin,Sub Main Admin,Department Head,Dept Head HR,Head of Welfare,Requisitioner,Officer,Auditor,External Auditor,Director General'
         ]);
 
         $user = User::findOrFail($request->user_id);
@@ -1035,6 +1035,7 @@ class AdminController extends Controller
             $receivedItems->appends($request->all());
         } else {
             $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
+            $receivedItems->appends($request->all());
         }
 
 

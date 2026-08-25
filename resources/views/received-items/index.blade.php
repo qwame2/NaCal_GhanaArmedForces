@@ -753,7 +753,7 @@
                 </div>
                 <select class="per-page-select" onchange="window.location.href=this.value">
                     @foreach([10, 25, 50, 100] as $perPage)
-                    <option value="{{ request()->fullUrlWithQuery(['per_page' => $perPage]) }}"
+                    <option value="{{ request()->fullUrlWithQuery(['per_page' => $perPage, 'page' => 1]) }}"
                         {{ request('per_page', 10) == $perPage ? 'selected' : '' }}>
                         Show {{ $perPage }} entries
                     </option>

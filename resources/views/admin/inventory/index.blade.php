@@ -401,6 +401,7 @@
                     container.style.pointerEvents = 'none';
 
                     const url = new URL(window.location.href);
+                    url.searchParams.delete('page');
                     url.searchParams.set('search', search);
                     url.searchParams.set('category', cat);
                     url.searchParams.set('date_from', from);

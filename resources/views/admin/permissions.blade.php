@@ -254,14 +254,13 @@
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
                                 <select onchange="changeUserRole(this)" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; border: 1px solid rgba(67, 56, 202, 0.1); cursor: pointer; outline: none; text-transform: uppercase; max-width: 150px;">
-                                    <option value="Main Admin" {{ $user->role === 'Main Admin' ? 'selected' : '' }}>Head of Admin</option>
-                                    <option value="Sub Main Admin" {{ $user->role === 'Sub Main Admin' ? 'selected' : '' }}>Sub Main Admin</option>
-                                    <option value="Department Head" {{ $user->role === 'Department Head' ? 'selected' : '' }}>Departmental Head</option>
-                                    <option value="Dept Head HR" {{ $user->role === 'Dept Head HR' ? 'selected' : '' }}>Dept Head HR</option>
-                                    <option value="Head of Welfare" {{ $user->role === 'Head of Welfare' ? 'selected' : '' }}>Head of Welfare</option>
                                     <option value="Requisitioner" {{ $user->role === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
                                     <option value="Officer" {{ $user->role === 'Officer' ? 'selected' : '' }}>Store Officer</option>
+                                    <option value="Department Head" {{ in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare']) ? 'selected' : '' }}>Departmental Head</option>
+                                    <option value="Main Admin" {{ $user->role === 'Main Admin' ? 'selected' : '' }}>Head of Admin(Authorizer)</option>
+                                    <option value="Sub Main Admin" {{ $user->role === 'Sub Main Admin' ? 'selected' : '' }}>Delegator(Authorizer)</option>
                                     <option value="Auditor" {{ $user->role === 'Auditor' ? 'selected' : '' }}>Auditor</option>
+                                    <option value="External Auditor" {{ $user->role === 'External Auditor' ? 'selected' : '' }}>External Auditor</option>
                                     <option value="Director General" {{ $user->role === 'Director General' ? 'selected' : '' }}>Director General</option>
                                 </select>
                                 @if($user->department)

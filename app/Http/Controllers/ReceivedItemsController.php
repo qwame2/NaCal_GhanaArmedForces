@@ -527,7 +527,7 @@ class ReceivedItemsController extends Controller
             $combined = $mockedItems->merge($dbItems);
             
             $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
-            $currentItems = $combined->slice(($currentPage - 1) * $perPage, $perPage)->all();
+            $currentItems = $combined->slice(($currentPage - 1) * $perPage, $perPage)->values()->all();
             
             $receivedItems = new \Illuminate\Pagination\LengthAwarePaginator(
                 $currentItems,
@@ -539,6 +539,7 @@ class ReceivedItemsController extends Controller
             $receivedItems->appends($request->all());
         } else {
             $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
+            $receivedItems->appends($request->all());
         }
 
         // Fetch aggregate totals for item status display in the table
