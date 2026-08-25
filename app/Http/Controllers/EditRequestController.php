@@ -546,7 +546,7 @@ class EditRequestController extends Controller
                         $batchData = [
                             'ledge_category' => $cat,
                             'supplier_name' => $data['supplier_name'],
-                            'supplier_status' => $data['supplier_status'],
+                            'supplier_status' => !empty($data['supplier_status']) ? $data['supplier_status'] : 'Full Delivery',
                             'donor_name' => $data['donor_name'] ?? null,
                             'acquisition_type' => $data['acquisition_type'],
                             'delivery_person' => $data['delivery_person'] ?? null,

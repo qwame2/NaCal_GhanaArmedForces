@@ -1056,7 +1056,7 @@
                 _token: '{{ csrf_token() }}',
                 ledge_category: ledge,
                 supplier_name: supplier,
-                supplier_status: deliveryStatus,
+                supplier_status: deliveryStatus || 'Full Delivery',
                 donor_name: null,
                 acquisition_type: 'Supplier',
                 entry_date: formattedEntryDate,

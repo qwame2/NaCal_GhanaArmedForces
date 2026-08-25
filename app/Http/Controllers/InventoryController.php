@@ -262,6 +262,8 @@ class InventoryController extends Controller
             'items.*.discrepancy_explanation' => 'nullable|string',
         ]);
 
+        $validated['supplier_status'] = !empty($validated['supplier_status']) ? $validated['supplier_status'] : 'Full Delivery';
+
         $arrivalDate = $validated['arrival_date'];
 
         $fingerprint = md5(json_encode(collect($validated['items'])->map(function($i) {
