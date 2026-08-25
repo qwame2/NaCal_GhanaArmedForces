@@ -78,7 +78,7 @@
                             <div>
                                 <label style="display: flex; align-items: center; gap: 6px;">
                                     <i data-lucide="truck" style="width: 12px; color: var(--primary);"></i>
-                                    Supplier/Donor Name (Search or Type) <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                    Supplier/Donor Name (Search or Type) <span id="supplierNameAsterisk" style="color: #ef4444; margin-left: 2px;">*</span>
                                 </label>
                                 <select id="supplierNameSelect" style="width: 100%;" required>
                                     <option value=""></option>
@@ -114,14 +114,14 @@
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                                  <i data-lucide="user" style="width: 14px; color: var(--primary);"></i>
-                                                 Contact Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                                 Contact Person Name <span id="contactPersonNameAsterisk" style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
                                              <input type="text" id="deliveryPersonInput" class="form-control" placeholder="Enter contact person's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                                  <i data-lucide="phone" style="width: 14px; color: var(--primary);"></i>
-                                                 Contact Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                                 Contact Person Number <span id="contactPersonPhoneAsterisk" style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
                                              <input type="text" id="deliveryPersonPhoneInput" maxlength="10" class="form-control" placeholder="Enter phone number" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
@@ -130,14 +130,14 @@
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                                  <i data-lucide="truck" style="width: 14px; color: var(--primary);"></i>
-                                                 Delivery Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                                 Delivery Person Name <span id="driverNameAsterisk" style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
                                              <input type="text" id="driverNameInput" class="form-control" placeholder="Enter delivery's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                                  <i data-lucide="phone" style="width: 14px; color: var(--primary);"></i>
-                                                 Delivery Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                                 Delivery Person Number <span id="driverPhoneAsterisk" style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
                                              <input type="text" id="driverPhoneInput" maxlength="10" class="form-control" placeholder="Enter delivery's number" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
@@ -325,6 +325,14 @@ jQuery(document).ready(function($) {
     const urlParams = new URLSearchParams(window.location.search);
     window.urlParams = urlParams;
     window.originalRollbackPayload = null;
+    if (urlParams.get('rollback')) {
+        $('#supplierNameSelect').removeAttr('required');
+        $('#supplierNameAsterisk').hide();
+        $('#contactPersonNameAsterisk').hide();
+        $('#contactPersonPhoneAsterisk').hide();
+        $('#driverNameAsterisk').hide();
+        $('#driverPhoneAsterisk').hide();
+    }
     const categoryOptionsHtml = `@foreach($ledgeMap as $code => $name)<option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>@endforeach`;
 
     // Global listener to close and blur select2 when an item is selected
@@ -693,12 +701,12 @@ jQuery(document).ready(function($) {
         }
 
         // Check Supplier/Donor Name
-        if (!$('#supplierNameSelect').val()) {
+        if (!urlParams.get('rollback') && !$('#supplierNameSelect').val()) {
             missingFields.push("Supplier/Donor Name");
         }
 
         // Check Delivery Person if visible
-        if ($('#deliveryPersonGroup').is(':visible')) {
+        if (!urlParams.get('rollback') && $('#deliveryPersonGroup').is(':visible')) {
             if (!$('#deliveryPersonInput').val().trim()) {
                 missingFields.push("Contact Person Name");
             }
