@@ -253,13 +253,17 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
-                                    @if($user->role === 'Main Admin')
-                                        Head of Admin
-                                    @else
-                                        {{ $user->role }}
-                                    @endif
-                                </span>
+                                <select onchange="changeUserRole(this)" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; border: 1px solid rgba(67, 56, 202, 0.1); cursor: pointer; outline: none; text-transform: uppercase; max-width: 150px;">
+                                    <option value="Main Admin" {{ $user->role === 'Main Admin' ? 'selected' : '' }}>Head of Admin</option>
+                                    <option value="Sub Main Admin" {{ $user->role === 'Sub Main Admin' ? 'selected' : '' }}>Sub Main Admin</option>
+                                    <option value="Department Head" {{ $user->role === 'Department Head' ? 'selected' : '' }}>Departmental Head</option>
+                                    <option value="Dept Head HR" {{ $user->role === 'Dept Head HR' ? 'selected' : '' }}>Dept Head HR</option>
+                                    <option value="Head of Welfare" {{ $user->role === 'Head of Welfare' ? 'selected' : '' }}>Head of Welfare</option>
+                                    <option value="Requisitioner" {{ $user->role === 'Requisitioner' ? 'selected' : '' }}>Requisitioner</option>
+                                    <option value="Officer" {{ $user->role === 'Officer' ? 'selected' : '' }}>Store Officer</option>
+                                    <option value="Auditor" {{ $user->role === 'Auditor' ? 'selected' : '' }}>Auditor</option>
+                                    <option value="Director General" {{ $user->role === 'Director General' ? 'selected' : '' }}>Director General</option>
+                                </select>
                                 @if($user->department)
                                 <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
                                     {{ $user->department }}
@@ -680,6 +684,57 @@
             row.classList.remove('syncing-row');
             checkbox.checked = !checkbox.checked;
             alert('A system error occurred.');
+        });
+    }
+
+    function changeUserRole(selectElement) {
+        const row = selectElement.closest('.m-row');
+        const userId = row.getAttribute('data-user-id');
+        const newRole = selectElement.value;
+        row.classList.add('syncing-row');
+
+        fetch('{{ route("admin.permissions.update_role", [], false) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId, role: newRole })
+        })
+        .then(async r => {
+            const data = await r.json();
+            if (!r.ok) {
+                throw new Error(data.message || 'Failed to update role.');
+            }
+            return data;
+        })
+        .then(data => {
+            row.classList.remove('syncing-row');
+            Swal.fire({
+                icon: 'success',
+                title: 'Role Updated',
+                text: data.message || 'User role has been updated successfully.',
+                confirmButtonColor: '#4f46e5',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.reload();
+            });
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(err => {
+            row.classList.remove('syncing-row');
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: err.message || 'A system error occurred.',
+                confirmButtonColor: '#ef4444'
+            }).then(() => {
+                window.location.reload();
+            });
         });
     }
 

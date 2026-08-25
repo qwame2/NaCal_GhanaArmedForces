@@ -2179,5 +2179,34 @@ class ApiTest extends TestCase
         $this->assertEquals(10, (float)$inventoryItem->stock_balance);
         $this->assertEquals(10, (float)$inventoryItem->qty);
     }
+
+    public function test_admin_can_update_user_role_via_ajax()
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'role' => 'Main Admin',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $deptHead = User::factory()->create([
+            'role' => 'Department Head',
+            'department' => 'IT Department',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // Change role from Department Head to Sub Main Admin
+        $response = $this->actingAs($admin)->postJson(route('admin.permissions.update_role'), [
+            'user_id' => $deptHead->id,
+            'role' => 'Sub Main Admin'
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        
+        $deptHead->refresh();
+        $this->assertEquals('Sub Main Admin', $deptHead->role);
+    }
 }
 

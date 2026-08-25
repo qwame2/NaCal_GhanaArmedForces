@@ -765,6 +765,82 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Permission updated']);
     }
 
+    public function updateUserRole(Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|string|in:Main Admin,Sub Main Admin,Department Head,Dept Head HR,Head of Welfare,Requisitioner,Officer,Auditor,Director General'
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $oldRole = $user->role;
+        $newRole = $request->role;
+
+        if ($oldRole === $newRole) {
+            return response()->json(['success' => true, 'message' => 'Role is already set to this value.']);
+        }
+
+        // Sub Main Admin count limit (max 2 active Delegators allowed)
+        if ($newRole === 'Sub Main Admin') {
+            $activeCount = User::where('role', 'Sub Main Admin')
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->count();
+            if ($activeCount >= 2) {
+                return response()->json(['success' => false, 'message' => 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.'], 422);
+            }
+        }
+
+        // Prevent duplicate Department Heads for the same department
+        if (in_array($newRole, ['Department Head', 'Dept Head HR', 'Head of Welfare'])) {
+            $targetDepartment = $user->department;
+            if (!empty($targetDepartment)) {
+                $existingHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+                    ->where('department', $targetDepartment)
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->where('id', '!=', $user->id)
+                    ->first();
+                if ($existingHead) {
+                    return response()->json(['success' => false, 'message' => "Department Conflict: {$existingHead->name} is already the active Department Head for the '{$targetDepartment}' department. Only one head per department is allowed. Please deactivate the existing head first."], 422);
+                }
+            }
+        }
+
+        // Adjust department based on role if necessary
+        $department = $user->department;
+        if ($newRole === 'Main Admin') {
+            $department = 'Stores';
+        } elseif ($newRole === 'Officer') {
+            $department = 'Stores';
+        } elseif ($newRole === 'Director General') {
+            $department = 'Executive Directorate';
+        }
+
+        $user->update([
+            'role' => $newRole,
+            'department' => $department,
+            'is_admin' => in_array($newRole, ['Head of Stores', 'Main Admin']),
+            'is_temp_account' => $newRole === 'Auditor',
+        ]);
+
+        // Log the change
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'ROLE_CHANGE',
+            'description' => "Administrator changed role for {$user->name} (@{$user->username}) from {$oldRole} to {$newRole}.",
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Role updated successfully']);
+    }
+
     public function logs(Request $request)
     {
         if (!auth()->user()->is_admin) {
