@@ -78,8 +78,22 @@ class Setting extends Model
             }
         }
 
-        if (array_key_exists($key, self::$cachedSettings)) {
+        $bypassCache = in_array($key, ['delegation_otp_code', 'delegation_otp_expires_at', 'delegated_approver_id']);
+
+        if (!$bypassCache && array_key_exists($key, self::$cachedSettings)) {
             return self::$cachedSettings[$key];
+        }
+
+        if ($bypassCache) {
+            $setting = self::where('key', $key)->first();
+            if (!$setting) {
+                return $default;
+            }
+            $val = $setting->value;
+            if ($setting->type === 'integer') {
+                $val = (int) $setting->value;
+            }
+            return $val;
         }
 
         $value = \Illuminate\Support\Facades\Cache::remember('setting_' . $key, 86400, function() use ($key) {

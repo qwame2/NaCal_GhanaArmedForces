@@ -1182,7 +1182,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     })->name('api.auditor.sidebar-counts');
 
     Route::get('/api/admin/sidebar-counts', function() {
-        if (!auth()->check() || !auth()->user()->is_admin) return response()->json(['error' => 'Unauthorized'], 401);
+        if (!auth()->check() || !(auth()->user()->is_admin || auth()->user()->isDelegatedApprover())) return response()->json(['error' => 'Unauthorized'], 401);
 
         $messages = \App\Models\Message::where('receiver_id', auth()->id())->whereNull('read_at')->where('is_archived', false)->where('is_automated', false)->count();
 

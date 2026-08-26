@@ -538,6 +538,7 @@
                 Delegated Admin Authority
             </div>
             <ul class="nav-menu">
+
                 <li class="nav-item">
                     <a href="{{ route('admin.requisitions') }}" class="nav-link {{ request()->routeIs('admin.requisitions') ? 'active' : '' }}" data-tooltip="Admin Store Requisitions">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -548,14 +549,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}" data-tooltip="Admin Staff Messages">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <span>Staff Messages</span>
-                        <span id="sidebar-badge-delegated-messages" style="background: #059669; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
-                            {{ $unreadMessagesCount ?? 0 }}
+                    <a href="{{ route('stores.item-entry-approval') }}" class="nav-link {{ request()->routeIs('stores.item-entry-approval') ? 'active' : '' }}" data-tooltip="Item Entry Approval">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                        <span>Item Entry Approval</span>
+                        <span id="sidebar-badge-delegated-item-entry-approval" style="background: #059669; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingItemEntryApprovalsCount) || $pendingItemEntryApprovalsCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingItemEntryApprovalsCount ?? 0 }}
                         </span>
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions') ? 'active' : '' }}" data-tooltip="Permissions & Roles">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -1661,7 +1663,7 @@
             @if(auth()->check() && auth()->user()->role !== 'Auditor')
             // â”€â”€ Sidebar Badge Polling: Approved Requisitions & Item Entry Approvals â”€â”€
             function pollSidebarCounts() {
-                let url = "{{ auth()->user()->is_admin ? route('api.admin.sidebar-counts') : route('api.personnel.sidebar-counts') }}";
+                let url = "{{ (auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) ? route('api.admin.sidebar-counts') : route('api.personnel.sidebar-counts') }}";
                 fetch(url, {
                     credentials: 'same-origin',
                     headers: { 'Accept': 'application/json' }
@@ -1721,6 +1723,51 @@
                             badgeMainReqs.style.display = 'flex';
                         } else {
                             badgeMainReqs.style.display = 'none';
+                        }
+                    }
+
+                    // Delegated Badges update
+                    const badgeDelegatedReqs = document.getElementById('sidebar-badge-delegated-reqs');
+                    if (badgeDelegatedReqs) {
+                        const countReqs = data.pending_requisitions || 0;
+                        if (countReqs > 0) {
+                            badgeDelegatedReqs.textContent = countReqs;
+                            badgeDelegatedReqs.style.display = 'flex';
+                        } else {
+                            badgeDelegatedReqs.style.display = 'none';
+                        }
+                    }
+
+                    const badgeDelegatedMessages = document.getElementById('sidebar-badge-delegated-messages');
+                    if (badgeDelegatedMessages) {
+                        const countMessages = data.messages || 0;
+                        if (countMessages > 0) {
+                            badgeDelegatedMessages.textContent = countMessages;
+                            badgeDelegatedMessages.style.display = 'flex';
+                        } else {
+                            badgeDelegatedMessages.style.display = 'none';
+                        }
+                    }
+
+                    const badgeDelegatedPasswordReqs = document.getElementById('sidebar-badge-delegated-password-reqs');
+                    if (badgeDelegatedPasswordReqs) {
+                        const countPasswordReqs = data.password_requests || 0;
+                        if (countPasswordReqs > 0) {
+                            badgeDelegatedPasswordReqs.textContent = countPasswordReqs;
+                            badgeDelegatedPasswordReqs.style.display = 'flex';
+                        } else {
+                            badgeDelegatedPasswordReqs.style.display = 'none';
+                        }
+                    }
+
+                    const badgeDelegatedItemEntry = document.getElementById('sidebar-badge-delegated-item-entry-approval');
+                    if (badgeDelegatedItemEntry) {
+                        const countItemEntry = data.pending_item_entry_approvals || 0;
+                        if (countItemEntry > 0) {
+                            badgeDelegatedItemEntry.textContent = countItemEntry;
+                            badgeDelegatedItemEntry.style.display = 'flex';
+                        } else {
+                            badgeDelegatedItemEntry.style.display = 'none';
                         }
                     }
 

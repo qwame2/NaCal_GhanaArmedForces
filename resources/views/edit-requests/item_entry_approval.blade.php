@@ -77,6 +77,16 @@
 
 <div class="animate-slide-up" style="padding: 2rem; width: 100%; box-sizing: border-box;">
     
+    @if(auth()->user()->isDelegatedApprover())
+        <!-- Breadcrumb / Back Button for Delegated Approvers -->
+        <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
+            <a href="{{ route('dashboard') }}" style="display: inline-flex; align-items: center; gap: 6px; color: #059669; text-decoration: none; font-weight: 800; font-size: 0.82rem; padding: 8px 16px; background: rgba(5,150,105,0.08); border: 1.5px dashed rgba(5,150,105,0.25); border-radius: 12px; transition: all 0.25s;" onmouseover="this.style.background='rgba(5,150,105,0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(5,150,105,0.08)'; this.style.transform='translateY(0)'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <span>Back to Store Officer Panel</span>
+            </a>
+        </div>
+    @endif
+
     <!-- Page Header -->
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>

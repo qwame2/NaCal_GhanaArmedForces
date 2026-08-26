@@ -1564,6 +1564,7 @@ class EditRequestController extends Controller
     {
         $user = auth()->user();
         $isStores = $user->is_admin
+            || $user->isDelegatedApprover()
             || $user->role === 'Main Admin'
             || $user->role === 'Head of Stores'
             || $user->role === 'Dept. Head (Stores)'

@@ -2208,5 +2208,66 @@ class ApiTest extends TestCase
         $deptHead->refresh();
         $this->assertEquals('Sub Main Admin', $deptHead->role);
     }
+
+    public function test_delegated_approver_can_access_item_entry_approval_panel(): void
+    {
+        $delegatedUser = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        \App\Models\Setting::updateOrCreate(
+            ['key' => 'delegated_approver_id'],
+            ['value' => $delegatedUser->id, 'type' => 'integer', 'group' => 'general']
+        );
+
+        $this->assertTrue($delegatedUser->isDelegatedApprover());
+
+        $response = $this->actingAs($delegatedUser)->get(route('stores.item-entry-approval'));
+        $response->assertStatus(200);
+        $response->assertSee('Item Entry Approval');
+    }
+
+    public function test_head_of_stores_can_directly_delegate_to_officer(): void
+    {
+        $headOfStores = User::factory()->create([
+            'role' => 'Head of Stores',
+            'is_admin' => true,
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // Delegate authority directly
+        $response = $this->actingAs($headOfStores)->postJson(route('admin.delegation.generate-otp'), [
+            'user_id' => $officer->id,
+            'expiry_minutes' => 60
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'officer_name' => $officer->name,
+            'officer_username' => $officer->username,
+        ]);
+
+        $this->assertEquals($officer->id, (int)\App\Models\Setting::get('delegated_approver_id'));
+        $this->assertTrue($officer->isDelegatedApprover());
+
+        // Revoke authority
+        $response = $this->actingAs($headOfStores)->postJson(route('admin.delegation.revoke-otp'));
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $this->assertEmpty(\App\Models\Setting::get('delegated_approver_id'));
+        $this->assertFalse($officer->isDelegatedApprover());
+    }
 }
 

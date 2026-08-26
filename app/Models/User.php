@@ -203,7 +203,19 @@ class User extends Authenticatable implements LdapAuthenticatable
             return false;
         }
         $delegatedId = \App\Models\Setting::get('delegated_approver_id');
-        return $delegatedId && (int)$delegatedId === (int)$this->id;
+        if (!$delegatedId || (int)$delegatedId !== (int)$this->id) {
+            return false;
+        }
+        $expiresAtStr = \App\Models\Setting::get('delegation_otp_expires_at');
+        if (!empty($expiresAtStr)) {
+            try {
+                $expiresAt = \Carbon\Carbon::parse($expiresAtStr);
+                if (now()->gt($expiresAt)) {
+                    return false;
+                }
+            } catch (\Exception $e) {}
+        }
+        return true;
     }
 
     /**

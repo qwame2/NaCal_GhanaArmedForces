@@ -4,6 +4,15 @@
 @section('title', 'Permissions & Registrations')
 
 @section('content')
+@if(auth()->user()->isDelegatedApprover())
+    <!-- Breadcrumb / Back Button for Delegated Approvers -->
+    <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
+        <a href="{{ route('dashboard') }}" style="display: inline-flex; align-items: center; gap: 6px; color: #059669; text-decoration: none; font-weight: 800; font-size: 0.82rem; padding: 8px 16px; background: rgba(5,150,105,0.08); border: 1.5px dashed rgba(5,150,105,0.25); border-radius: 12px; transition: all 0.25s;" onmouseover="this.style.background='rgba(5,150,105,0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(5,150,105,0.08)'; this.style.transform='translateY(0)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Back to Store Officer Panel</span>
+        </a>
+    </div>
+@endif
 <div class="view-header" style="margin-bottom: 3rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem; width: 100%;">
         <div style="flex: 1; min-width: 300px;">
@@ -54,6 +63,13 @@
 
 {{-- ── Panel: Store Officers ── --}}
 <div id="panel-store-officers" class="pager-panel active">
+    @php
+        $otpExpiresAt = \App\Models\Setting::get('delegation_otp_expires_at');
+        $delegatedApproverId = \App\Models\Setting::get('delegated_approver_id');
+        $delegatedUser = $delegatedApproverId ? \App\Models\User::find($delegatedApproverId) : null;
+        $isDelegationActive = $delegatedUser && $delegatedUser->isDelegatedApprover();
+    @endphp
+
     <div class="permissions-matrix-wrapper">
         <div class="matrix-table">
             <div class="m-header">
@@ -61,6 +77,9 @@
                 <div class="col-ctrl">Item Entry</div>
                 <div class="col-ctrl">Confirm Collection</div>
                 <div class="col-ctrl">Report Access</div>
+                @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
+                <div class="col-ctrl" style="color: #059669; font-weight: 800;">Delegation</div>
+                @endif
                 <div class="col-stat">Clearance Status</div>
             </div>
 
@@ -136,6 +155,37 @@
                             </div>
                         </div>
                     </div>
+
+                    @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
+                    @php
+                        $isUserDelegated = (int)$user->id === (int)$delegatedApproverId && $user->isDelegatedApprover();
+                    @endphp
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Delegation Authority">
+                                <input type="checkbox" 
+                                       class="delegation-toggle-checkbox"
+                                       data-user-id="{{ $user->id }}"
+                                       data-user-name="{{ $user->name }}"
+                                       onchange="toggleUserDelegation(this)" 
+                                       {{ $isUserDelegated ? 'checked' : '' }}>
+                                <div class="toggle-slider" style="{{ $isUserDelegated ? 'background-color: #059669;' : '' }}"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main" style="{{ $isUserDelegated ? 'color: #059669;' : '' }}">
+                                    {{ $isUserDelegated ? 'Delegated' : 'Off' }}
+                                </span>
+                                @if($isUserDelegated && $otpExpiresAt)
+                                    <span class="t-sub">
+                                        Exp: {{ \Carbon\Carbon::parse($otpExpiresAt)->format('H:i') }}
+                                    </span>
+                                @else
+                                    <span class="t-sub">Approver</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="col-stat">
                         <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
@@ -504,6 +554,56 @@
     }
     .swal2-html-container .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: 40px !important;
+    }
+
+    /* Premium Select2 Delegation Dropdown Styling */
+    .delegation-card .select2-container--default .select2-selection--single {
+        height: 42px !important;
+        border-radius: 10px !important;
+        border: 1.5px solid #cbd5e1 !important;
+        display: flex !important;
+        align-items: center !important;
+        background-color: #ffffff !important;
+        padding-left: 6px !important;
+        min-width: 180px;
+        position: relative !important;
+    }
+    .delegation-card .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--text-main) !important;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        text-align: center !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        line-height: inherit !important;
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+    }
+    .delegation-card .select2-container--default .select2-selection--single .select2-selection__clear {
+        position: absolute !important;
+        left: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: #ef4444 !important;
+        font-weight: 800 !important;
+        font-size: 1rem !important;
+    }
+    .delegation-card .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+    .delegation-card .select2-dropdown {
+        border-radius: 12px !important;
+        border: 1.5px solid #cbd5e1 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+        z-index: 9999 !important;
+    }
+    .delegation-card .select2-results__option {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        padding: 8px 12px !important;
     }
 
     /* ── Search Vault ── */
@@ -1315,6 +1415,123 @@
                 showToast('{{ addslashes(session('error')) }}', 'error');
             }
         @endif
+
+        // delegation initialization
     });
+
+    @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
+    async function toggleUserDelegation(el) {
+        const userId = el.dataset.userId;
+        const userName = el.dataset.userName;
+        const checked = el.checked;
+
+        if (checked) {
+            // Toggling ON: simple confirm — no time limit
+            const confirmed = await Swal.fire({
+                title: `<span style="font-weight:900;color:#0f172a;">Delegate Authority</span>`,
+                html: `<p style="color:#64748b;font-size:0.88rem;margin:0;">Delegate approval authority to <strong>${userName}</strong>?<br><span style="font-size:0.78rem;color:#94a3b8;margin-top:6px;display:block;">Authority remains active until manually revoked.</span></p>`,
+                icon: 'warning',
+                iconColor: '#059669',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#f1f5f9',
+                confirmButtonText: 'Delegate Authority',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    cancelButton: 'swal-cancel-dark'
+                }
+            });
+
+            if (!confirmed.isConfirmed) {
+                el.checked = false;
+                return;
+            }
+
+            const expiryMinutes = '';
+
+            try {
+                const res = await fetch('{{ route("admin.delegation.generate-otp") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        user_id: userId,
+                        expiry_minutes: expiryMinutes
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    if (typeof showToast === 'function') {
+                        showToast('Delegation Active', `Delegation authority successfully assigned to ${userName}.`, 'success');
+                    } else {
+                        Swal.fire('Delegated!', 'Delegation authority has been assigned successfully.', 'success');
+                    }
+                    
+                    window.location.reload();
+                } else {
+                    el.checked = false;
+                    Swal.fire('Error', data.message || 'Failed to delegate authority.', 'error');
+                }
+            } catch (err) {
+                el.checked = false;
+                Swal.fire('Error', 'Failed to communicate with delegation subsystem.', 'error');
+            }
+
+        } else {
+            // Toggling OFF: prompt to revoke
+            const confirmed = await Swal.fire({
+                title: '<span style="font-weight:900;color:#0f172a;">Revoke Delegation?</span>',
+                html: `<p style="color:#64748b;font-size:0.9rem;margin:0;">Are you sure you want to revoke delegated approval authority from <strong>${userName}</strong>?</p>`,
+                icon: 'warning',
+                iconColor: '#ef4444',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#f1f5f9',
+                confirmButtonText: 'Yes, Revoke Access',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    cancelButton: 'swal-cancel-dark'
+                }
+            });
+
+            if (!confirmed.isConfirmed) {
+                el.checked = true;
+                return;
+            }
+
+            try {
+                const res = await fetch('{{ route("admin.delegation.revoke-otp") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    if (typeof showToast === 'function') {
+                        showToast('Delegation Revoked', 'Delegation authority revoked.', 'info');
+                    } else {
+                        Swal.fire('Revoked!', 'Delegation authority has been revoked successfully.', 'success');
+                    }
+                    
+                    window.location.reload();
+                } else {
+                    el.checked = true;
+                    Swal.fire('Error', data.message || 'Failed to revoke delegation.', 'error');
+                }
+            } catch (err) {
+                el.checked = true;
+                Swal.fire('Error', 'Failed to communicate with delegation subsystem.', 'error');
+            }
+        }
+    }
+    @endif
 </script>
 @endsection
