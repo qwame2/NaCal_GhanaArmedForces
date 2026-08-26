@@ -739,6 +739,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/admin/pending-registrations', [\App\Http\Controllers\AdminController::class, 'getPendingRegistrations'])->name('admin.pending-registrations');
 
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
+    Route::get('/received-items/{id}/edit', [ReceivedItemsController::class, 'edit'])->name('receiveditems.edit');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
     Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
     Route::get('/api/global-search', [InventoryController::class, 'globalSearch'])->name('api.search');
@@ -1296,7 +1297,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             'alerts' => $alertCount,
             'pending_requisitions' => $pendingRequisitions,
             'pending_registrations' => $pendingRegistrations,
-            'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
+            'pending_item_entry_approvals' => \App\Models\EditRequest::where(function($q) {
+                $q->where('item_type', 'batch_creation')
+                  ->orWhereIn('request_type', ['remainder_submission', 'edit', 'edit_submission']);
+            })->where('status', 'pending')->count(),
             'pending_rollbacks' => $pendingRollbacks,
             'main_requisitions' => $mainStoreRequisitionsCount,
         ]);
@@ -1371,7 +1375,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         return response()->json([
             'approved_requisitions' => $approvedRequisitions,
-            'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
+            'pending_item_entry_approvals' => \App\Models\EditRequest::where(function($q) {
+                $q->where('item_type', 'batch_creation')
+                  ->orWhereIn('request_type', ['remainder_submission', 'edit', 'edit_submission']);
+            })->where('status', 'pending')->count(),
             'pending_rollbacks' => $pendingRollbacks,
             'main_requisitions' => $mainStoreRequisitionsCount,
         ]);

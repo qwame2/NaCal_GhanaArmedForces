@@ -115,6 +115,9 @@
         <div onclick="switchTab('pending')" id="tab-btn-pending" class="sra-tab-btn active">
             Pending Approval <span id="tab-pending-count" class="sra-tab-badge" style="background: #ef4444; color: white;">{{ $pending->total() }}</span>
         </div>
+        <div onclick="switchTab('edits')" id="tab-btn-edits" class="sra-tab-btn">
+            Edit Review and Approval <span id="tab-edits-count" class="sra-tab-badge" style="background: #ef4444; color: white;">{{ $pendingEdits->total() }}</span>
+        </div>
         <div onclick="switchTab('history')" id="tab-btn-history" class="sra-tab-btn">
             Decision History <span class="sra-tab-badge">{{ $history->total() }}</span>
         </div>
@@ -123,6 +126,11 @@
     <!-- Pending Queue Table Wrapper -->
     <div id="section-pending" class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem; display: block; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--shadow-luxe);">
         @include('edit-requests._pending_table')
+    </div>
+
+    <!-- Edits Queue Table Wrapper -->
+    <div id="section-edits" class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem; display: none; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--shadow-luxe);">
+        @include('edit-requests._pending_edits_table')
     </div>
 
     <!-- History Queue Table Wrapper -->
@@ -217,37 +225,55 @@
 @push('scripts')
 <script>
 function switchTab(tab) {
+    const btnPending = document.getElementById('tab-btn-pending');
+    const btnEdits = document.getElementById('tab-btn-edits');
+    const btnHistory = document.getElementById('tab-btn-history');
+
+    const secPending = document.getElementById('section-pending');
+    const secEdits = document.getElementById('section-edits');
+    const secHistory = document.getElementById('section-history');
+
+    if (btnPending) btnPending.classList.remove('active');
+    if (btnEdits) btnEdits.classList.remove('active');
+    if (btnHistory) btnHistory.classList.remove('active');
+
+    if (secPending) secPending.style.display = 'none';
+    if (secEdits) secEdits.style.display = 'none';
+    if (secHistory) secHistory.style.display = 'none';
+
     if (tab === 'pending') {
-        document.getElementById('tab-btn-pending').classList.add('active');
-        document.getElementById('tab-btn-history').classList.remove('active');
-        document.getElementById('section-pending').style.display = 'block';
-        document.getElementById('section-history').style.display = 'none';
-    } else {
-        document.getElementById('tab-btn-pending').classList.remove('active');
-        document.getElementById('tab-btn-history').classList.add('active');
-        document.getElementById('section-pending').style.display = 'none';
-        document.getElementById('section-history').style.display = 'block';
+        if (btnPending) btnPending.classList.add('active');
+        if (secPending) secPending.style.display = 'block';
+    } else if (tab === 'edits') {
+        if (btnEdits) btnEdits.classList.add('active');
+        if (secEdits) secEdits.style.display = 'block';
+    } else if (tab === 'history') {
+        if (btnHistory) btnHistory.classList.add('active');
+        if (secHistory) secHistory.style.display = 'block';
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     
-    // Auto switch to history tab if history pagination page parameter is set
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('history_page')) {
         switchTab('history');
+    } else if (urlParams.has('edits_page')) {
+        switchTab('edits');
     }
 });
 
 let lastPendingHtml = null;
+let lastEditsHtml = null;
 
 function pollPendingApprovalsSilently() {
     const activeModal = document.querySelector('.modal-overlay:not([style*="display: none"]), .swal2-container, #signature-warning-overlay:not([style*="display: none"])');
     if (activeModal) return;
 
     const pageParam = new URLSearchParams(window.location.search).get('pending_page') || 1;
-    const fetchUrl = window.location.pathname + '?pending_page=' + pageParam;
+    const editsPageParam = new URLSearchParams(window.location.search).get('edits_page') || 1;
+    const fetchUrl = window.location.pathname + '?pending_page=' + pageParam + '&edits_page=' + editsPageParam;
 
     fetch(fetchUrl, {
         headers: {
@@ -267,10 +293,16 @@ function pollPendingApprovalsSilently() {
             badgeEl.innerText = data.pending_count;
         }
 
+        const editsBadgeEl = document.getElementById('tab-edits-count');
+        if (editsBadgeEl && typeof data.edits_count !== 'undefined' && editsBadgeEl.innerText !== String(data.edits_count)) {
+            editsBadgeEl.innerText = data.edits_count;
+        }
+
+        const totalPending = (parseInt(data.pending_count) || 0) + (parseInt(data.edits_count) || 0);
         const sidebarBadge = document.getElementById('sidebar-badge-item-entry-approval');
         if (sidebarBadge) {
-            sidebarBadge.innerText = data.pending_count;
-            sidebarBadge.style.display = data.pending_count > 0 ? 'inline-block' : 'none';
+            sidebarBadge.innerText = totalPending;
+            sidebarBadge.style.display = totalPending > 0 ? 'inline-block' : 'none';
         }
 
         const pendingContainer = document.getElementById('section-pending');
@@ -283,6 +315,20 @@ function pollPendingApprovalsSilently() {
             if (lastPendingHtml !== newHtmlTrimmed) {
                 lastPendingHtml = newHtmlTrimmed;
                 pendingContainer.innerHTML = data.pending_html;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
+        const editsContainer = document.getElementById('section-edits');
+        if (editsContainer && typeof data.edits_html !== 'undefined') {
+            if (lastEditsHtml === null) {
+                lastEditsHtml = editsContainer.innerHTML.trim();
+            }
+
+            const newEditsHtmlTrimmed = data.edits_html.trim();
+            if (lastEditsHtml !== newEditsHtmlTrimmed) {
+                lastEditsHtml = newEditsHtmlTrimmed;
+                editsContainer.innerHTML = data.edits_html;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         }

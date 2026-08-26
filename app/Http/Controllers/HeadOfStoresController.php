@@ -28,7 +28,10 @@ class HeadOfStoresController extends Controller
         $pendingRequisitionsCount = StoreRequisition::awaitingHeadOfStoresReview()->count();
 
         // 2. Pending Item Entry Approvals
-        $pendingItemEntryCount = EditRequest::where('item_type', 'batch_creation')
+        $pendingItemEntryCount = EditRequest::where(function($q) {
+                $q->where('item_type', 'batch_creation')
+                  ->orWhereIn('request_type', ['remainder_submission', 'edit', 'edit_submission']);
+            })
             ->where('status', 'pending')
             ->count();
 
@@ -68,7 +71,10 @@ class HeadOfStoresController extends Controller
 
         // 7. Recent Pending Item Entry Requests
         $recentItemEntries = EditRequest::with(['user', 'batch'])
-            ->where('item_type', 'batch_creation')
+            ->where(function($q) {
+                $q->where('item_type', 'batch_creation')
+                  ->orWhereIn('request_type', ['remainder_submission', 'edit', 'edit_submission']);
+            })
             ->where('status', 'pending')
             ->orderBy('created_at', 'desc')
             ->take(5)

@@ -1,5 +1,20 @@
 @extends('layouts.dashboard')
 
+@php
+    $storeLocations = \App\Models\InventoryItem::whereNotNull('store_location')
+        ->where('store_location', '!=', '')
+        ->distinct()
+        ->pluck('store_location')
+        ->map(fn($l) => strtoupper(trim($l)))
+        ->filter()
+        ->unique()
+        ->values()
+        ->toArray();
+    $defaultLocations = ['STORE A', 'STORE B'];
+    $storeLocations = array_unique(array_merge($defaultLocations, $storeLocations));
+    sort($storeLocations);
+@endphp
+
 @section('content')
 <style>
     .serial-input-wrapper {
@@ -316,6 +331,7 @@
 </script>
 
 <script>
+    const storeLocations = @json($storeLocations);
 jQuery(document).ready(function($) {
     // Automatically convert any text typed in Select2 search boxes to uppercase
     $(document).on('input', '.select2-search__field', function() {
@@ -1030,6 +1046,11 @@ jQuery(document).ready(function($) {
         const allPackages = [...new Set([...standardPackages, ...existingUnits])];
         const packageOptionsHtml = allPackages.map(pkg => `<option value="${pkg}">${pkg}</option>`).join('');
 
+        const storeLocationOptionsHtml = storeLocations.map(loc => {
+            const selected = (loc === 'STORE A') ? 'selected' : '';
+            return `<option value="${loc}" ${selected}>${loc}</option>`;
+        }).join('');
+
         const categoryText = $('#ledgeSelect option:selected').text().trim();
         const suffix = categoryText ? ' - ' + categoryText : '';
 
@@ -1121,8 +1142,7 @@ jQuery(document).ready(function($) {
                             </label>
                             <div class="store-location-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
                                 <select class="row-store-location" style="width: 100%;" required>
-                                    <option value="Store A" selected>Store A</option>
-                                    <option value="Store B">Store B</option>
+                                    ${storeLocationOptionsHtml}
                                 </select>
                                 <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none; z-index: 5;">
                                     <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
@@ -1284,10 +1304,22 @@ jQuery(document).ready(function($) {
             // Initialize Select2 for Store Location
             const $storeLocationInput = $row.find('.row-store-location');
             $storeLocationInput.select2({
-                placeholder: "Select Store Location",
+                placeholder: "Select or type store location...",
                 width: '100%',
-                minimumResultsForSearch: Infinity,
-                dropdownParent: $row
+                tags: true,
+                closeOnSelect: true,
+                dropdownParent: $row,
+                createTag: function (params) {
+                    var term = $.trim(params.term).toUpperCase();
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    };
+                }
             });
 
             // Handle Item Selection to show previous data explicitly
@@ -1709,6 +1741,14 @@ jQuery(document).ready(function($) {
                 $unitSelect.append(new Option(item.unit, item.unit, true, true));
             }
             $unitSelect.val(item.unit).trigger('change.select2').trigger('change');
+        }
+
+        if (item.store_location) {
+            const $storeLocationSelect = $row.find('.row-store-location');
+            if ($storeLocationSelect.find(`option[value="${item.store_location}"]`).length === 0) {
+                $storeLocationSelect.append(new Option(item.store_location, item.store_location, true, true));
+            }
+            $storeLocationSelect.val(item.store_location).trigger('change.select2').trigger('change');
         }
 
         if (item.qty) {

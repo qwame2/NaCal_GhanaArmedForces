@@ -1583,12 +1583,18 @@ class EditRequestController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15, ['*'], 'pending_page');
 
+        $pendingEdits = EditRequest::with('user')
+            ->whereIn('request_type', ['edit', 'edit_submission'])
+            ->whereIn('status', ['pending', 'resubmitted'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15, ['*'], 'edits_page');
+
         $history = EditRequest::with('user')
             ->where(function($q) {
                 $q->where('item_type', 'batch_creation')
-                  ->orWhere('request_type', 'remainder_submission');
+                  ->orWhereIn('request_type', ['remainder_submission', 'edit', 'edit_submission']);
             })
-            ->whereIn('status', ['approved', 'rejected', 'completed'])
+            ->whereIn('status', ['approved', 'rejected', 'completed', 'canceled'])
             ->orderBy('updated_at', 'desc')
             ->paginate(15, ['*'], 'history_page');
 
@@ -1612,13 +1618,16 @@ class EditRequestController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $pendingHtml = view('edit-requests._pending_table', compact('pending'))->render();
+            $editsHtml = view('edit-requests._pending_edits_table', compact('pendingEdits'))->render();
             return response()->json([
                 'pending_count' => $pending->total() + $pendingServiceSras->count(),
+                'edits_count'   => $pendingEdits->total(),
                 'pending_html'  => $pendingHtml,
+                'edits_html'    => $editsHtml,
             ]);
         }
 
-        return view('edit-requests.item_entry_approval', compact('pending', 'history', 'ledgeMap', 'pendingServiceSras'));
+        return view('edit-requests.item_entry_approval', compact('pending', 'pendingEdits', 'history', 'ledgeMap', 'pendingServiceSras'));
     }
 
     public function rollbackRequestsIndex(Request $request)

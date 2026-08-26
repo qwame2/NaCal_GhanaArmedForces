@@ -1,5 +1,20 @@
 @extends('layouts.dashboard')
 
+@php
+    $storeLocations = \App\Models\InventoryItem::whereNotNull('store_location')
+        ->where('store_location', '!=', '')
+        ->distinct()
+        ->pluck('store_location')
+        ->map(fn($l) => strtoupper(trim($l)))
+        ->filter()
+        ->unique()
+        ->values()
+        ->toArray();
+    $defaultLocations = ['STORE A', 'STORE B'];
+    $storeLocations = array_unique(array_merge($defaultLocations, $storeLocations));
+    sort($storeLocations);
+@endphp
+
 @section('content')
 <style>
     .discrepancy-header-mobile {
@@ -107,6 +122,31 @@
     .select2-container--default .select2-search--dropdown .select2-search__field {
         border-radius: 8px !important;
         padding: 8px 12px !important;
+    }
+
+    /* Premium styling overrides for select2 fields in unit/store container */
+    .unit-container-sleek .select2-container--default .select2-selection--single,
+    .store-location-container-sleek .select2-container--default .select2-selection--single {
+        padding-left: 2.5rem !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        border: 1px solid var(--border-color) !important;
+        display: flex !important;
+        align-items: center !important;
+        background: rgba(239, 68, 68, 0.03) !important;
+    }
+    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered,
+    .store-location-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--text-main) !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        padding-left: 0px !important;
+    }
+    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__arrow,
+    .store-location-container-sleek .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px !important;
     }
 </style>
 
@@ -301,11 +341,17 @@
 </div>
 
 <script>
+    const storeLocations = @json($storeLocations);
     const existingDBItems = @json($existingItems);
     const ledgeMap = @json($ledgeMap);
     const suppliersRegistry = @json($suppliersRegistry);
 
     jQuery(document).ready(function($) {
+        // Automatically convert any text typed in Select2 search boxes to uppercase
+        $(document).on('input', '.select2-search__field', function() {
+            this.value = this.value.toUpperCase();
+        });
+
         const ledgeSelect = $('#ledgeSelect');
         const itemDetails = $('#itemDetails');
         const formFooter = $('#formFooter');
@@ -510,6 +556,11 @@
             const allPackages = [...new Set([...standardPackages, ...existingUnits])];
             const packageOptionsHtml = allPackages.map(pkg => `<option value="${pkg}">${pkg}</option>`).join('');
 
+            const storeLocationOptionsHtml = storeLocations.map(loc => {
+                const selected = (loc === 'STORE A') ? 'selected' : '';
+                return `<option value="${loc}" ${selected}>${loc}</option>`;
+            }).join('');
+
             const ledgeOptionsHtml = Object.entries(ledgeMap || {}).map(([code, name]) => 
                 `<option value="${code}">Category ${code} - ${name}</option>`
             ).join('');
@@ -552,33 +603,37 @@
                                 </select>
                             </div>
 
-                            <!-- Package Type -->
-                            <div class="form-group">
-                                 <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
-                                     <i data-lucide="package" style="width: 14px; color: var(--primary);"></i>
-                                     Package Type <span style="color: #ef4444; margin-left: 2px;">*</span>
-                                 </label>
-                                 <select class="row-unit-select" style="width: 100%;" required>
-                                     <option value=""></option>
-                                     ${packageOptionsHtml}
-                                 </select>
-                             </div>
+                             <!-- Package Type -->
+                             <div class="form-group">
+                                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                      <i data-lucide="package" style="width: 14px; color: var(--primary);"></i>
+                                      Package Type <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                  </label>
+                                  <div class="unit-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                      <select class="row-unit-select" style="width: 100%;" required>
+                                          <option value=""></option>
+                                          ${packageOptionsHtml}
+                                      </select>
+                                      <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none; z-index: 5;">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+                                      </div>
+                                  </div>
+                              </div>
 
-                            <!-- Store Location -->
-                            <div class="form-group">
-                                 <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
-                                     <i data-lucide="map-pin" style="width: 14px; color: var(--primary);"></i>
-                                     Store Location <span style="color: #ef4444; margin-left: 2px;">*</span>
-                                 </label>
-                                 <div class="store-location-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
-                                     <select class="row-store-location-select" style="width: 100%;" required>
-                                         <option value="Store A" selected>Store A</option>
-                                         <option value="Store B">Store B</option>
-                                     </select>
-                                     <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none; z-index: 5;">
-                                         <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
-                                     </div>
-                                 </div>
+                             <!-- Store Location -->
+                             <div class="form-group">
+                                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                      <i data-lucide="map-pin" style="width: 14px; color: var(--primary);"></i>
+                                      Store Location <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                  </label>
+                                  <div class="store-location-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                      <select class="row-store-location-select" style="width: 100%;" required>
+                                          ${storeLocationOptionsHtml}
+                                      </select>
+                                      <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none; z-index: 5;">
+                                          <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
+                                      </div>
+                                  </div>
                              </div>
                         </div>
 
@@ -700,9 +755,20 @@
 
                 // Initialize Select2 on store location dropdown
                 $rowStoreLocationSelect.select2({
-                    placeholder: 'Select Store Location',
+                    placeholder: 'Select or type store location...',
                     width: '100%',
-                    minimumResultsForSearch: Infinity
+                    tags: true,
+                    closeOnSelect: true,
+                    dropdownParent: $row,
+                    createTag: function (params) {
+                        var term = $.trim(params.term).toUpperCase();
+                        if (term === '') return null;
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true
+                        };
+                    }
                 });
 
                 // Initialize Select2 on discrepancy explanation dropdown
@@ -1296,7 +1362,11 @@
             }
 
             if (item.store_location) {
-                $row.find('.row-store-location-select').val(item.store_location).trigger('change.select2').trigger('change');
+                const $storeLocationSelect = $row.find('.row-store-location-select');
+                if ($storeLocationSelect.find(`option[value="${item.store_location}"]`).length === 0) {
+                    $storeLocationSelect.append(new Option(item.store_location, item.store_location, true, true));
+                }
+                $storeLocationSelect.val(item.store_location).trigger('change.select2').trigger('change');
             }
 
             if (item.book_qty) {

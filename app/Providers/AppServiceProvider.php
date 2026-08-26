@@ -405,7 +405,10 @@ class AppServiceProvider extends ServiceProvider
                     ->count();
                 $view->with('unreadMessagesCount', $unreadMessagesCount);
 
-                $pendingItemEntryApprovalsCount = \App\Models\EditRequest::where('item_type', 'batch_creation')
+                $pendingItemEntryApprovalsCount = \App\Models\EditRequest::where(function($q) {
+                        $q->where('item_type', 'batch_creation')
+                          ->orWhereIn('request_type', ['remainder_submission', 'edit', 'edit_submission']);
+                    })
                     ->where('status', 'pending')
                     ->count();
                 $view->with('pendingItemEntryApprovalsCount', $pendingItemEntryApprovalsCount);

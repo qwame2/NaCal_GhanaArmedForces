@@ -662,7 +662,12 @@ class ReceivedItemsController extends Controller
             'acquisition_type' => 'required|string',
             'arrival_date' => 'required|date',
             'delivery_person' => 'nullable|string',
-            'delivery_phone' => ['nullable', 'string', 'regex:/^(N\/A|\d{10})$/i'],
+            'delivery_phone' => 'nullable|string',
+            'contact_person' => 'nullable|string',
+            'contact_phone' => 'nullable|string',
+            'supplier_phone' => 'nullable|string',
+            'supplier_email' => 'nullable|email',
+            'supplier_address' => 'nullable|string',
             'items' => 'required|array',
             'items.*.id' => 'required|exists:inventory_items,id',
             'items.*.description' => 'required|string',
@@ -672,6 +677,7 @@ class ReceivedItemsController extends Controller
             'items.*.stock_balance' => 'required|numeric',
             'items.*.variance' => 'required|numeric',
             'items.*.remarks' => 'nullable|string',
+            'items.*.store_location' => 'nullable|string',
         ]);
 
         try {
@@ -682,7 +688,7 @@ class ReceivedItemsController extends Controller
             // Capture Original State for Forensic Audit
             $originalBatch = $batch->only(['arrival_date', 'ledge_category', 'acquisition_type', 'supplier_name', 'supplier_status', 'donor_name', 'delivery_person', 'delivery_phone']);
             $originalItems = $batch->items->mapWithKeys(function($item) {
-                return [$item->id => $item->only(['description', 'serial_number', 'unit', 'qty', 'stock_balance', 'variance', 'remarks'])];
+                return [$item->id => $item->only(['description', 'serial_number', 'unit', 'qty', 'stock_balance', 'variance', 'remarks', 'store_location'])];
             });
  
             $origPayloadArray = [
@@ -703,7 +709,8 @@ class ReceivedItemsController extends Controller
                         'qty' => $i->qty,
                         'stock_balance' => $i->stock_balance,
                         'variance' => $i->variance,
-                        'remarks' => $i->remarks
+                        'remarks' => $i->remarks,
+                        'store_location' => $i->store_location ?? 'Store A'
                     ];
                 })->toArray()
             ];
@@ -726,7 +733,8 @@ class ReceivedItemsController extends Controller
                         'qty' => $i['qty'],
                         'stock_balance' => $i['stock_balance'],
                         'variance' => $i['variance'],
-                        'remarks' => $i['remarks'] ?? null
+                        'remarks' => $i['remarks'] ?? null,
+                        'store_location' => $i['store_location'] ?? 'Store A'
                     ];
                 })->toArray()
             ];
@@ -742,6 +750,30 @@ class ReceivedItemsController extends Controller
                 'delivery_phone' => $validated['delivery_phone'] ?? null,
             ]);
 
+            // Also update the Supplier record if one exists
+            $cleanSupplierName = trim(preg_replace('/\[.*?\]/', '', $validated['supplier_name'] ?? $validated['donor_name'] ?? ''));
+            if ($cleanSupplierName) {
+                $supplierRecord = \App\Models\Supplier::where('name', $cleanSupplierName)
+                    ->orWhere('name', $validated['supplier_name'])
+                    ->first();
+
+                $supplierFields = array_filter([
+                    'contact_person'  => $validated['contact_person'] ?? null,
+                    'contact_phone'   => $validated['contact_phone'] ?? null,
+                    'delivery_person' => $validated['delivery_person'] ?? null,
+                    'delivery_phone'  => $validated['delivery_phone'] ?? null,
+                    'phone'           => $validated['supplier_phone'] ?? null,
+                    'email'           => $validated['supplier_email'] ?? null,
+                    'address'         => $validated['supplier_address'] ?? null,
+                ], fn($v) => !is_null($v));
+
+                if ($supplierRecord && !empty($supplierFields)) {
+                    $supplierRecord->update($supplierFields);
+                } elseif (!$supplierRecord && $cleanSupplierName && !empty($supplierFields)) {
+                    \App\Models\Supplier::create(array_merge(['name' => $cleanSupplierName], $supplierFields));
+                }
+            }
+
             $itemChanges = [];
             foreach ($validated['items'] as $itemData) {
                 $item = $batch->items()->findOrFail($itemData['id']);
@@ -755,6 +787,7 @@ class ReceivedItemsController extends Controller
                     'stock_balance' => $itemData['stock_balance'],
                     'variance' => $itemData['variance'],
                     'remarks' => $itemData['remarks'],
+                    'store_location' => $itemData['store_location'] ?? ($item->store_location ?? 'Store A'),
                 ];
 
                 // Detect changes
@@ -875,6 +908,84 @@ class ReceivedItemsController extends Controller
         }
 
         return view('received-items.show', compact('batch', 'ledgeMap', 'history'));
+    }
+
+    public function edit(Request $request, $id)
+    {
+        InventoryBatch::selfHealSchema();
+
+        $user = auth()->user();
+        // Only stores staff and admins may access this page
+        $isStoresUser = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || in_array($user->role, ['Officer', 'Store Officer', 'Head of Stores'])
+            || strcasecmp($user->department ?? '', 'Stores') === 0
+            || strcasecmp($user->department ?? '', 'Store') === 0;
+
+        if (!$isStoresUser) {
+            abort(403, 'Unauthorized: Only stores personnel may edit inventory entries.');
+        }
+
+        $ledgeMap = $this->getLedgeMap();
+        $batch = InventoryBatch::with(['items', 'recorder'])->findOrFail($id);
+
+        $itemId = $request->query('item_id');
+        if ($itemId) {
+            $batch->setRelation('items', $batch->items->filter(function($i) use ($itemId) {
+                return $i->id == $itemId;
+            }));
+        }
+
+        // Gather supplier/donor options (same as index)
+        $registryData = \App\Models\Setting::get('suppliers_registry', []);
+        if (is_string($registryData)) {
+            $registryData = json_decode($registryData, true) ?? [];
+        }
+        $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
+        $allSuppliers = collect($registrySuppliers)
+            ->filter(fn($s) => strtolower(trim($s)) !== 'system')
+            ->unique()
+            ->values();
+
+        $donorNames1 = InventoryBatch::where('acquisition_type', 'Donor')
+            ->where('supplier_status', '!=', 'System Draft')
+            ->distinct()->pluck('donor_name');
+        $donorNames2 = InventoryBatch::where('acquisition_type', 'Donor')
+            ->where('supplier_status', '!=', 'System Draft')
+            ->distinct()->pluck('supplier_name');
+        $allDonors = $donorNames1->concat($donorNames2)->filter()->unique()->values();
+
+        // Store locations
+        $storeLocations = \App\Models\InventoryItem::whereNotNull('store_location')
+            ->where('store_location', '!=', '')
+            ->distinct()
+            ->pluck('store_location')
+            ->map(fn($l) => strtoupper(trim($l)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+        $defaultLocations = ['STORE A', 'STORE B'];
+        $storeLocations = array_unique(array_merge($defaultLocations, $storeLocations));
+        sort($storeLocations);
+
+        // Supplier profile for pre-filling delivery person details
+        $supplierProfile = null;
+        $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''));
+        if ($cleanSupplier) {
+            $supplierProfile = \App\Models\Supplier::where('name', $cleanSupplier)
+                ->orWhere('name', $batch->supplier_name)
+                ->first();
+        }
+
+        return view('received-items.edit', compact(
+            'batch',
+            'ledgeMap',
+            'allSuppliers',
+            'allDonors',
+            'storeLocations',
+            'supplierProfile'
+        ));
     }
 
     public function print($id)
