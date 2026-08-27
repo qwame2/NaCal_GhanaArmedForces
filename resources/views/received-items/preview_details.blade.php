@@ -32,7 +32,9 @@
                 if (floatval($item['qty'] ?? 0) !== floatval($prevItem['qty'] ?? 0)) $isQtyChanged = true;
                 if (floatval($item['stock_balance'] ?? 0) !== floatval($prevItem['stock_balance'] ?? 0)) $isStockChanged = true;
                 if (trim($item['description'] ?? '') !== trim($prevItem['description'] ?? '')) $isDescChanged = true;
-                if (trim($item['remarks'] ?? '') !== trim($prevItem['remarks'] ?? '')) $isRemarksChanged = true;
+                $itemRem = ($item['discrepancy_explanation'] ?? '') ?: ($item['remarks'] ?? '');
+                $prevItemRem = ($prevItem['discrepancy_explanation'] ?? '') ?: ($prevItem['remarks'] ?? '');
+                if (trim($itemRem) !== trim($prevItemRem)) $isRemarksChanged = true;
             }
 
             if ($isQtyChanged || $isStockChanged || $isDescChanged || $isRemarksChanged) {
@@ -247,7 +249,7 @@
                                 </th>
                             @endif
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Total System</th>
-                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 20%;">Remarks</th>
+                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 20%;">{{ $isDiscrepancy ? 'Explanation' : 'Remarks' }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -264,7 +266,9 @@
                                     if (floatval($item['qty'] ?? 0) !== floatval($prevItem['qty'] ?? 0)) $isQtyChanged = true;
                                     if (floatval($item['stock_balance'] ?? 0) !== floatval($prevItem['stock_balance'] ?? 0)) $isStockChanged = true;
                                     if (trim($item['description'] ?? '') !== trim($prevItem['description'] ?? '')) $isDescChanged = true;
-                                    if (trim($item['remarks'] ?? '') !== trim($prevItem['remarks'] ?? '')) $isRemarksChanged = true;
+                                    $itemRem = ($item['discrepancy_explanation'] ?? '') ?: ($item['remarks'] ?? '');
+                                    $prevItemRem = ($prevItem['discrepancy_explanation'] ?? '') ?: ($prevItem['remarks'] ?? '');
+                                    if (trim($itemRem) !== trim($prevItemRem)) $isRemarksChanged = true;
                                 }
                             }
 
@@ -316,7 +320,7 @@
                                 {{ number_format($item['total_in_system'] ?? 0) }}
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; {!! $isRemarksChanged ? 'background: rgba(59, 130, 246, 0.08); border-left: 2px solid #2563eb;' : '' !!}">
-                                {{ $item['remarks'] ?: '-- No specific notes --' }}
+                                {{ ($item['discrepancy_explanation'] ?? '') ?: ($item['remarks'] ?? '') ?: '-- No specific notes --' }}
                             </td>
                         </tr>
                         @endforeach
@@ -385,7 +389,7 @@
                                     </th>
                                 @endif
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Total System</th>
-                                <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
+                                <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">{{ $isDiscrepancy ? 'Explanation' : 'Remarks' }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -411,7 +415,9 @@
                                     if (floatval($matchingCorrItem['qty'] ?? 0) !== floatval($prevItem['qty'] ?? 0)) $isPrevQtyChanged = true;
                                     if (floatval($matchingCorrItem['stock_balance'] ?? 0) !== floatval($prevItem['stock_balance'] ?? 0)) $isPrevStockChanged = true;
                                     if (trim($matchingCorrItem['description'] ?? '') !== trim($prevItem['description'] ?? '')) $isPrevDescChanged = true;
-                                    if (trim($matchingCorrItem['remarks'] ?? '') !== trim($prevItem['remarks'] ?? '')) $isPrevRemarksChanged = true;
+                                    $matchRem = ($matchingCorrItem['discrepancy_explanation'] ?? '') ?: ($matchingCorrItem['remarks'] ?? '');
+                                    $prevItemRem = ($prevItem['discrepancy_explanation'] ?? '') ?: ($prevItem['remarks'] ?? '');
+                                    if (trim($matchRem) !== trim($prevItemRem)) $isPrevRemarksChanged = true;
                                 }
                             @endphp
                             <tr style="border-bottom: 1px solid #fee2e2;">
@@ -453,7 +459,7 @@
                                     {{ number_format($prevItem['total_in_system'] ?? 0) }}
                                 </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #b91c1c; font-style: italic; max-width: 200px; word-break: break-word; {!! $isPrevRemarksChanged ? 'background: rgba(239, 68, 68, 0.08); border-left: 2px solid #dc2626;' : '' !!}">
-                                    {{ $prevItem['remarks'] ?: '-- No specific notes --' }}
+                                    {{ ($prevItem['discrepancy_explanation'] ?? '') ?: ($prevItem['remarks'] ?? '') ?: '-- No explanation provided --' }}
                                 </td>
                             </tr>
                             @endforeach

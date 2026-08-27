@@ -247,7 +247,7 @@ class User extends Authenticatable implements LdapAuthenticatable
             return true;
         }
         if (in_array(strtoupper(trim($this->department ?? '')), ['STORES', 'STORE'])) {
-            return !in_array($role, ['officer', 'requisitioner']);
+            return !in_array($role, ['officer', 'requisitioner', 'store officer']);
         }
         return false;
     }

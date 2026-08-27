@@ -880,6 +880,9 @@ class InventoryController extends Controller
             $qtyVal = floatval(str_replace(',', '', $rawQty));
             if ($qtyVal <= 0) continue;
 
+            // Normalize spaces by removing all whitespace characters for a space-insensitive check
+            $normalizedDesc = preg_replace('/\s+/', '', $desc);
+
             // 1. Check Pending Approval Queue (EditRequest)
             $pendingRequests = \App\Models\EditRequest::with('user')
                 ->where('item_type', 'batch_creation')
@@ -895,7 +898,9 @@ class InventoryController extends Controller
                     $pRawQty = $pendingItem['qty'] ?? ($pendingItem['stock_balance'] ?? 0);
                     $pQty = floatval(str_replace(',', '', $pRawQty));
 
-                    if ($pDesc === $desc && abs($pQty - $qtyVal) < 0.001) {
+                    $pNormalizedDesc = preg_replace('/\s+/', '', $pDesc);
+
+                    if ($pNormalizedDesc === $normalizedDesc && abs($pQty - $qtyVal) < 0.001) {
                         $submitter = $pendingReq->user->name ?? 'another Store Officer';
                         $reqCode = 'REQ-' . str_pad($pendingReq->id, 5, '0', STR_PAD_LEFT);
                         return [
@@ -908,7 +913,7 @@ class InventoryController extends Controller
 
             // 2. Check Recent Inventory Records (matching SAME arrival date created within 30 minutes)
             $recentMatch = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                ->whereRaw('TRIM(UPPER(inventory_items.description)) = ?', [$desc])
+                ->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(inventory_items.description), ' ', ''), '\t', ''), '\r', '') = ?", [$normalizedDesc])
                 ->whereRaw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) = ?', [$qtyVal])
                 ->where('inventory_batches.arrival_date', '=', $arrivalDate)
                 ->where('inventory_batches.created_at', '>=', now()->subMinutes(30))
