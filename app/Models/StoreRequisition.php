@@ -324,4 +324,102 @@ class StoreRequisition extends Model
                 }
             });
     }
+
+    /**
+     * Auto-approve all requisitions pending HOD approval that are older than their department head's custom timeout.
+     */
+    public static function autoApproveOverdueHODRequisitions()
+    {
+        $requisitions = self::where('status', 'pending')
+            ->where('origin_admin_status', 'pending')
+            ->get();
+
+        // Fetch department heads
+        $deptHeads = \App\Models\User::whereIn('role', ['Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])
+            ->where('is_active', true)
+            ->whereNotNull('department')
+            ->get()
+            ->keyBy(fn($u) => strtolower(trim($u->department)));
+
+        foreach ($requisitions as $req) {
+            $key = strtolower(trim($req->department));
+            $hod = $deptHeads->get($key);
+            // Default to the global setting default_hod_auto_approve_timeout_mins (fallback to 5 minutes)
+            $globalDefault = (int)\App\Models\Setting::get('default_hod_auto_approve_timeout_mins', 5);
+            $timeoutMins = ($hod && isset($hod->hod_auto_approve_timeout_mins)) ? (int)$hod->hod_auto_approve_timeout_mins : $globalDefault;
+            $threshold = now()->subMinutes($timeoutMins);
+
+            if ($req->created_at->lte($threshold)) {
+                $req->autoApproveHOD($timeoutMins);
+            }
+        }
+    }
+
+    /**
+     * Auto-approve the HOD review stage for this requisition and escalate it to the next actor.
+     */
+    public function autoApproveHOD($timeoutMins = 5)
+    {
+        $this->origin_admin_status = 'approved';
+        $this->origin_approved_by  = 'System Auto-Approved';
+        $this->save();
+
+        // Log the action
+        SystemLog::create([
+            'user_id'    => null, // System action
+            'event_type' => 'REQUISITION',
+            'action'     => 'AUTO_APPROVE_HOD',
+            'description'=> "System automatically approved store requisition #{$this->id} (HOD approval timeout: {$timeoutMins} minutes). Escalated to next stage.",
+            'severity'   => 'info',
+            'metadata'   => ['requisition_id' => $this->id],
+            'ip_address' => '127.0.0.1',
+        ]);
+
+        // Notifications
+        if ($this->requires_dg_approval) {
+            $dgs = User::where('role', 'Director General')->where('is_active', true)->get();
+            foreach ($dgs as $dg) {
+                $priorityLabel = strtoupper($this->priority);
+                $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #8b5cf6;border-radius:12px;background:rgba(139,92,246,0.05);'>";
+                $msg .= "<b style='color:#8b5cf6;'>📋 NEW REQUISITION AWAITING DG APPROVAL — {$priorityLabel} PRIORITY (AUTO-APPROVED BY DEPT)</b><br><br>";
+                $msg .= "Store requisition Ref: #<b>{$this->id}</b> has been automatically approved by the system due to Department Head inactivity and is awaiting your clearance.<br><br>";
+                $msg .= "<b>Department:</b> {$this->department}<br>";
+                $msg .= "<b>Requested by:</b> {$this->requester_name}<br>";
+                $msg .= "<b>Purpose:</b> " . e($this->purpose) . "<br><br>";
+                $msg .= "<a href='" . route('dg.dashboard') . "?open_id={$this->id}' style='display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id'    => 1, // System sender or generic admin
+                    'receiver_id'  => $dg->id,
+                    'message'      => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+        } else {
+            // Notify Department Head (Stores) / Main Admin / Sub Main Admin
+            $storesHeads = User::whereIn('role', ['Main Admin', 'Sub Main Admin', 'Department Head'])
+                ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
+                ->where('is_active', true)
+                ->get();
+            foreach ($storesHeads as $storesHead) {
+                $priorityLabel = strtoupper($this->priority);
+                $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                $msg .= "<b style='color:#10b981;'>📋 REQUISITION AUTO-APPROVED BY DEPT — {$priorityLabel} PRIORITY</b><br><br>";
+                $msg .= "Store requisition Ref: #<b>{$this->id}</b> has been automatically approved by the system due to Department Head inactivity.<br><br>";
+                $msg .= "<b>Department:</b> {$this->department}<br>";
+                $msg .= "<b>Requested by:</b> {$this->requester_name}<br>";
+                $msg .= "<b>Purpose:</b> " . e($this->purpose) . "<br><br>";
+                $msg .= "<a href='" . route('main-admin.requisitions') . "?open_id={$this->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id'    => 1, // System sender or generic admin
+                    'receiver_id'  => $storesHead->id,
+                    'message'      => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+        }
+    }
 }

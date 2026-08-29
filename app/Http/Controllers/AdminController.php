@@ -733,14 +733,22 @@ class AdminController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'permission' => 'required|string',
-            'value' => 'required|boolean'
+            'value' => $request->permission === 'hod_auto_approve_timeout_mins' ? 'required|integer|min:1' : 'required|boolean'
         ]);
 
         $user = User::findOrFail($request->user_id);
         $field = $request->permission;
         
         // Ensure the field is one of our allowed permission columns
-        $allowed = ['can_add_inventory', 'can_operate_logistics', 'can_generate_reports', 'can_verify_stock', 'can_make_requisition', 'can_approve_requisition'];
+        $allowed = [
+            'can_add_inventory', 
+            'can_operate_logistics', 
+            'can_generate_reports', 
+            'can_verify_stock', 
+            'can_make_requisition', 
+            'can_approve_requisition',
+            'hod_auto_approve_timeout_mins'
+        ];
         if (!in_array($field, $allowed)) {
             return response()->json(['success' => false, 'message' => 'Invalid permission field'], 400);
         }
@@ -748,20 +756,64 @@ class AdminController extends Controller
         $user->$field = $request->value;
         $user->save();
 
-        $actionWord = $request->value ? 'GRANTED' : 'REVOKED';
-        $permLabel = str_replace('_', ' ', str_replace('can_', '', $field));
+        if ($field === 'hod_auto_approve_timeout_mins') {
+            $actionWord = 'UPDATED';
+            $permLabel = 'HOD auto-approve timeout';
+            $desc = "Administrator updated HOD auto-approve timeout to {$request->value} minutes for staff member: {$user->name} (@{$user->username}).";
+        } else {
+            $actionWord = $request->value ? 'GRANTED' : 'REVOKED';
+            $permLabel = str_replace('_', ' ', str_replace('can_', '', $field));
+            $desc = "Administrator {$actionWord} [{$permLabel}] permission for staff member: {$user->name} (@{$user->username}).";
+        }
 
         // Log the change
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'PERMISSION_CHANGE',
-            'description' => "Administrator {$actionWord} [{$permLabel}] permission for staff member: {$user->name} (@{$user->username}).",
+            'description' => $desc,
             'severity' => 'warning',
             'ip_address' => $request->ip()
         ]);
 
         return response()->json(['success' => true, 'message' => 'Permission updated']);
+    }
+
+    public function updateGlobalSetting(Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'key' => 'required|string|in:default_hod_auto_approve_timeout_mins',
+            'value' => 'required|integer|min:1'
+        ]);
+
+        $setting = \App\Models\Setting::updateOrCreate(
+            ['key' => $request->key],
+            [
+                'value' => (string)$request->value,
+                'type' => 'integer',
+                'group' => 'general',
+                'description' => 'Default timeout in minutes for HOD auto-approval'
+            ]
+        );
+
+        // Clear the cache for this setting
+        \Illuminate\Support\Facades\Cache::forget('setting_' . $request->key);
+
+        // Log the change
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'SETTING_CHANGE',
+            'description' => "Administrator updated global HOD auto-approval timeout default to {$request->value} minutes.",
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Global setting updated successfully.']);
     }
 
     public function updateUserRole(Request $request)
@@ -837,6 +889,99 @@ class AdminController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Role updated successfully']);
+    }
+
+    public function updateUserDepartment(Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'department' => 'nullable|string|max:255'
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $oldDepartment = $user->department;
+        $newDepartment = $request->department ?: null;
+
+        if ($oldDepartment === $newDepartment) {
+            return response()->json(['success' => true, 'message' => 'Department is already set to this value.']);
+        }
+
+        // Prevent duplicate Department Heads for the same department
+        if (in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])) {
+            if (!empty($newDepartment)) {
+                $existingHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+                    ->where('department', $newDepartment)
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->where('id', '!=', $user->id)
+                    ->first();
+                if ($existingHead) {
+                    return response()->json(['success' => false, 'message' => "Department Conflict: {$existingHead->name} is already the active Department Head for the '{$newDepartment}' department. Only one head per department is allowed. Please deactivate the existing head first."], 422);
+                }
+            }
+        }
+
+        $user->update([
+            'department' => $newDepartment
+        ]);
+
+        // If the name of a Department is changed for a departmental head related role in that department
+        // automatically change the department of all related roles in that department
+        $updatedRelatedCount = 0;
+        if (in_array($user->role, ['Head of Stores', 'Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])) {
+            if (!empty($oldDepartment) && !empty($newDepartment)) {
+                $oldDeptLower = strtolower(trim($oldDepartment));
+                
+                // Match exact lowercase, and also treat 'store' and 'stores' as equivalent
+                $oldDeptsToMatch = [$oldDeptLower];
+                if ($oldDeptLower === 'stores') {
+                    $oldDeptsToMatch[] = 'store';
+                } elseif ($oldDeptLower === 'store') {
+                    $oldDeptsToMatch[] = 'stores';
+                }
+
+                // Find all users in the old department (excluding the head themselves who was already updated)
+                $relatedUsers = User::where(function($q) use ($oldDeptsToMatch) {
+                        foreach ($oldDeptsToMatch as $deptVal) {
+                            $q->orWhereRaw('LOWER(TRIM(department)) = ?', [$deptVal]);
+                        }
+                    })
+                    ->where('id', '!=', $user->id)
+                    ->get();
+
+                foreach ($relatedUsers as $relatedUser) {
+                    $relatedUser->update(['department' => $newDepartment]);
+                    $updatedRelatedCount++;
+                }
+            }
+        }
+
+        // Log the change
+        $desc = "Administrator updated department for {$user->name} (@{$user->username}) from '{$oldDepartment}' to '{$newDepartment}'.";
+        if ($updatedRelatedCount > 0) {
+            $desc .= " Automatically migrated {$updatedRelatedCount} related user(s) in that department from '{$oldDepartment}' to '{$newDepartment}'.";
+        }
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'DEPARTMENT_CHANGE',
+            'description' => $desc,
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Department updated successfully.',
+            'migrated_count' => $updatedRelatedCount,
+            'old_dept' => $oldDepartment,
+            'new_dept' => $newDepartment
+        ]);
     }
 
     public function logs(Request $request)

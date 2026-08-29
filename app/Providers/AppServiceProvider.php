@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         if (app()->environment() !== 'testing') {
             try {
-            \Illuminate\Support\Facades\Cache::remember('schema_healed_v13', 86400, function () {
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_v15', 86400, function () {
                 // Ensure can_make_requisition column exists for requisitioner permission gating
                 if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
                     if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_make_requisition')) {
@@ -32,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
                     if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_approve_requisition')) {
                         \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
                             $table->boolean('can_approve_requisition')->default(true)->after('can_make_requisition');
+                        });
+                    }
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'hod_auto_approve_timeout_mins')) {
+                        \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->unsignedInteger('hod_auto_approve_timeout_mins')->default(5)->after('can_approve_requisition');
                         });
                     }
                 }
@@ -128,6 +133,15 @@ class AppServiceProvider extends ServiceProvider
                             'type' => 'integer',
                             'group' => 'general',
                             'description' => 'User ID of the Store Officer delegated to stand in and perform approvals.'
+                        ]);
+                    }
+                    if (!\App\Models\Setting::where('key', 'default_hod_auto_approve_timeout_mins')->exists()) {
+                        \App\Models\Setting::create([
+                            'key' => 'default_hod_auto_approve_timeout_mins',
+                            'value' => '5',
+                            'type' => 'integer',
+                            'group' => 'general',
+                            'description' => 'Default timeout in minutes for HOD auto-approval'
                         ]);
                     }
                 }

@@ -613,6 +613,9 @@
         <button class="audit-tab-btn {{ $activeTab === 'requisitions' ? 'active' : '' }}" onclick="switchAuditTab('requisitions', this)">
             <i data-lucide="clipboard-list" style="width: 16px;"></i> Requisitions Log ({{ $requisitions->total() }})
         </button>
+        <button class="audit-tab-btn {{ $activeTab === 'approved_requisitions' ? 'active' : '' }}" onclick="switchAuditTab('approved_requisitions', this)">
+            <i data-lucide="check-circle" style="width: 16px;"></i> Approved Requests ({{ $approvedRequisitions->total() }})
+        </button>
     </div>
 
     {{-- Tab 1: Audit Trail --}}
@@ -715,7 +718,15 @@
     {{-- Tab 5: Requisitions Log --}}
     <div id="tab-requisitions" class="audit-tab-panel {{ $activeTab === 'requisitions' ? 'active' : '' }}">
         <div class="auditor-card" style="padding: 0; overflow: hidden;">
-            <table class="audit-table">
+            <table class="audit-table" style="table-layout: fixed; min-width: 900px;">
+                <colgroup>
+                    <col style="width: 11%;">
+                    <col style="width: 12%;">
+                    <col style="width: 18%;">
+                    <col style="width: 18%;">
+                    <col style="width: 28%;">
+                    <col style="width: 13%;">
+                </colgroup>
                 <thead>
                     <tr>
                         <th>Req #</th>
@@ -733,6 +744,40 @@
         </div>
         <div id="pager-requisitions" style="margin-top: 1.5rem;">
             @include('auditor._tab_pager', ['items' => $requisitions, 'param' => 'requisitions_page'])
+        </div>
+    </div>
+
+    {{-- Tab: Approved Requests --}}
+    <div id="tab-approved_requisitions" class="audit-tab-panel {{ $activeTab === 'approved_requisitions' ? 'active' : '' }}">
+        <div class="auditor-card" style="padding: 0; overflow: hidden;">
+            <table class="audit-table" style="table-layout: fixed; min-width: 900px;">
+                <colgroup>
+                    <col style="width: 12%;">
+                    <col style="width: 9%;">
+                    <col style="width: 13%;">
+                    <col style="width: 18%;">
+                    <col style="width: 27%;">
+                    <col style="width: 12%;">
+                    <col style="width: 9%;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Supplier / Requester</th>
+                        <th>Purpose / Category</th>
+                        <th>Status</th>
+                        <th style="text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-approved_requisitions">
+                    @include('auditor._tab_approved_requisitions', ['approvedRequisitions' => $approvedRequisitions, 'ledgeMap' => $ledgeMap])
+                </tbody>
+            </table>
+        </div>
+        <div id="pager-approved_requisitions" style="margin-top: 1.5rem;">
+            @include('auditor._tab_pager', ['items' => $approvedRequisitions, 'param' => 'approved_reqs_page'])
         </div>
     </div>
 
@@ -930,7 +975,8 @@
             'received_items': 6,
             'issued_items': 7,
             'returned_items': 6,
-            'requisitions': 6
+            'requisitions': 6,
+            'approved_requisitions': 7
         };
 
         for (const [tabKey, cols] of Object.entries(tabCols)) {
@@ -994,7 +1040,8 @@
                 'received_items': 'Received Items',
                 'issued_items': 'Issued Items',
                 'returned_items': 'Returned Items',
-                'requisitions': 'Requisitions Log'
+                'requisitions': 'Requisitions Log',
+                'approved_requisitions': 'Approved Requests'
             };
 
             const iconMap = {
@@ -1002,7 +1049,8 @@
                 'received_items': '<i data-lucide="package-check" style="width: 16px;"></i>',
                 'issued_items': '<i data-lucide="package-minus" style="width: 16px;"></i>',
                 'returned_items': '<i data-lucide="rotate-ccw" style="width: 16px;"></i>',
-                'requisitions': '<i data-lucide="clipboard-list" style="width: 16px;"></i>'
+                'requisitions': '<i data-lucide="clipboard-list" style="width: 16px;"></i>',
+                'approved_requisitions': '<i data-lucide="check-circle" style="width: 16px;"></i>'
             };
 
             for (const [tabKey, tabData] of Object.entries(data.tabs)) {

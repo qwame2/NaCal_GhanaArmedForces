@@ -1400,7 +1400,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'adminProcess'])->name('admin.requisitions.process');
     Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');
     Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');
+    Route::post('/admin/permissions/update-global-setting', [AdminController::class, 'updateGlobalSetting'])->name('admin.permissions.update_global_setting');
     Route::post('/admin/permissions/update-role', [AdminController::class, 'updateUserRole'])->name('admin.permissions.update_role');
+    Route::post('/admin/permissions/update-department', [AdminController::class, 'updateUserDepartment'])->name('admin.permissions.update_department');
     Route::post('/admin/permissions/toggle-department', [AdminController::class, 'toggleDepartmentPermission'])->name('admin.permissions.toggle_department');
     Route::get('/api/admin/pending-registrations', [AdminController::class, 'getPendingRegistrations'])->name('api.admin.pending-registrations');
     Route::get('/api/admin/store-officers', [AdminController::class, 'getStoreOfficers'])->name('api.admin.store-officers');

@@ -8,7 +8,7 @@
         </td>
         <td style="font-weight: 800; color: var(--text-main);">{{ $req->requester_name }}</td>
         <td style="font-weight: 700; color: var(--text-muted);">{{ $req->department }}</td>
-        <td style="max-width: 250px; line-height: 1.4; color: var(--text-main); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $req->purpose }}">
+        <td style="line-height: 1.4; color: var(--text-main); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $req->purpose }}">
             {{ $req->purpose }}
         </td>
         <td>

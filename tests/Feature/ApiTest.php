@@ -2269,5 +2269,210 @@ class ApiTest extends TestCase
         $this->assertEmpty(\App\Models\Setting::get('delegated_approver_id'));
         $this->assertFalse($officer->isDelegatedApprover());
     }
+
+    public function test_admin_can_update_user_department_via_ajax()
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'role' => 'Main Admin',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $user = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'IT Department',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->postJson(route('admin.permissions.update_department'), [
+            'user_id' => $user->id,
+            'department' => 'HR Department'
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $user->refresh();
+        $this->assertEquals('HR Department', $user->department);
+    }
+
+    public function test_admin_updating_hod_department_cascades_to_all_related_roles()
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'role' => 'Main Admin',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $hod = User::factory()->create([
+            'role' => 'Department Head',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $requisitioner1 = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $requisitioner2 = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $storeOfficer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $otherRequisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'IT',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->postJson(route('admin.permissions.update_department'), [
+            'user_id' => $hod->id,
+            'department' => 'Human Resources'
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'migrated_count' => 3
+        ]);
+
+        $hod->refresh();
+        $requisitioner1->refresh();
+        $requisitioner2->refresh();
+        $storeOfficer->refresh();
+        $otherRequisitioner->refresh();
+
+        $this->assertEquals('Human Resources', $hod->department);
+        $this->assertEquals('Human Resources', $requisitioner1->department);
+        $this->assertEquals('Human Resources', $requisitioner2->department);
+        $this->assertEquals('Human Resources', $storeOfficer->department);
+        $this->assertEquals('IT', $otherRequisitioner->department);
+
+        $this->assertTrue(\App\Models\SystemLog::where('action', 'DEPARTMENT_CHANGE')
+            ->where('description', 'like', '%migrated 3 related user(s)%')
+            ->exists());
+    }
+
+    public function test_admin_updating_head_of_stores_department_cascades_to_store_officers()
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'role' => 'Main Admin',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $headOfStores = User::factory()->create([
+            'role' => 'Head of Stores',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Store',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->postJson(route('admin.permissions.update_department'), [
+            'user_id' => $headOfStores->id,
+            'department' => 'Stores & Supplies'
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'migrated_count' => 1
+        ]);
+
+        $headOfStores->refresh();
+        $officer->refresh();
+
+        $this->assertEquals('Stores & Supplies', $headOfStores->department);
+        $this->assertEquals('Stores & Supplies', $officer->department);
+    }
+
+    public function test_approved_requisitions_show_in_approved_requests_tab_for_auditor(): void
+    {
+        $auditor = User::factory()->create([
+            'role' => 'Auditor',
+            'department' => 'Audit Department',
+            'is_active' => true,
+        ]);
+
+        $requisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'Audit Department',
+            'is_active' => true,
+        ]);
+
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => $requisitioner->name,
+            'department' => 'Audit Department',
+            'requested_by' => $requisitioner->id,
+            'purpose' => 'Approved stationery supplies',
+            'priority' => 'normal',
+            'status' => 'approved',
+            'usage_type' => 'permanent',
+        ]);
+
+        $response = $this->actingAs($auditor)->get('/auditor?format=json', ['X-Requested-With' => 'XMLHttpRequest']);
+        $response->assertStatus(200);
+        $json = $response->json();
+
+        $this->assertArrayHasKey('approved_requisitions', $json['tabs']);
+        $this->assertStringContainsString('REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT), $json['tabs']['approved_requisitions']['tbody']);
+    }
+
+    public function test_approved_requisitions_show_in_approved_requests_tab_for_external_auditor(): void
+    {
+        $externalAuditor = User::factory()->create([
+            'role' => 'External Auditor',
+            'department' => 'External Audit Department',
+            'is_active' => true,
+        ]);
+
+        $requisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'IT Department',
+            'is_active' => true,
+        ]);
+
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => $requisitioner->name,
+            'department' => 'IT Department',
+            'requested_by' => $requisitioner->id,
+            'purpose' => 'External audit approved request',
+            'priority' => 'normal',
+            'status' => 'partially_approved',
+            'usage_type' => 'permanent',
+        ]);
+
+        $response = $this->actingAs($externalAuditor)->get('/external-auditor?format=json', ['X-Requested-With' => 'XMLHttpRequest']);
+        $response->assertStatus(200);
+        $json = $response->json();
+
+        $this->assertArrayHasKey('approved_requisitions', $json['tabs']);
+        $this->assertStringContainsString('REQ-' . str_pad($requisition->id, 5, '0', STR_PAD_LEFT), $json['tabs']['approved_requisitions']['tbody']);
+    }
 }
 

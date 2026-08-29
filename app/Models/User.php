@@ -45,6 +45,7 @@ class User extends Authenticatable implements LdapAuthenticatable
         'registration_status',
         'can_make_requisition',
         'can_approve_requisition',
+        'hod_auto_approve_timeout_mins',
     ];
 
     /**
@@ -78,6 +79,7 @@ class User extends Authenticatable implements LdapAuthenticatable
             'can_approve_requisition'=> 'boolean',
             'must_change_password'   => 'boolean',
             'is_temp_account'        => 'boolean',
+            'hod_auto_approve_timeout_mins' => 'integer',
         ];
     }
 

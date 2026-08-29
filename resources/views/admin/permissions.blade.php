@@ -57,7 +57,7 @@
     <button class="pager-tab" id="tab-all-users" onclick="switchTab('all-users')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="19" cy="8" r="3"/><path d="M22 14a5 5 0 0 0-5-5"/></svg>
         All Users
-        <span class="tab-badge" style="background: rgba(99,102,241,0.2); color: #4f46e5; font-size: 0.65rem; font-weight: 900; padding: 2px 7px; border-radius: 99px; margin-left: 2px; line-height: 1.4;">{{ $allUsers->count() }}</span>
+        <span class="tab-badge badge-neutral" style="display: inline-block;">{{ $allUsers->count() }}</span>
     </button>
 </div>
 
@@ -288,6 +288,30 @@
 
 {{-- ── Panel: Other Dept. Heads ── --}}
 <div id="panel-dept-heads" class="pager-panel">
+    {{-- Global Default Auto-Approve Timeout --}}
+    <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: rgba(79,70,229,0.08); padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px dashed rgba(79,70,229,0.25);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">Global HOD Auto-Approval Timeout</h4>
+                <p style="margin: 2px 0 0 0; font-size: 0.78rem; font-weight: 600; color: #64748b;">Fallback time used for automatic approvals if a custom timeout is not set below.</p>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="number" 
+                   id="globalAutoApproveTimeout"
+                   value="{{ \App\Models\Setting::get('default_hod_auto_approve_timeout_mins', 5) }}" 
+                   min="1" 
+                   onchange="updateGlobalAutoApproveTimeout(this)"
+                   style="width: 90px; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-weight: 800; font-size: 0.9rem; color: #0f172a; outline: none; transition: border-color 0.2s; text-align: center;"
+                   onfocus="this.style.borderColor='#4f46e5'" 
+                   onblur="this.style.borderColor='#cbd5e1'">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #334155;">Minutes</span>
+        </div>
+    </div>
+
     <div class="permissions-matrix-wrapper">
         <div class="matrix-table">
             <div class="m-header">
@@ -449,7 +473,7 @@
             {{-- Header --}}
             <div class="m-header">
                 <div style="flex: 0 0 320px; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">User</div>
-                <div style="flex: 0 0 200px; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Department</div>
+                <div style="flex: 1; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Department</div>
                 <div style="flex: 1; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Role</div>
                 <div style="flex: 0 0 140px; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Status</div>
             </div>
@@ -479,12 +503,15 @@
                     </div>
 
                     {{-- Department --}}
-                    <div style="flex: 0 0 200px;">
-                        @if($user->department)
-                            <span style="display: inline-flex; align-items: center; font-size: 0.7rem; background: #f0fdf4; color: #15803d; padding: 3px 10px; border-radius: 8px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21,128,61,0.12); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">{{ $user->department }}</span>
-                        @else
-                            <span style="font-size: 0.78rem; color: #cbd5e1; font-weight: 600;">—</span>
-                        @endif
+                    <div style="flex: 1;">
+                        <select data-current-dept="{{ $user->department ?? '' }}" class="select2-assign-dept"
+                            style="font-size: 0.75rem; background: #f0fdf4; color: #15803d; padding: 5px 10px; border-radius: 8px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21,128,61,0.12); cursor: pointer; outline: none; max-width: 220px; transition: border-color 0.2s;"
+                            onfocus="this.style.borderColor='#15803d'" onblur="this.style.borderColor='rgba(21,128,61,0.12)'">
+                            <option value="" {{ is_null($user->department) || $user->department === '' ? 'selected' : '' }}>— No Department —</option>
+                            @foreach($allDepartments as $dept)
+                                <option value="{{ $dept }}" {{ strcasecmp($user->department, $dept) === 0 ? 'selected' : '' }}>{{ $dept }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     {{-- Role Dropdown --}}
@@ -661,6 +688,7 @@
     .pager-tab.active { background: #4f46e5; color: white; box-shadow: 0 4px 14px rgba(79,70,229,0.25); }
     .pager-tab.active svg { opacity: 1; }
     .tab-badge {
+        display: inline-block;
         background: #ef4444;
         color: white;
         font-size: 0.65rem;
@@ -671,6 +699,8 @@
         line-height: 1.4;
     }
     .pager-tab.active .tab-badge { background: rgba(255,255,255,0.25); }
+    .tab-badge.badge-neutral { background: #f1f5f9; color: #475569; }
+    .pager-tab.active .tab-badge.badge-neutral { background: rgba(255,255,255,0.2); color: white; }
 
     /* ── Panel visibility ── */
     .pager-panel { display: none; animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -868,13 +898,47 @@
     @media (max-width: 1024px) {
         .permissions-matrix-wrapper { overflow-x: auto; }
     }
-    @media (max-width: 768px) {
-        .reg-card { flex-direction: column; align-items: flex-start; }
-        .reg-identity { flex: none; width: 100%; }
-        .reg-actions { width: 100%; }
-        .reg-btn { flex: 1; justify-content: center; }
-    }
-</style>
+        @media (max-width: 768px) {
+            .reg-card { flex-direction: column; align-items: flex-start; }
+            .reg-identity { flex: none; width: 100%; }
+            .reg-actions { width: 100%; }
+            .reg-btn { flex: 1; justify-content: center; }
+        }
+
+        /* Custom Green Theme for Department Select2 */
+        .select2-container--default.select2-assign-dept-container .select2-selection--single {
+            border-radius: 8px !important;
+            border: 1px solid rgba(21, 128, 61, 0.12) !important;
+            background-color: #f0fdf4 !important;
+            height: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: border-color 0.2s !important;
+        }
+        .select2-container--default.select2-assign-dept-container .select2-selection--single:focus,
+        .select2-container--default.select2-assign-dept-container .select2-selection--single:active {
+            border-color: #15803d !important;
+        }
+        .select2-container--default.select2-assign-dept-container .select2-selection--single .select2-selection__rendered {
+            color: #15803d !important;
+            font-size: 0.75rem !important;
+            font-weight: 800 !important;
+            font-family: sans-serif !important;
+            text-transform: uppercase !important;
+            padding-left: 10px !important;
+            padding-right: 20px !important;
+        }
+        .select2-container--default.select2-assign-dept-container .select2-selection--single .select2-selection__arrow {
+            height: 28px !important;
+            right: 4px !important;
+        }
+        .select2-container--default.select2-assign-dept-container .select2-selection--single .select2-selection__arrow b {
+            border-color: #15803d transparent transparent transparent !important;
+        }
+        .select2-container--default.select2-assign-dept-container.select2-container--open .select2-selection--single .select2-selection__arrow b {
+            border-color: transparent transparent #15803d transparent !important;
+        }
+    </style>
 
 <script>
     /* ── Initialize select2 for role dropdowns ── */
@@ -889,16 +953,85 @@
         }
     }
 
+    /* ── Initialize select2 for department dropdowns ── */
+    function initDeptSelects() {
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $('.select2-assign-dept').select2({
+                placeholder: '— No Department —',
+                allowClear: true,
+                tags: true, // Allow typing new/custom department names
+                minimumResultsForSearch: 4,
+                width: '240px',
+                dropdownCssClass: 'select2-assign-dept-dropdown',
+                containerCssClass: 'select2-assign-dept-container'
+            }).on('select2:open', function(e) {
+                // Pre-populate the search field inside the dropdown with the current value
+                const selectElement = this;
+                const currentValue = $(selectElement).val();
+                if (currentValue) {
+                    setTimeout(function() {
+                        const searchInput = document.querySelector('.select2-container--open .select2-search__field');
+                        if (searchInput) {
+                            searchInput.value = currentValue;
+                            searchInput.focus();
+                            // Trigger input event to let Select2 filter/refresh
+                            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                            // Listen for Enter key to save the name change
+                            searchInput.addEventListener('keydown', function(event) {
+                                if (event.key === 'Enter') {
+                                    const typedVal = $.trim(searchInput.value);
+                                    if (typedVal) {
+                                        event.preventDefault();
+                                        event.stopImmediatePropagation();
+                                        
+                                        let optionExists = false;
+                                        $(selectElement).find('option').each(function() {
+                                            if ($(this).val().toLowerCase() === typedVal.toLowerCase()) {
+                                                optionExists = true;
+                                                $(selectElement).val($(this).val()).trigger('change');
+                                            }
+                                        });
+                                        
+                                        if (!optionExists) {
+                                            const newOption = new Option(typedVal, typedVal, true, true);
+                                            $(selectElement).append(newOption).trigger('change');
+                                        }
+                                        
+                                        $(selectElement).select2('close');
+                                    }
+                                }
+                            }, true);
+                        }
+                    }, 50);
+                }
+            }).on('change', function() {
+                changeUserDepartment(this);
+            });
+        }
+    }
+
     /* ── Tab Switcher ── */
     function switchTab(tab) {
         document.querySelectorAll('.pager-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.pager-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-        document.getElementById('panel-' + tab).classList.add('active');
+        
+        const tabBtn = document.getElementById('tab-' + tab);
+        const panelEl = document.getElementById('panel-' + tab);
+        if (tabBtn) tabBtn.classList.add('active');
+        if (panelEl) panelEl.classList.add('active');
 
         // Show/hide search vault (only relevant for matrix tabs, not registrations/all-users)
         const sv = document.getElementById('searchVaultWrap');
         if (sv) sv.style.display = (tab !== 'registrations' && tab !== 'all-users') ? '' : 'none';
+
+        // Persist active tab state
+        if (history.replaceState) {
+            history.replaceState(null, null, '#' + tab);
+        } else {
+            window.location.hash = tab;
+        }
+        sessionStorage.setItem('active_permissions_tab', tab);
     }
 
     /* ── Personnel Filter (Store Officers / Requisitioners / Dept Heads) ── */
@@ -983,6 +1116,41 @@
         .catch(() => {
             row.classList.remove('syncing-row');
             checkbox.checked = !checkbox.checked;
+            alert('A system error occurred.');
+        });
+    }
+
+
+
+    function updateGlobalAutoApproveTimeout(input) {
+        const val = parseInt(input.value);
+        if (isNaN(val) || val < 1) {
+            alert('Please enter a valid number of minutes (minimum 1).');
+            input.value = 5;
+            return;
+        }
+
+        const inputWrapper = input.parentElement;
+        if (inputWrapper) inputWrapper.style.opacity = '0.5';
+
+        fetch('{{ route("admin.permissions.update_global_setting", [], false) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ key: 'default_hod_auto_approve_timeout_mins', value: val })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (inputWrapper) inputWrapper.style.opacity = '1';
+            if (!data.success) {
+                alert('Failed to update global timeout: ' + data.message);
+            }
+        })
+        .catch(() => {
+            if (inputWrapper) inputWrapper.style.opacity = '1';
             alert('A system error occurred.');
         });
     }
@@ -1151,6 +1319,138 @@
                 });
             } else {
                 selectElement.value = oldRole;
+            }
+        });
+    }
+
+    function changeUserDepartment(selectElement) {
+        const row = selectElement.closest('.m-row');
+        const userId = row.getAttribute('data-user-id');
+        const oldDept = selectElement.getAttribute('data-current-dept') || '';
+        const newDept = selectElement.value;
+
+        // If they select the same department, do nothing
+        if (oldDept.toLowerCase() === newDept.toLowerCase()) return;
+
+        const userName = row.querySelector('.m-name').textContent.trim();
+
+        Swal.fire({
+            title: `<span style="font-weight:900;color:#0f172a;">Change Department?</span>`,
+            html: `
+                <div style="text-align: left; font-size: 0.95rem; color: #334155; line-height: 1.6;">
+                    <p style="margin-bottom: 12px; font-weight: 600;">
+                        Are you sure you want to change <strong>${userName}</strong>’s department from <strong>${oldDept || 'None'}</strong> to <strong>${newDept || 'None'}</strong>?
+                    </p>
+                    <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 12px; color: #b45309; font-size: 0.82rem; font-weight: 600; display: flex; gap: 8px; align-items: flex-start; margin-top: 15px;">
+                        <span>⚠️</span>
+                        <span><strong>Please note:</strong> This action will be permanently recorded in the audit log. If this user is a Departmental Head, any Requisitioners in their old department will also be automatically moved to the new department.</span>
+                    </div>
+                </div>
+            `,
+            icon: 'warning',
+            iconColor: '#f59e0b',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#f1f5f9',
+            confirmButtonText: 'Yes, Change',
+            cancelButtonText: 'No, Cancel',
+            background: 'white',
+            customClass: {
+                cancelButton: 'swal-cancel-dark'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                row.classList.add('syncing-row');
+
+                fetch('{{ route("admin.permissions.update_department", [], false) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: userId, department: newDept })
+                })
+                .then(async r => {
+                    const data = await r.json();
+                    if (!r.ok) {
+                        throw new Error(data.message || 'Failed to update department.');
+                    }
+                    return data;
+                })
+                .then(data => {
+                    row.classList.remove('syncing-row');
+                    selectElement.setAttribute('data-current-dept', newDept);
+                    $(selectElement).val(newDept).trigger('change.select2');
+
+                    // Dynamically update all select2 dropdowns and page filters in the DOM
+                    if (data.old_dept && data.new_dept) {
+                        const oldVal = data.old_dept.toLowerCase();
+                        const newVal = data.new_dept;
+
+                        // 1. Update matching options in all select2 dropdowns
+                        $('.select2-assign-dept').each(function() {
+                            const selectEl = $(this);
+                            let found = false;
+                            selectEl.find('option').each(function() {
+                                if ($(this).val().toLowerCase() === oldVal) {
+                                    $(this).val(newVal).text(newVal);
+                                    found = true;
+                                }
+                            });
+                            if (!found) {
+                                selectEl.append(new Option(newVal, newVal));
+                            }
+                            selectEl.trigger('change.select2');
+                        });
+
+                        // 2. Update matching options in all department filter dropdowns
+                        const filterSelects = ['#allUsersDeptFilter'];
+                        filterSelects.forEach(selector => {
+                            const filterEl = $(selector);
+                            if (filterEl.length) {
+                                let found = false;
+                                filterEl.find('option').each(function() {
+                                    if ($(this).val().toLowerCase() === oldVal) {
+                                        $(this).val(newVal.toLowerCase()).text(newVal);
+                                        found = true;
+                                    }
+                                });
+                                if (!found) {
+                                    filterEl.append(new Option(newVal, newVal.toLowerCase()));
+                                }
+                            }
+                        });
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Department Updated',
+                        text: data.message || 'Department has been updated successfully.',
+                        confirmButtonColor: '#10b981',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                })
+                .catch(err => {
+                    row.classList.remove('syncing-row');
+                    $(selectElement).val(oldDept).trigger('change.select2');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: err.message || 'A system error occurred.',
+                        confirmButtonColor: '#ef4444'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                });
+            } else {
+                $(selectElement).val(oldDept).trigger('change.select2');
             }
         });
     }
@@ -1390,18 +1690,22 @@
     // Start polling every 10 seconds
     setInterval(pollPendingRegistrations, 10000);
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function initTabsOnLoad() {
         if (window.lucide) lucide.createIcons();
         initRoleSelects();
+        initDeptSelects();
 
-        // Auto-open tab from server session (after approve/decline redirect)
+        // Auto-open tab from server session, URL hash, or sessionStorage fallback
         const serverTab = '{{ session('open_tab') }}';
-        if (serverTab === 'registrations') {
-            switchTab('registrations');
-        } else {
-            // Fallback: URL hash
-            const hash = window.location.hash;
-            if (hash === '#registrations') switchTab('registrations');
+        const hash = window.location.hash.replace('#', '');
+        const savedTab = sessionStorage.getItem('active_permissions_tab');
+
+        if (serverTab) {
+            switchTab(serverTab);
+        } else if (hash) {
+            switchTab(hash);
+        } else if (savedTab) {
+            switchTab(savedTab);
         }
 
         // Show server-side flash messages as toasts
@@ -1415,9 +1719,13 @@
                 showToast('{{ addslashes(session('error')) }}', 'error');
             }
         @endif
+    }
 
-        // delegation initialization
-    });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTabsOnLoad);
+    } else {
+        initTabsOnLoad();
+    }
 
     @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
     async function toggleUserDelegation(el) {

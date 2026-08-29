@@ -2387,10 +2387,26 @@ class StoreRequisitionController extends Controller
     }
 
     /**
+     * Cache-guarded check to auto-approve overdue HOD requisitions.
+     */
+    public static function checkOverdueHODRequisitions()
+    {
+        $cacheKey = 'overdue_hod_requisitions_checked';
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return;
+        }
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 30); // 30 seconds cache guard
+
+        \App\Models\StoreRequisition::autoApproveOverdueHODRequisitions();
+    }
+
+    /**
      * Daily check for overdue and due temporary items, issuing alerts.
      */
     public static function checkOverdueTemporaryItems()
     {
+        self::checkOverdueHODRequisitions();
+
         $cacheKey = 'overdue_temporary_items_checked';
         if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
             return;

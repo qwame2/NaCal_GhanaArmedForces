@@ -795,6 +795,10 @@
             <i data-lucide="file-text" style="width: 16px;"></i>
             Requisitions Log
         </button>
+        <button class="audit-tab-btn" onclick="switchAuditTab('approved-reqs-tab', this)">
+            <i data-lucide="check-circle" style="width: 16px;"></i>
+            Approved Requests
+        </button>
         @php
             $totalPendingSrasCount = $pendingSras->count() + $pendingServiceSras->count() + ($pendingDeptRequisitions->count() ?? 0);
         @endphp
@@ -1236,7 +1240,16 @@
     <div id="requisitions-tab" class="audit-tab-panel">
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
             <div style="overflow-x: auto;">
-                <table class="audit-table">
+                <table class="audit-table" style="table-layout: fixed; min-width: 900px;">
+                    <colgroup>
+                        <col style="width: 11%;">  {{-- Req ID --}}
+                        <col style="width: 11%;">  {{-- Date --}}
+                        <col style="width: 16%;">  {{-- Requester Name --}}
+                        <col style="width: 16%;">  {{-- Department --}}
+                        <col style="width: 25%;">  {{-- Purpose --}}
+                        <col style="width: 12%;">  {{-- Status --}}
+                        <col style="width: 9%;">   {{-- Receipt --}}
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>Requisition ID</th>
@@ -1263,7 +1276,7 @@
                                 <td style="font-weight: 700; color: var(--text-muted);">
                                     {{ $req->department }}
                                 </td>
-                                <td style="max-width: 250px; line-height: 1.4; color: var(--text-main); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $req->purpose }}">
+                                <td style="line-height: 1.4; color: var(--text-main); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $req->purpose }}">
                                     {{ $req->purpose }}
                                 </td>
                                 <td>
@@ -1319,6 +1332,59 @@
 
                         @if ($requisitions->hasMorePages())
                             <a href="{{ $requisitions->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
+                        @else
+                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- PANEL: APPROVED REQUESTS --}}
+    <div id="approved-reqs-tab" class="audit-tab-panel">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
+            <div style="overflow-x: auto;">
+                <table class="audit-table" style="table-layout: fixed; min-width: 900px;">
+                    <colgroup>
+                        <col style="width: 12%;">  {{-- Request ID --}}
+                        <col style="width: 9%;">   {{-- Date --}}
+                        <col style="width: 13%;">  {{-- Type --}}
+                        <col style="width: 18%;">  {{-- Supplier / Requester --}}
+                        <col style="width: 27%;">  {{-- Purpose / Category --}}
+                        <col style="width: 12%;">  {{-- Status --}}
+                        <col style="width: 9%;">   {{-- Action --}}
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Supplier / Requester</th>
+                            <th>Purpose / Category</th>
+                            <th>Status</th>
+                            <th style="text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-approved-requisitions">
+                        @include('auditor._tab_approved_requisitions', ['approvedRequisitions' => $approvedRequisitions, 'ledgeMap' => $ledgeMap])
+                    </tbody>
+                </table>
+            </div>
+            @if($approvedRequisitions->hasPages())
+                <div class="audit-pagination-container" id="pager-approved-requisitions">
+                    <div class="audit-pagination-info">
+                        Showing <span>{{ $approvedRequisitions->firstItem() ?? 0 }}</span> to <span>{{ $approvedRequisitions->lastItem() ?? 0 }}</span> of <span>{{ $approvedRequisitions->total() }}</span> records
+                    </div>
+                    <div class="audit-pagination-buttons">
+                        @if ($approvedRequisitions->onFirstPage())
+                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
+                        @else
+                            <a href="{{ $approvedRequisitions->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
+                        @endif
+
+                        @if ($approvedRequisitions->hasMorePages())
+                            <a href="{{ $approvedRequisitions->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
                         @else
                             <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
                         @endif
@@ -2150,6 +2216,7 @@
         issued_items:   { tbody: 'tbody-issued-items',   pager: 'pager-issued-items'   },
         returned_items: { tbody: 'tbody-returned-items', pager: 'pager-returned-items' },
         requisitions:   { tbody: 'tbody-requisitions',   pager: 'pager-requisitions'   },
+        approved_requisitions: { tbody: 'tbody-approved-requisitions', pager: 'pager-approved-requisitions' },
         pending_sra:    { tbody: 'tbody-pending-sra',    pager: null                   },
     };
 

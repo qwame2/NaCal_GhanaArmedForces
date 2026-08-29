@@ -235,6 +235,80 @@ class ExternalAuditorController extends Controller
 
         $requisitions = $requisitionsQuery->paginate(15, ['*'], 'requisitions_page')->withQueryString();
 
+        // Fetch Approved Requests (Inventory SRA, Service SRA, Store Requisitions)
+        $approvedInvQuery = InventoryBatch::with('storesApprover')
+            ->where('auditor_status', 'approved');
+
+        $approvedSvcQuery = \App\Models\ServiceSra::with('submitter')
+            ->where('auditor_status', 'approved');
+
+        $approvedReqsQuery = StoreRequisition::with(['requester'])
+            ->whereIn('status', ['approved', 'partially_approved']);
+
+        if ($request->filled('date_from')) {
+            $approvedInvQuery->whereDate('entry_date', '>=', $request->date_from);
+            $approvedSvcQuery->whereDate('created_at', '>=', $request->date_from);
+            $approvedReqsQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $approvedInvQuery->whereDate('entry_date', '<=', $request->date_to);
+            $approvedSvcQuery->whereDate('created_at', '<=', $request->date_to);
+            $approvedReqsQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('search_query')) {
+            $search = $request->search_query;
+            $approvedInvQuery->where(function($q) use ($search) {
+                $q->where('supplier_name', 'LIKE', "%{$search}%")
+                  ->orWhere('donor_name', 'LIKE', "%{$search}%")
+                  ->orWhere('delivery_person', 'LIKE', "%{$search}%")
+                  ->orWhere('id', 'LIKE', "%{$search}%");
+            });
+            $approvedSvcQuery->where(function($q) use ($search) {
+                $q->where('supplier_name', 'LIKE', "%{$search}%")
+                  ->orWhere('details', 'LIKE', "%{$search}%")
+                  ->orWhere('sra_number', 'LIKE', "%{$search}%")
+                  ->orWhere('id', 'LIKE', "%{$search}%");
+            });
+            $approvedReqsQuery->where(function($q) use ($search) {
+                $q->where('purpose', 'LIKE', "%{$search}%")
+                  ->orWhere('id', 'LIKE', "%{$search}%")
+                  ->orWhere('requester_name', 'LIKE', "%{$search}%")
+                  ->orWhere('department', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('user_id')) {
+            $approvedReqsQuery->where(function($q) use ($request) {
+                $q->where('requested_by', $request->user_id)
+                  ->orWhere('processed_by', $request->user_id)
+                  ->orWhere('collected_by', $request->user_id);
+            });
+        }
+
+        $approvedInv = $approvedInvQuery->get();
+        $approvedSvc = $approvedSvcQuery->get();
+        $approvedReqs = $approvedReqsQuery->get();
+
+        $mergedApprovedCollection = $approvedInv->map(fn($b) => ['type' => 'inventory_sra', 'item' => $b, 'created_at' => $b->created_at ?: $b->entry_date])
+            ->concat($approvedSvc->map(fn($s) => ['type' => 'service_sra', 'item' => $s, 'created_at' => $s->created_at]))
+            ->concat($approvedReqs->map(fn($r) => ['type' => 'dept_req', 'item' => $r, 'created_at' => $r->created_at]))
+            ->sortByDesc('created_at')
+            ->values();
+
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage('approved_reqs_page');
+        $perPage = 15;
+        $currentItems = $mergedApprovedCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $approvedRequisitions = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $mergedApprovedCollection->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'approved_reqs_page'
+            ]
+        );
+        $approvedRequisitions->withQueryString();
+
         $ledgeMap = Setting::getCategories();
         $auditUsers = User::orderBy('name')->get();
 
@@ -269,6 +343,11 @@ class ExternalAuditorController extends Controller
                         'pager' => view('auditor._tab_pager', ['items' => $requisitions, 'param' => 'requisitions_page'])->render(),
                         'total' => $requisitions->total(),
                     ],
+                    'approved_requisitions' => [
+                        'tbody' => view('auditor._tab_approved_requisitions', ['approvedRequisitions' => $approvedRequisitions, 'ledgeMap' => $ledgeMap])->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $approvedRequisitions, 'param' => 'approved_reqs_page'])->render(),
+                        'total' => $approvedRequisitions->total(),
+                    ],
                 ],
             ]);
         }
@@ -282,6 +361,7 @@ class ExternalAuditorController extends Controller
             'issuedItems',
             'returnedItems',
             'requisitions',
+            'approvedRequisitions',
             'ledgeMap',
             'auditUsers'
         ));

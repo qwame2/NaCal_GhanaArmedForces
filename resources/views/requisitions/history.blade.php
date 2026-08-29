@@ -265,9 +265,9 @@
         }
 
         /* --- HERO BANNER --- */
-        .history-card-header {
-            background: rgba(5, 150, 105, 0.05);
-            padding: 3rem 2rem 2.5rem 2rem;
+        .store-hero {
+            background: rgba(5, 150, 105, 0.04);
+            padding: 3rem 1.5rem 2.5rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
         }
 
