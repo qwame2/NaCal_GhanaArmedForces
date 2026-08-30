@@ -455,13 +455,41 @@ class AdminController extends Controller
             ]);
         }
 
-        // Log department change as WARNING if department actually changed
+        // If department changed for a Department Head, cascade update to all staff in old department
+        $updatedRelatedCount = 0;
         if ($oldDepartment !== $department) {
+            if (in_array($user->role, ['Head of Stores', 'Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])) {
+                if (!empty($oldDepartment) && !empty($department)) {
+                    $oldDeptsToMatch = User::getMatchingDepartments($oldDepartment);
+                    if (empty($oldDeptsToMatch)) {
+                        $oldDeptsToMatch = [strtolower(trim($oldDepartment))];
+                    }
+
+                    $relatedUsers = User::where(function($q) use ($oldDeptsToMatch) {
+                            foreach ($oldDeptsToMatch as $deptVal) {
+                                $q->orWhereRaw('LOWER(TRIM(department)) = ?', [strtolower(trim($deptVal))]);
+                            }
+                        })
+                        ->where('id', '!=', $user->id)
+                        ->get();
+
+                    foreach ($relatedUsers as $relatedUser) {
+                        $relatedUser->update(['department' => $department]);
+                        $updatedRelatedCount++;
+                    }
+                }
+            }
+
+            $desc = "[DEPT CHANGE] ".auth()->user()->name." (@".auth()->user()->username.") reassigned {$user->name} (@{$user->username}) from department '{$oldDepartment}' → '{$department}'.";
+            if ($updatedRelatedCount > 0) {
+                $desc .= " Cascade: {$updatedRelatedCount} related user(s) also migrated from '{$oldDepartment}' → '{$department}'.";
+            }
+
             \App\Models\SystemLog::create([
                 'user_id'     => auth()->id(),
                 'event_type'  => 'SECURITY',
                 'action'      => 'DEPARTMENT_CHANGE',
-                'description' => "[DEPT CHANGE] ".auth()->user()->name." (@".auth()->user()->username.") reassigned {$user->name} (@{$user->username}) from department '{$oldDepartment}' → '{$department}'.",
+                'description' => $desc,
                 'severity'    => 'warning',
                 'ip_address'  => request()->ip()
             ]);
@@ -963,20 +991,15 @@ class AdminController extends Controller
         $updatedRelatedCount = 0;
         if (in_array($user->role, ['Head of Stores', 'Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])) {
             if (!empty($oldDepartment) && !empty($newDepartment)) {
-                $oldDeptLower = strtolower(trim($oldDepartment));
-                
-                // Match exact lowercase, and also treat 'store' and 'stores' as equivalent
-                $oldDeptsToMatch = [$oldDeptLower];
-                if ($oldDeptLower === 'stores') {
-                    $oldDeptsToMatch[] = 'store';
-                } elseif ($oldDeptLower === 'store') {
-                    $oldDeptsToMatch[] = 'stores';
+                $oldDeptsToMatch = User::getMatchingDepartments($oldDepartment);
+                if (empty($oldDeptsToMatch)) {
+                    $oldDeptsToMatch = [strtolower(trim($oldDepartment))];
                 }
 
                 // Find all users in the old department (excluding the head themselves who was already updated)
                 $relatedUsers = User::where(function($q) use ($oldDeptsToMatch) {
                         foreach ($oldDeptsToMatch as $deptVal) {
-                            $q->orWhereRaw('LOWER(TRIM(department)) = ?', [$deptVal]);
+                            $q->orWhereRaw('LOWER(TRIM(department)) = ?', [strtolower(trim($deptVal))]);
                         }
                     })
                     ->where('id', '!=', $user->id)
