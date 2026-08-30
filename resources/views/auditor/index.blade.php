@@ -770,6 +770,19 @@
                 <i data-lucide="x" style="width: 16px;"></i>
                 Clear
             </a>
+
+            {{-- Generate User Audit Report Button --}}
+            <a id="btn-generate-user-report" 
+               href="{{ request('user_id') ? route('auditor.user_report', array_merge(['id' => request('user_id')], request()->only(['date_from', 'date_to']))) : '#' }}" 
+               target="_blank" 
+               class="btn-view-receipt" 
+               style="display: {{ request('user_id') ? 'inline-flex' : 'none' }}; align-items: center; gap: 6px; padding: 0.6rem 1rem; border-radius: 12px; background: #0f172a; color: #ffffff; font-size: 0.78rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s; white-space: nowrap;"
+               onmouseover="this.style.background='#1e293b';"
+               onmouseout="this.style.background='#0f172a';"
+               title="Generate Essay & Tabulated Audit Report for this User">
+                <i data-lucide="file-text" style="width: 15px; height: 15px; color: #38bdf8;"></i>
+                <span>User Audit Report</span>
+            </a>
         </div>
     </form>
 
@@ -1633,60 +1646,81 @@
                     }
                 }
 
-                fetch(url, {
+                const sep = url.includes('?') ? '&' : '?';
+                const fetchUrl = url + (url.includes('format=json') ? '' : sep + 'format=json');
+
+                fetch(fetchUrl, {
                     headers: {
+                        'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.tabs) {
+                        // 1. Swap stat numbers
+                        if (document.getElementById('stat-total-logs') && data.total_logs) {
+                            document.getElementById('stat-total-logs').textContent = data.total_logs;
+                        }
+                        if (document.getElementById('stat-total-variance') && data.total_variance) {
+                            document.getElementById('stat-total-variance').textContent = data.total_variance;
+                        }
+                        if (document.getElementById('stat-active-loans') && data.active_loans) {
+                            document.getElementById('stat-active-loans').textContent = data.active_loans;
+                        }
 
-                    // Swap stats
-                    const stats = ['stat-total-logs', 'stat-total-variance', 'stat-active-loans'];
-                    stats.forEach(id => {
-                        const newStatEl = doc.getElementById(id);
-                        const currentStatEl = document.getElementById(id);
-                        if (newStatEl && currentStatEl) {
-                            currentStatEl.innerHTML = newStatEl.innerHTML;
-                            if (newStatEl.getAttribute('style')) {
-                                currentStatEl.setAttribute('style', newStatEl.getAttribute('style'));
+                        // 2. Swap tab tbodies and pagers
+                        const _refreshMap = {
+                            audit_trail:            { tbody: 'tbody-audit-trail',            pager: 'pager-audit-trail' },
+                            received_items:         { tbody: 'tbody-received-items',         pager: 'pager-received-items' },
+                            issued_items:           { tbody: 'tbody-issued-items',           pager: 'pager-issued-items' },
+                            returned_items:         { tbody: 'tbody-returned-items',         pager: 'pager-returned-items' },
+                            requisitions:           { tbody: 'tbody-requisitions',           pager: 'pager-requisitions' },
+                            approved_requisitions: { tbody: 'tbody-approved-requisitions', pager: 'pager-approved-requisitions' },
+                            pending_sra:            { tbody: 'tbody-pending-sra',            pager: null }
+                        };
+
+                        for (const [key, cfg] of Object.entries(_refreshMap)) {
+                            const tabData = data.tabs[key];
+                            if (!tabData) continue;
+
+                            const tbodyEl = document.getElementById(cfg.tbody);
+                            if (tbodyEl && tabData.tbody !== undefined) {
+                                tbodyEl.innerHTML = tabData.tbody;
+                            }
+
+                            if (cfg.pager && tabData.pager !== undefined) {
+                                const existingPager = document.getElementById(cfg.pager);
+                                if (tabData.pager.trim() === '') {
+                                    if (existingPager) existingPager.remove();
+                                } else {
+                                    if (existingPager) {
+                                        existingPager.outerHTML = tabData.pager;
+                                    } else if (tbodyEl) {
+                                        const card = tbodyEl.closest('div[style*="background: var(--bg-card)"]') ||
+                                                     tbodyEl.closest('.audit-tab-panel > div');
+                                        if (card) {
+                                            const tmp = document.createElement('div');
+                                            tmp.innerHTML = tabData.pager;
+                                            while (tmp.firstChild) card.appendChild(tmp.firstChild);
+                                        }
+                                    }
+                                }
                             }
                         }
-                    });
 
-                    // Swap print button href
-                    const newPrintBtn = doc.getElementById('print-ledger-btn');
-                    const currentPrintBtn = document.getElementById('print-ledger-btn');
-                    if (newPrintBtn && currentPrintBtn) {
-                        currentPrintBtn.setAttribute('href', newPrintBtn.getAttribute('href'));
-                    }
-
-                    // Swap panels
-                    const panels = ['audit-trail-tab', 'received-items-tab', 'issued-items-tab', 'returned-items-tab', 'requisitions-tab', 'pending-sra-tab'];
-                    panels.forEach(id => {
-                        const newPanel = doc.getElementById(id);
-                        const currentPanel = document.getElementById(id);
-                        if (newPanel && currentPanel) {
-                            currentPanel.innerHTML = newPanel.innerHTML;
+                        // 3. Update Clear button visibility
+                        const clearBtn = document.getElementById('clear-filters-btn');
+                        if (clearBtn) {
+                            const hasFilter = Array.from(selects).some(s => s.value) || 
+                                              Array.from(dates).some(d => d.value) || 
+                                              (searchInput && searchInput.value.trim() !== '');
+                            clearBtn.style.display = hasFilter ? 'inline-flex' : 'none';
                         }
-                    });
 
-                    // Update Clear button visibility
-                    const clearBtn = document.getElementById('clear-filters-btn');
-                    if (clearBtn) {
-                        const hasFilter = Array.from(selects).some(s => s.value) || 
-                                          Array.from(dates).some(d => d.value) || 
-                                          (searchInput && searchInput.value.trim() !== '');
-                        clearBtn.style.display = hasFilter ? 'inline-flex' : 'none';
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                        history.replaceState(null, '', url);
                     }
-
-                    // Re-initialize lucide icons
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-
-                    // Update URL without page reload
-                    history.replaceState(null, '', url);
                 })
                 .catch(error => {
                     console.error('Audit filter fetch error:', error);
@@ -1714,12 +1748,37 @@
                 performAuditAjaxFilter(url);
             }
 
+            function updateUserReportBtn() {
+                const userBtn = document.getElementById('btn-generate-user-report');
+                const selectedUserId = $('#audit-user-select').val();
+                if (userBtn) {
+                    if (selectedUserId) {
+                        const dateFrom = form.querySelector('[name="date_from"]')?.value || '';
+                        const dateTo = form.querySelector('[name="date_to"]')?.value || '';
+                        let reportUrl = `/auditor/user-report/${selectedUserId}`;
+                        const queryParts = [];
+                        if (dateFrom) queryParts.push(`date_from=${encodeURIComponent(dateFrom)}`);
+                        if (dateTo) queryParts.push(`date_to=${encodeURIComponent(dateTo)}`);
+                        if (queryParts.length > 0) reportUrl += '?' + queryParts.join('&');
+
+                        userBtn.setAttribute('href', reportUrl);
+                        userBtn.style.display = 'inline-flex';
+                    } else {
+                        userBtn.style.display = 'none';
+                        userBtn.setAttribute('href', '#');
+                    }
+                }
+            }
+
             // Initialize Select2 on the audit user select
             if (window.jQuery && jQuery().select2) {
                 $('#audit-user-select').select2({
                     placeholder: '-- Audit User --',
                     allowClear: true
-                }).on('change', triggerFilterSubmit);
+                }).on('change', function() {
+                    updateUserReportBtn();
+                    triggerFilterSubmit();
+                });
             }
 
             selects.forEach(select => {
@@ -1729,7 +1788,10 @@
             });
 
             dates.forEach(date => {
-                date.addEventListener('change', triggerFilterSubmit);
+                date.addEventListener('change', () => {
+                    updateUserReportBtn();
+                    triggerFilterSubmit();
+                });
             });
 
             if (searchInput) {
@@ -1757,6 +1819,7 @@
                     if (window.jQuery && jQuery().select2) {
                         $('#audit-user-select').val(null).trigger('change.select2');
                     }
+                    updateUserReportBtn();
                     performAuditAjaxFilter(clearBtn.getAttribute('href'));
                 });
             }
@@ -2233,6 +2296,13 @@
         // Block if any filter field has focus (user is typing/selecting)
         const focused = document.activeElement;
         if (focused && focused.closest('.filter-card-audit')) return true;
+
+        // Block if any filter control currently has an active value
+        const form = document.querySelector('.filter-card-audit');
+        if (form) {
+            const hasActiveFilter = Array.from(form.querySelectorAll('select, input')).some(el => el.value && el.value.trim() !== '');
+            if (hasActiveFilter) return true;
+        }
 
         return false;
     }

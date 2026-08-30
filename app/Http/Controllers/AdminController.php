@@ -423,6 +423,9 @@ class AdminController extends Controller
             }
         }
 
+        $oldRole       = $user->role;
+        $oldDepartment = $user->department;
+
         $department = $request->department;
         if ($request->role === 'Main Admin') {
             $department = 'Stores';
@@ -433,22 +436,48 @@ class AdminController extends Controller
         }
 
         $user->update([
-            'name' => $request->name,
-            'role' => $request->role,
-            'department' => $department,
-            'is_admin' => in_array($request->role, ['Head of Stores', 'Main Admin']),
+            'name'         => $request->name,
+            'role'         => $request->role,
+            'department'   => $department,
+            'is_admin'     => in_array($request->role, ['Head of Stores', 'Main Admin']),
             'is_temp_account' => $request->role === 'Auditor',
         ]);
 
-        // Log the update
-        \App\Models\SystemLog::create([
-            'user_id' => auth()->id(),
-            'event_type' => 'SECURITY',
-            'action' => 'UPDATE_USER',
-            'description' => "Administrator updated details for staff member: {$user->name} (@{$user->username}). Role set to {$user->role}.",
-            'severity' => 'info',
-            'ip_address' => request()->ip()
-        ]);
+        // Log role change as DANGER if role actually changed
+        if ($oldRole !== $request->role) {
+            \App\Models\SystemLog::create([
+                'user_id'     => auth()->id(),
+                'event_type'  => 'SECURITY',
+                'action'      => 'ROLE_CHANGE',
+                'description' => "[ROLE CHANGE] ".auth()->user()->name." (@".auth()->user()->username.") changed role for {$user->name} (@{$user->username}) from '{$oldRole}' → '{$request->role}'.",
+                'severity'    => 'danger',
+                'ip_address'  => request()->ip()
+            ]);
+        }
+
+        // Log department change as WARNING if department actually changed
+        if ($oldDepartment !== $department) {
+            \App\Models\SystemLog::create([
+                'user_id'     => auth()->id(),
+                'event_type'  => 'SECURITY',
+                'action'      => 'DEPARTMENT_CHANGE',
+                'description' => "[DEPT CHANGE] ".auth()->user()->name." (@".auth()->user()->username.") reassigned {$user->name} (@{$user->username}) from department '{$oldDepartment}' → '{$department}'.",
+                'severity'    => 'warning',
+                'ip_address'  => request()->ip()
+            ]);
+        }
+
+        // Generic update log if only name changed (no role/dept change)
+        if ($oldRole === $request->role && $oldDepartment === $department) {
+            \App\Models\SystemLog::create([
+                'user_id'     => auth()->id(),
+                'event_type'  => 'SECURITY',
+                'action'      => 'UPDATE_USER',
+                'description' => "Administrator updated name/details for staff member: {$user->name} (@{$user->username}).",
+                'severity'    => 'info',
+                'ip_address'  => request()->ip()
+            ]);
+        }
 
         return back()->with('success', "Personnel registry for {$user->name} updated successfully.");
     }
@@ -878,14 +907,14 @@ class AdminController extends Controller
             'is_temp_account' => $newRole === 'Auditor',
         ]);
 
-        // Log the change
+        // Log the role change as DANGER
         \App\Models\SystemLog::create([
-            'user_id' => auth()->id(),
-            'event_type' => 'SECURITY',
-            'action' => 'ROLE_CHANGE',
-            'description' => "Administrator changed role for {$user->name} (@{$user->username}) from {$oldRole} to {$newRole}.",
-            'severity' => 'warning',
-            'ip_address' => $request->ip()
+            'user_id'     => auth()->id(),
+            'event_type'  => 'SECURITY',
+            'action'      => 'ROLE_CHANGE',
+            'description' => "[ROLE CHANGE] ".auth()->user()->name." (@".auth()->user()->username.") changed role for {$user->name} (@{$user->username}) from '{$oldRole}' → '{$newRole}'.",
+            'severity'    => 'danger',
+            'ip_address'  => $request->ip()
         ]);
 
         return response()->json(['success' => true, 'message' => 'Role updated successfully']);
@@ -960,19 +989,19 @@ class AdminController extends Controller
             }
         }
 
-        // Log the change
-        $desc = "Administrator updated department for {$user->name} (@{$user->username}) from '{$oldDepartment}' to '{$newDepartment}'.";
+        // Log the department change as WARNING
+        $desc = "[DEPT CHANGE] ".auth()->user()->name." (@".auth()->user()->username.") reassigned {$user->name} (@{$user->username}) from department '{$oldDepartment}' → '{$newDepartment}'.";
         if ($updatedRelatedCount > 0) {
-            $desc .= " Automatically migrated {$updatedRelatedCount} related user(s) in that department from '{$oldDepartment}' to '{$newDepartment}'.";
+            $desc .= " Cascade: {$updatedRelatedCount} related user(s) also migrated from '{$oldDepartment}' → '{$newDepartment}'.";
         }
 
         \App\Models\SystemLog::create([
-            'user_id' => auth()->id(),
-            'event_type' => 'SECURITY',
-            'action' => 'DEPARTMENT_CHANGE',
+            'user_id'     => auth()->id(),
+            'event_type'  => 'SECURITY',
+            'action'      => 'DEPARTMENT_CHANGE',
             'description' => $desc,
-            'severity' => 'warning',
-            'ip_address' => $request->ip()
+            'severity'    => 'warning',
+            'ip_address'  => $request->ip()
         ]);
 
         return response()->json([

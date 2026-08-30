@@ -23,6 +23,7 @@ class EnsureNotTempAccount
         'auditor.dashboard',
         'external-auditor.dashboard',
         'auditor.print',
+        'auditor.user_report',
         'auditor.supplier_info',
         'auditor.staff-approvals',
         'requisitions.index',

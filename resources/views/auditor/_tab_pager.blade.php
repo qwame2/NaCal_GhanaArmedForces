@@ -1,5 +1,5 @@
 @if($items->hasPages())
-<div class="audit-pagination-container">
+<div class="audit-pagination-container" @if(isset($id) && $id) id="{{ $id }}" @endif>
     <div class="audit-pagination-info">
         Showing <span>{{ number_format($items->firstItem() ?? 0) }}</span> to <span>{{ number_format($items->lastItem() ?? 0) }}</span> of <span>{{ number_format($items->total()) }}</span> records
     </div>

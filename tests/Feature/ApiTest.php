@@ -2366,7 +2366,7 @@ class ApiTest extends TestCase
         $this->assertEquals('IT', $otherRequisitioner->department);
 
         $this->assertTrue(\App\Models\SystemLog::where('action', 'DEPARTMENT_CHANGE')
-            ->where('description', 'like', '%migrated 3 related user(s)%')
+            ->where('description', 'like', '%3 related user(s) also migrated%')
             ->exists());
     }
 

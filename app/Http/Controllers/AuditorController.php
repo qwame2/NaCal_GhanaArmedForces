@@ -38,7 +38,20 @@ class AuditorController extends Controller
             $logsQuery->where('event_type', $request->log_event);
         }
         if ($request->filled('user_id')) {
-            $logsQuery->where('user_id', $request->user_id);
+            $uId = (int)$request->user_id;
+            $targetUserObj = \App\Models\User::find($uId);
+            $logsQuery->where(function($q) use ($uId, $targetUserObj) {
+                $q->where('user_id', $uId)
+                  ->orWhereRaw("JSON_EXTRACT(metadata, '$.user_id') = ?", [$uId]);
+                if ($targetUserObj) {
+                    if (!empty($targetUserObj->username)) {
+                        $q->orWhere('description', 'LIKE', "%@{$targetUserObj->username}%");
+                    }
+                    if (!empty($targetUserObj->name)) {
+                        $q->orWhere('description', 'LIKE', "%{$targetUserObj->name}%");
+                    }
+                }
+            });
         }
         if ($request->filled('date_from')) {
             $logsQuery->whereDate('created_at', '>=', $request->date_from);
@@ -293,32 +306,32 @@ class AuditorController extends Controller
                 'tabs' => [
                     'audit_trail'    => [
                         'tbody' => view('auditor._tab_audit_trail', compact('systemLogs'))->render(),
-                        'pager' => view('auditor._tab_pager', ['items' => $systemLogs, 'param' => 'logs_page'])->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $systemLogs, 'param' => 'logs_page', 'id' => 'pager-audit-trail'])->render(),
                         'total' => $systemLogs->total(),
                     ],
                     'received_items' => [
                         'tbody' => view('auditor._tab_received_items', compact('receivedItems', 'ledgeMap'))->render(),
-                        'pager' => view('auditor._tab_pager', ['items' => $receivedItems, 'param' => 'received_page'])->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $receivedItems, 'param' => 'received_page', 'id' => 'pager-received-items'])->render(),
                         'total' => $receivedItems->total(),
                     ],
                     'issued_items'   => [
                         'tbody' => view('auditor._tab_issued_items', compact('issuedItems', 'ledgeMap'))->render(),
-                        'pager' => view('auditor._tab_pager', ['items' => $issuedItems, 'param' => 'issued_page'])->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $issuedItems, 'param' => 'issued_page', 'id' => 'pager-issued-items'])->render(),
                         'total' => $issuedItems->total(),
                     ],
                     'returned_items' => [
                         'tbody' => view('auditor._tab_returned_items', compact('returnedItems', 'ledgeMap'))->render(),
-                        'pager' => view('auditor._tab_pager', ['items' => $returnedItems, 'param' => 'returned_page'])->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $returnedItems, 'param' => 'returned_page', 'id' => 'pager-returned-items'])->render(),
                         'total' => $returnedItems->total(),
                     ],
                     'requisitions'   => [
                         'tbody' => view('auditor._tab_requisitions', compact('requisitions'))->render(),
-                        'pager' => view('auditor._tab_pager', ['items' => $requisitions, 'param' => 'requisitions_page'])->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $requisitions, 'param' => 'requisitions_page', 'id' => 'pager-requisitions'])->render(),
                         'total' => $requisitions->total(),
                     ],
                     'approved_requisitions' => [
                         'tbody' => view('auditor._tab_approved_requisitions', ['approvedRequisitions' => $approvedRequisitions, 'ledgeMap' => $ledgeMap])->render(),
-                        'pager' => view('auditor._tab_pager', ['items' => $approvedRequisitions, 'param' => 'approved_reqs_page'])->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $approvedRequisitions, 'param' => 'approved_reqs_page', 'id' => 'pager-approved-requisitions'])->render(),
                         'total' => $approvedRequisitions->total(),
                     ],
                     'pending_sra'    => [
@@ -419,6 +432,85 @@ class AuditorController extends Controller
             'returnedItems',
             'ledgeMap',
             'auditor'
+        ));
+    }
+
+    public function generateUserAuditReport(Request $request, $id)
+    {
+        if (!in_array(auth()->user()->role, ['Auditor', 'External Auditor'])) {
+            abort(403, 'Access Restricted: Auditor clearance required.');
+        }
+
+        $targetUser = \App\Models\User::findOrFail($id);
+        $auditor = auth()->user();
+
+        // 1. All System Trail Logs for this user
+        $logsQuery = SystemLog::with('user')
+            ->where('user_id', $targetUser->id)
+            ->orderBy('created_at', 'asc');
+
+        if ($request->filled('date_from')) {
+            $logsQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $logsQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $systemLogs = $logsQuery->get();
+
+        // 2. Requisitions associated with this user (requested, processed, or collected)
+        $requisitionsQuery = \App\Models\StoreRequisition::with(['requester', 'processor', 'items'])
+            ->where(function($q) use ($targetUser) {
+                $q->where('requested_by', $targetUser->id)
+                  ->orWhere('processed_by', $targetUser->id)
+                  ->orWhere('collected_by', $targetUser->id);
+            })
+            ->orderBy('created_at', 'asc');
+
+        if ($request->filled('date_from')) {
+            $requisitionsQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $requisitionsQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $userRequisitions = $requisitionsQuery->get();
+
+        // 3. Generate structured readable essay synthesis
+        $totalLogs = $systemLogs->count();
+        $securityLogs = $systemLogs->where('event_type', 'SECURITY')->count();
+        $authLogs = $systemLogs->where('event_type', 'AUTH')->count();
+        $inventoryLogs = $systemLogs->where('event_type', 'INVENTORY')->count();
+        $requisitionLogs = $systemLogs->where('event_type', 'REQUISITION')->count();
+
+        $dangerLogs = $systemLogs->whereIn('severity', ['danger', 'critical']);
+        $warningLogs = $systemLogs->where('severity', 'warning');
+
+        $firstActivity = $systemLogs->first()?->created_at?->format('d/m/Y H:i:s') ?? 'N/A';
+        $lastActivity = $systemLogs->last()?->created_at?->format('d/m/Y H:i:s') ?? 'N/A';
+
+        // Categorize key activity events
+        $loginCount = $systemLogs->filter(fn($l) => str_contains(strtolower($l->action ?? ''), 'login') || str_contains(strtolower($l->description ?? ''), 'logged in'))->count();
+        $roleChangeLogs = $systemLogs->filter(fn($l) => $l->action === 'ROLE_CHANGE');
+        $deptChangeLogs = $systemLogs->filter(fn($l) => $l->action === 'DEPARTMENT_CHANGE');
+
+        return view('auditor.user_report', compact(
+            'targetUser',
+            'auditor',
+            'systemLogs',
+            'userRequisitions',
+            'totalLogs',
+            'securityLogs',
+            'authLogs',
+            'inventoryLogs',
+            'requisitionLogs',
+            'dangerLogs',
+            'warningLogs',
+            'firstActivity',
+            'lastActivity',
+            'loginCount',
+            'roleChangeLogs',
+            'deptChangeLogs'
         ));
     }
 
