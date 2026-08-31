@@ -3906,9 +3906,8 @@
         if (isPollingOversight) return;
 
         const isModalOpen = document.querySelector('.modal-overlay.open') || (typeof Swal !== 'undefined' && Swal.isVisible());
-        const isAnyInputFocused = document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName);
 
-        if (!manual && (document.hidden || isModalOpen || isAnyInputFocused)) return;
+        if (!manual && (document.hidden || isModalOpen)) return;
 
         isPollingOversight = true;
 
@@ -3966,10 +3965,10 @@
         });
     };
 
-    // Auto-Poll every 8 seconds
+    // Auto-Poll every 3 seconds for instant updates
     setInterval(function() {
         pollOversightQueueSilently(false);
-    }, 8000);
+    }, 3000);
 
     document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('stores_dept_head_approval_categories') || document.getElementById('dg_approval_categories')) {

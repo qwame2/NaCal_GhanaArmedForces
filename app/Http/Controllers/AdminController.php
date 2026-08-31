@@ -42,8 +42,7 @@ class AdminController extends Controller
         $search = $request->input('search');
         $roleFilter = $request->input('role_filter');
 
-        $query = User::where('role', '!=', 'Head of Stores')
-            ->where('registration_status', 'approved');
+        $query = User::where('registration_status', 'approved');
 
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -68,19 +67,15 @@ class AdminController extends Controller
 
         $users = $query->orderBy('updated_at', 'desc')->paginate($perPage);
 
-        $totalUsers = User::where('role', '!=', 'Head of Stores')
-            ->where('registration_status', 'approved')
-            ->count();
+        $totalUsers = User::where('registration_status', 'approved')->count();
 
-        $onlineCount = User::where('role', '!=', 'Head of Stores')
-            ->where('registration_status', 'approved')
+        $onlineCount = User::where('registration_status', 'approved')
             ->where('is_online', true)
             ->count();
 
         $allUsers = User::where('registration_status', 'approved')->get(); // Keep for calculating global metrics if needed
         
-        $recentLogins = User::where('role', '!=', 'Head of Stores')
-            ->where('registration_status', 'approved')
+        $recentLogins = User::where('registration_status', 'approved')
             ->orderBy('last_login_at', 'desc')
             ->limit(100)
             ->get();
@@ -439,7 +434,7 @@ class AdminController extends Controller
             'name'         => $request->name,
             'role'         => $request->role,
             'department'   => $department,
-            'is_admin'     => in_array($request->role, ['Head of Stores', 'Main Admin']),
+            'is_admin'     => in_array($request->role, ['Head of Stores', 'Main Admin', 'Sub Main Admin']) || (bool)$user->is_admin,
             'is_temp_account' => $request->role === 'Auditor',
         ]);
 
@@ -931,7 +926,7 @@ class AdminController extends Controller
         $user->update([
             'role' => $newRole,
             'department' => $department,
-            'is_admin' => in_array($newRole, ['Head of Stores', 'Main Admin']),
+            'is_admin' => in_array($newRole, ['Head of Stores', 'Main Admin', 'Sub Main Admin']) || (bool)$user->is_admin,
             'is_temp_account' => $newRole === 'Auditor',
         ]);
 

@@ -163,6 +163,10 @@
                                     <span class="badge-role sub-admin">
                                         <span class="badge-dot"></span> Delegators (Auth) {{ $user->rank ? '(' . $user->rank . ')' : '' }}
                                     </span>
+                                @elseif($user->role === 'Head of Stores')
+                                    <span class="badge-role admin">
+                                        <span class="badge-dot"></span> Head of Stores {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                    </span>
                                 @elseif($user->is_admin)
                                     <span class="badge-role admin">
                                         <span class="badge-dot"></span> Head of Admin

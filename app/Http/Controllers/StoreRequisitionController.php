@@ -605,6 +605,76 @@ class StoreRequisitionController extends Controller
     }
 
     /**
+     * Return JSON representation of requisition details for modal review.
+     */
+    public function showJson($id)
+    {
+        $requisition = StoreRequisition::with(['requester', 'processor', 'collector', 'items'])->find($id);
+
+        if (!$requisition) {
+            return response()->json(['success' => false, 'message' => 'Requisition record not found.'], 404);
+        }
+
+        $items = $requisition->items->map(function ($item) {
+            $physicalStock = (float) InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', 'approved')
+                ->whereRaw('TRIM(inventory_items.description) = ?', [trim($item->description)])
+                ->sum(DB::raw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))'));
+
+            $availableStock = Setting::getAvailableStock($item->description, $physicalStock, $item->category);
+            $stockSufficient = ($availableStock >= (float)$item->quantity_requested);
+
+            return [
+                'id' => $item->id,
+                'description' => $item->description,
+                'category' => $item->category,
+                'unit' => $item->unit ?? 'units',
+                'quantity_requested' => (float)$item->quantity_requested,
+                'quantity_approved' => $item->quantity_approved !== null ? (float)$item->quantity_approved : null,
+                'alternative_description' => $item->alternative_description,
+                'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
+                'remarks' => $item->remarks,
+                'current_stock' => $availableStock,
+                'stock_sufficient' => $stockSufficient,
+            ];
+        });
+
+        $trackingPipeline = $requisition->tracking_pipeline;
+
+        return response()->json([
+            'id' => $requisition->id,
+            'unique_id' => $requisition->unique_id,
+            'requester_name' => $requisition->requester_name ?: ($requisition->requester?->name ?: 'N/A'),
+            'department' => $requisition->department,
+            'rank_or_title' => $requisition->rank_or_title ?: ($requisition->requester?->rank ?: 'N/A'),
+            'purpose' => $requisition->purpose,
+            'priority' => $requisition->priority,
+            'status' => $requisition->status,
+            'usage_type' => $requisition->usage_type ?: 'permanent',
+            'status_badge' => $requisition->status_badge,
+            'usage_type_badge' => $requisition->usage_type_badge,
+            'origin_admin_status' => $requisition->origin_admin_status,
+            'origin_approved_by' => $requisition->origin_approved_by,
+            'main_admin_status' => $requisition->main_admin_status,
+            'stores_approved_by' => $requisition->stores_approved_by,
+            'requires_dg_approval' => (bool)$requisition->requires_dg_approval,
+            'dg_status' => $requisition->dg_status,
+            'dg_approved_by' => $requisition->dg_approved_by,
+            'admin_notes' => $requisition->admin_notes,
+            'decline_reason' => $requisition->decline_reason,
+            'collected_at' => $requisition->collected_at ? $requisition->collected_at->format('d/m/Y H:i') : null,
+            'collected_by_name' => $requisition->collector?->name ?: $requisition->collector_name,
+            'collector_name' => $requisition->collector_name,
+            'collector_contact' => $requisition->collector_contact,
+            'collector_location' => $requisition->collector_location,
+            'created_at' => $requisition->created_at ? $requisition->created_at->format('d/m/Y H:i') : 'N/A',
+            'tracking_pipeline' => $trackingPipeline,
+            'items' => $items,
+        ]);
+    }
+
+    /**
      * Print Collection Receipt for a requisition.
      */
     public function printReceipt($id)
