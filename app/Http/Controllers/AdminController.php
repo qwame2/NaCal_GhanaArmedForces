@@ -852,8 +852,9 @@ class AdminController extends Controller
             ]
         );
 
-        // Clear the cache for this setting
+        // Clear the cache for this setting and force auto-approval check run
         \Illuminate\Support\Facades\Cache::forget('setting_' . $request->key);
+        \Illuminate\Support\Facades\Cache::forget('overdue_hod_requisitions_checked');
 
         // Log the change
         \App\Models\SystemLog::create([

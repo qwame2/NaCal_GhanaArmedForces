@@ -334,6 +334,13 @@ class StoreRequisition extends Model
             ->where('origin_admin_status', 'pending')
             ->get();
 
+        if ($requisitions->isEmpty()) {
+            return;
+        }
+
+        // Global default setting set by Admin in UI (fallback to 5 minutes if setting absent)
+        $globalDefault = (int)\App\Models\Setting::get('default_hod_auto_approve_timeout_mins', 5);
+
         // Fetch department heads
         $deptHeads = \App\Models\User::whereIn('role', ['Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])
             ->where('is_active', true)
@@ -344,9 +351,12 @@ class StoreRequisition extends Model
         foreach ($requisitions as $req) {
             $key = strtolower(trim($req->department));
             $hod = $deptHeads->get($key);
-            // Default to the global setting default_hod_auto_approve_timeout_mins (fallback to 5 minutes)
-            $globalDefault = (int)\App\Models\Setting::get('default_hod_auto_approve_timeout_mins', 5);
-            $timeoutMins = ($hod && isset($hod->hod_auto_approve_timeout_mins)) ? (int)$hod->hod_auto_approve_timeout_mins : $globalDefault;
+            
+            // If HOD has a specific non-null custom timeout configured for their account, use it; otherwise fallback to globalDefault
+            $timeoutMins = ($hod && !is_null($hod->hod_auto_approve_timeout_mins)) 
+                ? (int)$hod->hod_auto_approve_timeout_mins 
+                : $globalDefault;
+
             $threshold = now()->subMinutes($timeoutMins);
 
             if ($req->created_at->lte($threshold)) {

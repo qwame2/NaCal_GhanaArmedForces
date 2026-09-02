@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         if (app()->environment() !== 'testing') {
             try {
-            \Illuminate\Support\Facades\Cache::remember('schema_healed_v15', 86400, function () {
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_v16', 86400, function () {
                 // Ensure can_make_requisition column exists for requisitioner permission gating
                 if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
                     if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_make_requisition')) {
@@ -36,8 +36,15 @@ class AppServiceProvider extends ServiceProvider
                     }
                     if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'hod_auto_approve_timeout_mins')) {
                         \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
-                            $table->unsignedInteger('hod_auto_approve_timeout_mins')->default(5)->after('can_approve_requisition');
+                            $table->unsignedInteger('hod_auto_approve_timeout_mins')->nullable()->default(null)->after('can_approve_requisition');
                         });
+                    } else {
+                        try {
+                            \Illuminate\Support\Facades\DB::statement("ALTER TABLE users MODIFY hod_auto_approve_timeout_mins INT UNSIGNED NULL DEFAULT NULL");
+                            \Illuminate\Support\Facades\DB::table('users')
+                                ->where('hod_auto_approve_timeout_mins', 5)
+                                ->update(['hod_auto_approve_timeout_mins' => null]);
+                        } catch (\Exception $e) {}
                     }
                 }
 
