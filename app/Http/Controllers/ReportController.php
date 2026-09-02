@@ -16,7 +16,7 @@ class ReportController extends Controller
             return $this->data($request);
         }
 
-        $period = $request->query('period', 'monthly');
+        $period = $request->query('period', 'all');
 
         $startDate = Carbon::now();
         $endDate   = Carbon::now();
@@ -42,6 +42,11 @@ class ReportController extends Controller
             $startDate = Carbon::now()->startOfYear();
             $endDate   = Carbon::now()->endOfYear();
             $dateLabel = "Annual Summary Report - " . $startDate->format('Y');
+        } else {
+            $period = 'all';
+            $startDate = Carbon::create(1970, 1, 1)->startOfDay();
+            $endDate   = Carbon::now()->addYears(50)->endOfDay();
+            $dateLabel = "All Time Inventory & Activity Report";
         }
 
         $ledgeMap = \App\Models\Setting::getCategories();
@@ -222,7 +227,7 @@ class ReportController extends Controller
      */
     public function data(Request $request)
     {
-        $period = $request->query('period', 'monthly');
+        $period = $request->query('period', 'all');
 
         $startDate = Carbon::now();
         $endDate   = Carbon::now();
@@ -247,6 +252,11 @@ class ReportController extends Controller
             $startDate = Carbon::now()->startOfYear();
             $endDate   = Carbon::now()->endOfYear();
             $dateLabel = 'Annual Summary Report - ' . $startDate->format('Y');
+        } else {
+            $period = 'all';
+            $startDate = Carbon::create(1970, 1, 1)->startOfDay();
+            $endDate   = Carbon::now()->addYears(50)->endOfDay();
+            $dateLabel = 'All Time Inventory & Activity Report';
         }
 
         $ledgeMap = \App\Models\Setting::getCategories();
@@ -502,7 +512,7 @@ class ReportController extends Controller
     }
     public function printReport(Request $request)
     {
-        $period = $request->query('period', 'monthly');
+        $period = $request->query('period', 'all');
 
         $startDate = Carbon::now();
         $endDate   = Carbon::now();
@@ -527,6 +537,11 @@ class ReportController extends Controller
             $startDate = Carbon::now()->startOfYear();
             $endDate   = Carbon::now()->endOfYear();
             $dateLabel = 'Annual Summary Report — ' . $startDate->format('Y');
+        } else {
+            $period = 'all';
+            $startDate = Carbon::create(1970, 1, 1)->startOfDay();
+            $endDate   = Carbon::now()->addYears(50)->endOfDay();
+            $dateLabel = 'All Time Inventory & Activity Report';
         }
 
         $ledgeMap = \App\Models\Setting::getCategories();
@@ -588,7 +603,7 @@ class ReportController extends Controller
         $recentReceivals = $recentReceivalsQuery
             ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type', 'inventory_batches.ledge_category')
             ->orderBy('inventory_batches.entry_date', 'desc')
-            ->limit(500)
+            ->limit(5000)
             ->get();
 
         $recentIssues = $recentIssuesQuery
@@ -603,14 +618,28 @@ class ReportController extends Controller
             )
             ->selectRaw('issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0) as original_quantity')
             ->orderBy('issuances.issuance_date', 'desc')
-            ->limit(500)
+            ->limit(5000)
             ->get();
+
+        $type = $request->query('type', 'all');
+        if (!in_array($type, ['issued', 'received', 'all'])) {
+            $type = 'all';
+        }
+
+        if ($type === 'issued') {
+            $recentReceivals = collect();
+            $receivedDistribution = collect();
+        } elseif ($type === 'received') {
+            $recentIssues = collect();
+            $issuedDistribution = collect();
+        }
 
         $user = auth()->user();
 
         return view('reports.print', compact(
             'dateLabel',
             'period',
+            'type',
             'startDate',
             'endDate',
             'totalReceivedQty',

@@ -18,6 +18,7 @@
         </div>
         <div style="display: flex; gap: 1rem; position: relative; z-index: 1; flex-wrap: wrap; align-items: center;">
             <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'all']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'all' ? 'active' : '' }}">All Time</a>
                 <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
                 <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
                 <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
@@ -126,7 +127,7 @@
                             <span>GENERATE REPORT</span>
                         </button>
                         @if(!empty($selectedItems) || $period === 'custom')
-                            <a href="{{ route('reports.index', ['period' => 'monthly']) }}" class="filter-clear-btn" style="height: 52px; display: inline-flex; align-items: center; gap: 8px; padding: 0 1.25rem; border-radius: 14px; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; transition: var(--transition);" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';this.style.background='rgba(239,68,68,0.06)';" onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-muted)';this.style.background='transparent';">
+                            <a href="{{ route('reports.index', ['period' => 'all']) }}" class="filter-clear-btn" style="height: 52px; display: inline-flex; align-items: center; gap: 8px; padding: 0 1.25rem; border-radius: 14px; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; transition: var(--transition);" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';this.style.background='rgba(239,68,68,0.06)';" onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-muted)';this.style.background='transparent';">
                                 <i data-lucide="rotate-ccw" style="width:15px;height:15px;"></i>
                                 <span>RESET</span>
                             </a>
@@ -165,36 +166,45 @@
     <div class="stats-charts-print-layout">
     <!-- Quick Stats -->
     <div class="stats-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-        <div class="glass-card stat-card stat-card-received" style="padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);">
+        <div onclick="filterReportTable('received')" id="card-filter-received" class="glass-card stat-card stat-card-received" style="cursor: pointer; padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);" title="Click to filter table for Received Items">
             <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981; width: 62px; height: 62px; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none;">
                 <i data-lucide="package" style="width: 28px; height: 28px;"></i>
             </div>
             <div style="flex: 1;">
                 <div class="stat-label" style="font-size: 0.73rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 4px;">TOTAL RECEIVED</div>
                 <div class="stat-value" style="color: #10b981; font-size: 2.1rem; font-weight: 950; line-height: 1;">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit" style="font-size: 1rem; color: var(--text-muted); font-weight: 700;">Item(s)</span></div>
-                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px;">{{ $totalReceivedBatches }} Received Batches</div>
+                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>{{ $totalReceivedBatches }} Received Batches</span>
+                    <span class="card-click-hint" style="font-size: 0.68rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 1px 6px; border-radius: 4px;">Click to filter</span>
+                </div>
             </div>
         </div>
 
-        <div class="glass-card stat-card stat-card-issued" style="padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);">
+        <div onclick="filterReportTable('issued')" id="card-filter-issued" class="glass-card stat-card stat-card-issued" style="cursor: pointer; padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);" title="Click to filter table for Issued Items">
             <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; width: 62px; height: 62px; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none;">
                 <i data-lucide="package-minus" style="width: 28px; height: 28px;"></i>
             </div>
             <div style="flex: 1;">
                 <div class="stat-label" style="font-size: 0.73rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 4px;">TOTAL ISSUED</div>
                 <div class="stat-value" style="color: #f59e0b; font-size: 2.1rem; font-weight: 950; line-height: 1;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit" style="font-size: 1rem; color: var(--text-muted); font-weight: 700;">Item(s)</span></div>
-                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px;">{{ $totalIssuedBatches }} Issued Records</div>
+                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>{{ $totalIssuedBatches }} Issued Records</span>
+                    <span class="card-click-hint" style="font-size: 0.68rem; font-weight: 800; color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 1px 6px; border-radius: 4px;">Click to filter</span>
+                </div>
             </div>
         </div>
 
-        <div class="glass-card stat-card stat-card-net" style="padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);">
+        <div onclick="filterReportTable('all')" id="card-filter-all" class="glass-card stat-card stat-card-net" style="cursor: pointer; padding: 2rem; border-radius: 24px; display: flex; align-items: center; gap: 1.5rem; border-top: none !important; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--card-shadow); transition: var(--transition);" title="Click to reset table to show All Items">
             <div class="stat-icon" style="background: var(--primary-glow); color: var(--primary); width: 62px; height: 62px; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none;">
                 <i data-lucide="activity" style="width: 28px; height: 28px;"></i>
             </div>
             <div style="flex: 1;">
                 <div class="stat-label" style="font-size: 0.73rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 4px;">STOCK BALANCE</div>
                 <div class="stat-value" style="color: var(--primary); font-size: 2.1rem; font-weight: 950; line-height: 1;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit" style="font-size: 1rem; color: var(--text-muted); font-weight: 700;">Item(s)</span></div>
-                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px;">Period Surplus (Received − Issued)</div>
+                <div class="stat-subtitle" style="font-size: 0.73rem; color: var(--text-muted); font-weight: 600; margin-top: 6px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Period Surplus (Received − Issued)</span>
+                    <span class="card-click-hint" style="font-size: 0.68rem; font-weight: 800; color: var(--primary); background: var(--primary-glow); padding: 1px 6px; border-radius: 4px;">Click for all</span>
+                </div>
             </div>
         </div>
     </div>
@@ -536,6 +546,44 @@
         <div id="no-transactions-placeholder" style="padding: 3rem; text-align: center; color: var(--text-muted); {{ $allTransactions->count() > 0 ? 'display: none;' : '' }}">
             <i data-lucide="inbox" style="width: 40px; height: 40px; margin: 0 auto 1rem; display: block; opacity: 0.3;"></i>
             <em>No transactions recorded for this period.</em>
+        </div>
+
+        {{-- Table Pagination Footer --}}
+        <div id="rpt-pagination-footer" class="rpt-pagination-footer hide-in-print" style="padding: 1.25rem 1.75rem; background: var(--bg-card); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div class="rpt-pagination-info" style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="rpt-pagination-badge" style="font-size: 0.75rem; font-weight: 800; color: var(--primary); background: var(--primary-glow); padding: 0.3rem 0.75rem; border-radius: 99px; border: 1px solid var(--primary-glow); display: inline-flex; align-items: center; gap: 5px;">
+                    <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
+                    <span id="rpt-total-records-text">{{ $allTransactions->count() }} Total Records</span>
+                </span>
+                <span id="rpt-pagination-stats" style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
+                    Showing 1 - {{ min(10, $allTransactions->count()) }} of {{ $allTransactions->count() }}
+                </span>
+            </div>
+
+            <div class="rpt-pagination-nav" style="display: flex; align-items: center; gap: 0.5rem;">
+                <button type="button" id="rpt-prev-page" onclick="changeRptPage(-1)" class="rpt-page-arrow" style="width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" title="Previous Page">
+                    <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
+                </button>
+
+                <div id="rpt-pagination-numbers" style="display: flex; align-items: center; gap: 4px;">
+                    <!-- JS Page Buttons -->
+                </div>
+
+                <button type="button" id="rpt-next-page" onclick="changeRptPage(1)" class="rpt-page-arrow" style="width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" title="Next Page">
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+
+            <div class="rpt-pagination-perpage" style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Per Page:</span>
+                <select id="rpt-per-page-select" onchange="changeRptPerPage(this.value)" style="padding: 0.4rem 0.8rem; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 800; font-size: 0.8rem; cursor: pointer;">
+                    <option value="10" selected>10 entries</option>
+                    <option value="25">25 entries</option>
+                    <option value="50">50 entries</option>
+                    <option value="100">100 entries</option>
+                    <option value="all">Show All</option>
+                </select>
+            </div>
         </div>
     </div> {{-- /.unified-ledger-card --}}
 
@@ -1432,8 +1480,11 @@
     }
 
     function triggerPrintMode() {
-        // Build a URL to the dedicated print view, preserving current query params
+        // Build a URL to the dedicated print view, preserving current query params and active card filter
         const params = new URLSearchParams(window.location.search);
+        if (window.activeReportTableFilter && window.activeReportTableFilter !== 'all') {
+            params.set('type', window.activeReportTableFilter);
+        }
         const printUrl = '{{ route("reports.print") }}?' + params.toString();
         window.open(printUrl, '_blank');
     }
@@ -1787,7 +1838,240 @@
 
             // Re-run lucide icon replacement on new SVGs
             if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            // Re-apply active card table filter and pagination
+            window.updateRptPagination();
         }
+
+        /* ── Table Pagination & Card Filter Implementation ── */
+        window.activeReportTableFilter = 'all';
+        window.rptCurrentPage = 1;
+        window.rptPerPage = 10;
+
+        window.filterReportTable = function(type) {
+            if (window.activeReportTableFilter === type && type !== 'all') {
+                type = 'all';
+            }
+            window.activeReportTableFilter = type;
+            window.rptCurrentPage = 1;
+
+            // Active Card Visual Feedback
+            const cardReceived = document.getElementById('card-filter-received');
+            const cardIssued = document.getElementById('card-filter-issued');
+            const cardAll = document.getElementById('card-filter-all');
+
+            if (cardReceived) {
+                if (type === 'received') {
+                    cardReceived.style.borderColor = '#10b981';
+                    cardReceived.style.boxShadow = '0 0 24px rgba(16, 185, 129, 0.35)';
+                    cardReceived.style.transform = 'translateY(-4px)';
+                } else {
+                    cardReceived.style.borderColor = 'var(--border-color)';
+                    cardReceived.style.boxShadow = 'var(--card-shadow)';
+                    cardReceived.style.transform = 'none';
+                }
+            }
+
+            if (cardIssued) {
+                if (type === 'issued') {
+                    cardIssued.style.borderColor = '#f59e0b';
+                    cardIssued.style.boxShadow = '0 0 24px rgba(245, 158, 11, 0.35)';
+                    cardIssued.style.transform = 'translateY(-4px)';
+                } else {
+                    cardIssued.style.borderColor = 'var(--border-color)';
+                    cardIssued.style.boxShadow = 'var(--card-shadow)';
+                    cardIssued.style.transform = 'none';
+                }
+            }
+
+            if (cardAll) {
+                cardAll.style.borderColor = 'var(--border-color)';
+                cardAll.style.boxShadow = 'var(--card-shadow)';
+                cardAll.style.transform = 'none';
+            }
+
+            window.updateRptPagination();
+
+            // Smooth scroll to table
+            const tableCard = document.querySelector('.unified-ledger-card');
+            if (tableCard) {
+                tableCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        window.updateRptPagination = function() {
+            const filterType = window.activeReportTableFilter || 'all';
+            const allRows = Array.from(document.querySelectorAll('.rpt-unified-table tbody tr.ledger-row'));
+
+            // Filter matching rows
+            const matchingRows = allRows.filter(row => {
+                const isReceived = row.classList.contains('ledger-row-received');
+                const isIssued = row.classList.contains('ledger-row-issued');
+                if (filterType === 'issued') return isIssued;
+                if (filterType === 'received') return isReceived;
+                return true;
+            });
+
+            const totalMatching = matchingRows.length;
+
+            // Update Header Subtitle
+            const subtitleEl = document.querySelector('.unified-ledger-subtitle');
+            if (subtitleEl) {
+                if (filterType === 'issued') {
+                    subtitleEl.innerHTML = '<span style="color: #f59e0b; font-weight: 800;">Showing Issued items only (' + totalMatching + ' records) — Click card again or Stock Balance to show all</span>';
+                } else if (filterType === 'received') {
+                    subtitleEl.innerHTML = '<span style="color: #10b981; font-weight: 800;">Showing Received items only (' + totalMatching + ' records) — Click card again or Stock Balance to show all</span>';
+                } else {
+                    subtitleEl.textContent = 'Received & Issued items in order of date';
+                }
+            }
+
+            let perPage = window.rptPerPage === 'all' ? totalMatching : parseInt(window.rptPerPage, 10);
+            if (!perPage || perPage <= 0) perPage = totalMatching || 10;
+
+            const totalPages = Math.max(1, Math.ceil(totalMatching / perPage));
+            if (window.rptCurrentPage > totalPages) window.rptCurrentPage = totalPages;
+            if (window.rptCurrentPage < 1) window.rptCurrentPage = 1;
+
+            const startIdx = (window.rptCurrentPage - 1) * perPage;
+            const endIdx = window.rptPerPage === 'all' ? totalMatching : Math.min(startIdx + perPage, totalMatching);
+
+            // Hide all rows, show only page slice of matching rows
+            allRows.forEach(row => {
+                row.style.display = 'none';
+            });
+
+            for (let i = startIdx; i < endIdx; i++) {
+                if (matchingRows[i]) {
+                    matchingRows[i].style.display = '';
+                }
+            }
+
+            // Update Info text
+            const totalRecordsText = document.getElementById('rpt-total-records-text');
+            const statsText = document.getElementById('rpt-pagination-stats');
+            if (totalRecordsText) totalRecordsText.textContent = totalMatching + ' Total Records';
+            if (statsText) {
+                statsText.textContent = totalMatching > 0 
+                    ? 'Showing ' + (startIdx + 1) + ' - ' + endIdx + ' of ' + totalMatching
+                    : 'Showing 0 - 0 of 0';
+            }
+
+            // Update Prev / Next buttons
+            const prevBtn = document.getElementById('rpt-prev-page');
+            const nextBtn = document.getElementById('rpt-next-page');
+            if (prevBtn) {
+                prevBtn.disabled = window.rptCurrentPage <= 1;
+                prevBtn.style.opacity = window.rptCurrentPage <= 1 ? '0.4' : '1';
+                prevBtn.style.cursor = window.rptCurrentPage <= 1 ? 'not-allowed' : 'pointer';
+            }
+            if (nextBtn) {
+                nextBtn.disabled = window.rptCurrentPage >= totalPages;
+                nextBtn.style.opacity = window.rptCurrentPage >= totalPages ? '0.4' : '1';
+                nextBtn.style.cursor = window.rptCurrentPage >= totalPages ? 'not-allowed' : 'pointer';
+            }
+
+            // Render Page Numbers
+            const numbersContainer = document.getElementById('rpt-pagination-numbers');
+            if (numbersContainer) {
+                numbersContainer.innerHTML = '';
+                if (window.rptPerPage !== 'all' && totalPages > 1) {
+                    const maxVisible = 5;
+                    let startPage = Math.max(1, window.rptCurrentPage - 2);
+                    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+                    if (endPage - startPage < maxVisible - 1) {
+                        startPage = Math.max(1, endPage - maxVisible + 1);
+                    }
+
+                    if (startPage > 1) {
+                        numbersContainer.appendChild(createRptPageBtn(1));
+                        if (startPage > 2) {
+                            const dots = document.createElement('span');
+                            dots.textContent = '...';
+                            dots.style.color = 'var(--text-muted)';
+                            dots.style.padding = '0 4px';
+                            dots.style.fontWeight = '800';
+                            numbersContainer.appendChild(dots);
+                        }
+                    }
+
+                    for (let p = startPage; p <= endPage; p++) {
+                        numbersContainer.appendChild(createRptPageBtn(p));
+                    }
+
+                    if (endPage < totalPages) {
+                        if (endPage < totalPages - 1) {
+                            const dots = document.createElement('span');
+                            dots.textContent = '...';
+                            dots.style.color = 'var(--text-muted)';
+                            dots.style.padding = '0 4px';
+                            dots.style.fontWeight = '800';
+                            numbersContainer.appendChild(dots);
+                        }
+                        numbersContainer.appendChild(createRptPageBtn(totalPages));
+                    }
+                }
+            }
+
+            // Handle Empty State vs Table Visibility
+            const emptyPlaceholder = document.getElementById('no-transactions-placeholder');
+            const tableContainer = document.getElementById('table-container');
+            const footer = document.getElementById('rpt-pagination-footer');
+
+            if (totalMatching === 0) {
+                if (emptyPlaceholder) emptyPlaceholder.style.display = 'block';
+                if (tableContainer) tableContainer.style.display = 'none';
+                if (footer) footer.style.display = 'none';
+            } else {
+                if (emptyPlaceholder) emptyPlaceholder.style.display = 'none';
+                if (tableContainer) tableContainer.style.display = 'block';
+                if (footer) footer.style.display = 'flex';
+            }
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+
+        function createRptPageBtn(page) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = page;
+            const isActive = page === window.rptCurrentPage;
+            btn.className = 'rpt-page-btn ' + (isActive ? 'active' : '');
+            Object.assign(btn.style, {
+                padding: '0.35rem 0.75rem',
+                borderRadius: '8px',
+                fontWeight: isActive ? '900' : '700',
+                fontSize: '0.8rem',
+                border: isActive ? '1.5px solid var(--primary)' : '1.5px solid var(--border-color)',
+                background: isActive ? 'var(--primary)' : 'var(--bg-card)',
+                color: isActive ? '#ffffff' : 'var(--text-main)',
+                cursor: isActive ? 'default' : 'pointer',
+                boxShadow: isActive ? '0 4px 12px var(--primary-glow)' : 'none',
+                transition: 'all 0.2s ease'
+            });
+            if (!isActive) {
+                btn.onclick = function() {
+                    window.rptCurrentPage = page;
+                    window.updateRptPagination();
+                    const tableCard = document.querySelector('.unified-ledger-card');
+                    if (tableCard) tableCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+            }
+            return btn;
+        }
+
+        window.changeRptPage = function(delta) {
+            window.rptCurrentPage += delta;
+            window.updateRptPagination();
+            const tableCard = document.querySelector('.unified-ledger-card');
+            if (tableCard) tableCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        window.changeRptPerPage = function(val) {
+            window.rptPerPage = val;
+            window.rptCurrentPage = 1;
+            window.updateRptPagination();
+        };
 
         function fmtDate(str) {
             if (!str) return '—';
@@ -2477,6 +2761,11 @@
                     });
                 }
             @endif
+
+            // Initialize Item(s) Report Table Pagination
+            if (typeof window.updateRptPagination === 'function') {
+                window.updateRptPagination();
+            }
         });
     </script>
 @endpush

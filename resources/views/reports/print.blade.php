@@ -602,8 +602,24 @@
     @if($allTransactions->count() > 0)
     <div class="table-card">
         <div class="table-card-header">
-            <div class="table-title">Item(s) Report</div>
-            <div class="table-subtitle">Received &amp; Issued items in order of date</div>
+            <div class="table-title">
+                @if(isset($type) && $type === 'issued')
+                    Item(s) Report — Issued Items Only
+                @elseif(isset($type) && $type === 'received')
+                    Item(s) Report — Received Items Only
+                @else
+                    Item(s) Report
+                @endif
+            </div>
+            <div class="table-subtitle">
+                @if(isset($type) && $type === 'issued')
+                    Filtered ledger view showing Issued items only
+                @elseif(isset($type) && $type === 'received')
+                    Filtered ledger view showing Received items only
+                @else
+                    Received &amp; Issued items in order of date
+                @endif
+            </div>
         </div>
         <table class="unified-ledger-table">
             <thead>
