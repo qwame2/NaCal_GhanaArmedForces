@@ -1083,10 +1083,14 @@ class StoreRequisitionController extends Controller
     /**
      * Admin: Get single requisition detail (API).
      */
-    public function adminShow($id)
+    public function adminShow(Request $request, $id)
     {
         $user = auth()->user();
-        $req = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])->findOrFail($id);
+        $req = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])->find($id);
+
+        if (!$req) {
+            return response()->json(['success' => false, 'message' => 'Requisition record not found.'], 404);
+        }
 
         $isStoresHead = ($user->isMainAdminOrSub() || $user->role === 'Head of Stores' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
         if (!$isStoresHead) {
@@ -1106,7 +1110,7 @@ class StoreRequisitionController extends Controller
                    ($req->requested_by === $user->id);
 
         if (!$canView) {
-            abort(403, 'Unauthorized');
+            return response()->json(['success' => false, 'message' => 'Unauthorized: You do not have permission to view this requisition.'], 403);
         }
 
         // Batch-fetch stock for all item descriptions in a single query (avoids N+1)
@@ -1137,8 +1141,8 @@ class StoreRequisitionController extends Controller
                 'alternative_description'       => $item->alternative_description,
                 'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
                 'category'                      => $item->category,
-                'unit'                          => $item->unit,
-                'quantity_requested'            => $item->quantity_requested,
+                'unit'                          => $item->unit ?? 'units',
+                'quantity_requested'            => (float)$item->quantity_requested,
                 'quantity_approved'             => $item->quantity_approved !== null ? (float)$item->quantity_approved : null,
                 'remarks'                       => $item->remarks,
                 'current_stock'                 => (float) $stock,
@@ -1146,37 +1150,39 @@ class StoreRequisitionController extends Controller
             ];
         });
 
-        // alternatives is not used by the main-admin view — skip the expensive full-inventory scan
-        $alternatives = [];
-
         return response()->json([
-            'id'             => $req->id,
-            'unique_id'      => $req->unique_id,
-            'requester_name' => $req->requester_name,
-            'department'     => $req->department,
-            'rank_or_title'  => $req->rank_or_title,
-            'purpose'        => $req->purpose,
-            'priority'       => $req->priority,
-            'priority_badge' => $req->priority_badge,
-            'status'         => $req->status,
-            'status_badge'   => $req->status_badge,
-            'main_admin_status' => $req->main_admin_status,
-            'origin_admin_status' => $req->origin_admin_status,
-            'alternative_status' => $req->alternative_status,
-            'origin_approved_by' => $req->origin_approved_by,
-            'usage_type'     => $req->usage_type,
-            'usage_type_badge' => $req->usage_type_badge,
-            'admin_notes'    => $req->admin_notes,
-            'decline_reason' => $req->decline_reason,
-            'created_at'     => $req->created_at->format('d/m/y H:i'),
-            'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
-            'processor'      => $req->processor?->name,
-            'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
-            'collected_by_name' => $req->collector?->name,
-            'collector_name' => $req->collector_name,
-            'collector_contact' => $req->collector_contact,
-            'collector_location' => $req->collector_location,
-            'items'          => $items,
+            'id'                     => $req->id,
+            'unique_id'              => $req->unique_id,
+            'requester_name'         => $req->requester_name ?: ($req->requester?->name ?: 'N/A'),
+            'department'             => $req->department,
+            'rank_or_title'          => $req->rank_or_title ?: ($req->requester?->rank ?: 'N/A'),
+            'purpose'                => $req->purpose,
+            'priority'               => $req->priority,
+            'priority_badge'         => $req->priority_badge,
+            'status'                 => $req->status,
+            'status_badge'           => $req->status_badge,
+            'main_admin_status'      => $req->main_admin_status,
+            'origin_admin_status'    => $req->origin_admin_status,
+            'alternative_status'     => $req->alternative_status,
+            'origin_approved_by'     => $req->origin_approved_by,
+            'stores_approved_by'     => $req->stores_approved_by,
+            'requires_dg_approval'   => (bool)$req->requires_dg_approval,
+            'dg_status'              => $req->dg_status,
+            'dg_approved_by'         => $req->dg_approved_by,
+            'usage_type'             => $req->usage_type ?: 'permanent',
+            'usage_type_badge'       => $req->usage_type_badge,
+            'admin_notes'            => $req->admin_notes,
+            'decline_reason'         => $req->decline_reason,
+            'created_at'             => $req->created_at ? $req->created_at->format('d/m/y H:i') : 'N/A',
+            'processed_at'           => $req->processed_at ? $req->processed_at->format('d/m/y H:i') : null,
+            'processor'              => $req->processor?->name,
+            'collected_at'           => $req->collected_at ? $req->collected_at->format('d/m/y H:i') : null,
+            'collected_by_name'      => $req->collector?->name ?: $req->collector_name,
+            'collector_name'         => $req->collector_name,
+            'collector_contact'      => $req->collector_contact,
+            'collector_location'    => $req->collector_location,
+            'tracking_pipeline'     => $req->tracking_pipeline,
+            'items'                  => $items,
         ]);
     }
 

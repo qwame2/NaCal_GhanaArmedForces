@@ -1789,12 +1789,21 @@
         }
         reqModal.classList.add('open');
 
+        const headers = {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+
         // Check in-memory cache first for instant 0ms launch
         if (window._reqDetailsCache[id]) {
             renderRequisitionModalContent(window._reqDetailsCache[id]);
             // Silent background refresh
-            fetch(`{{ url('/admin/requisitions') }}/${id}/show`)
-                .then(r => r.json())
+            fetch(`{{ url('/admin/requisitions') }}/${id}/show`, { headers })
+                .then(async r => {
+                    if (!r.ok) return null;
+                    const ct = r.headers.get('content-type') || '';
+                    return ct.includes('application/json') ? await r.json() : null;
+                })
                 .then(data => {
                     if (data && data.items) {
                         window._reqDetailsCache[id] = data;
@@ -1821,18 +1830,47 @@
         document.getElementById('modalSubtitle').textContent = 'Loading requisition details...';
 
         try {
-            const res = await fetch(`{{ url('/admin/requisitions') }}/${id}/show`);
-            const data = await res.json();
-            if (!res.ok || !data || !data.items) {
-                Swal.fire('Error', data?.message || 'Failed to load requisition details.', 'error');
+            const res = await fetch(`{{ url('/admin/requisitions') }}/${id}/show`, { headers });
+
+            if (res.status === 401) {
+                Swal.fire({
+                    title: 'Session Expired',
+                    text: 'Your security session has timed out. Please log in again.',
+                    icon: 'warning',
+                    confirmButtonColor: '#059669'
+                }).then(() => {
+                    window.location.href = '{{ route("login") }}';
+                });
                 closeModal();
                 return;
             }
+
+            const contentType = res.headers.get('content-type') || '';
+            let data = null;
+
+            if (contentType.includes('application/json')) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                try {
+                    data = JSON.parse(text);
+                } catch (jsonErr) {
+                    data = null;
+                }
+            }
+
+            if (!res.ok || !data || !data.items) {
+                const errorMsg = (data && data.message) ? data.message : 'Unable to load requisition details.';
+                Swal.fire('Notice', errorMsg, res.status === 403 ? 'warning' : 'error');
+                closeModal();
+                return;
+            }
+
             window._reqDetailsCache[id] = data;
             renderRequisitionModalContent(data);
         } catch(err) {
-            console.error(err);
-            Swal.fire('Error', 'Network error. Failed to load requisition details.', 'error');
+            console.error('Requisition Modal Fetch Error:', err);
+            Swal.fire('Error', 'Communication sync error. Please check your network connection and retry.', 'error');
             closeModal();
         }
     }
@@ -2760,10 +2798,20 @@
         }
 
         try {
-            const res = await fetch('{{ route("dept-head.provisioning-dashboard") }}');
+            const res = await fetch('{{ route("dept-head.provisioning-dashboard") }}', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (res.status === 401 || !res.ok) return;
+
+            const contentType = res.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) return;
+
             const data = await res.json();
 
-            if (!data.success) return;
+            if (!data || !data.success) return;
 
             // --- Render Pending Registrations ---
             if (pendingContainer) {

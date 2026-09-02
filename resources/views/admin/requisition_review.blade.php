@@ -488,10 +488,41 @@
 
     async function fetchRequisitionDetails() {
         try {
-            const res = await fetch(`{{ url('/admin/requisitions') }}/${currentReqId}/show`);
-            const data = await res.json();
+            const res = await fetch(`{{ url('/admin/requisitions') }}/${currentReqId}/show`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (res.status === 401) {
+                Swal.fire({
+                    title: 'Session Expired',
+                    text: 'Your security session has timed out. Please log in again.',
+                    icon: 'warning',
+                    confirmButtonColor: '#059669'
+                }).then(() => {
+                    window.location.href = '{{ route("login") }}';
+                });
+                return;
+            }
+
+            const contentType = res.headers.get('content-type') || '';
+            let data = null;
+
+            if (contentType.includes('application/json')) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                try {
+                    data = JSON.parse(text);
+                } catch (jsonErr) {
+                    data = null;
+                }
+            }
+
             if (!res.ok || !data || !data.items) {
-                Swal.fire('Error', data?.message || 'Failed to load requisition details.', 'error').then(() => {
+                Swal.fire('Notice', data?.message || 'Failed to load requisition details.', 'warning').then(() => {
                     window.location.href = "{{ route('admin.requisitions') }}";
                 });
                 return;

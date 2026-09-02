@@ -48,7 +48,9 @@
                     'Accept': 'application/json'
                 }
             });
-            if (!res.ok) return;
+            if (!res.ok || res.status === 401) return;
+            const contentType = res.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) return;
             const data = await res.json();
 
             if (data.has_popover && data.requisitions && data.requisitions.length > 0) {
