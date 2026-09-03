@@ -1797,6 +1797,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
     Route::post('/edit-requests/complete/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'complete'])->name('edit-requests.complete');
     Route::post('/api/edit-requests/{id}/remove-item', [\App\Http\Controllers\EditRequestController::class, 'removeItemFromPayload'])->name('api.edit-requests.remove-item');
+    Route::post('/api/edit-requests/{id}/cancel-rollback', [\App\Http\Controllers\EditRequestController::class, 'cancelRollback'])->name('api.edit-requests.cancel-rollback');
 
     // Remainder Preview API â€” returns preview data for an edit request
     Route::get('/api/edit-requests/{id}/remainder-preview', function ($id) {

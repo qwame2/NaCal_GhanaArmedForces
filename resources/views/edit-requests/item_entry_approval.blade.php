@@ -128,6 +128,9 @@
         <div onclick="switchTab('edits')" id="tab-btn-edits" class="sra-tab-btn">
             Edit Review and Approval <span id="tab-edits-count" class="sra-tab-badge" style="background: #ef4444; color: white;">{{ $pendingEdits->total() }}</span>
         </div>
+        <div onclick="switchTab('rollbacks')" id="tab-btn-rollbacks" class="sra-tab-btn">
+            Rollback List <span id="tab-rollbacks-count" class="sra-tab-badge" style="background: #f59e0b; color: white;">{{ $rollbacks->total() }}</span>
+        </div>
         <div onclick="switchTab('history')" id="tab-btn-history" class="sra-tab-btn">
             Decision History <span class="sra-tab-badge">{{ $history->total() }}</span>
         </div>
@@ -141,6 +144,11 @@
     <!-- Edits Queue Table Wrapper -->
     <div id="section-edits" class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem; display: none; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--shadow-luxe);">
         @include('edit-requests._pending_edits_table')
+    </div>
+
+    <!-- Rollbacks Queue Table Wrapper -->
+    <div id="section-rollbacks" class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem; display: none; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--shadow-luxe);">
+        @include('edit-requests._rollback_table')
     </div>
 
     <!-- History Queue Table Wrapper -->
@@ -237,18 +245,22 @@
 function switchTab(tab) {
     const btnPending = document.getElementById('tab-btn-pending');
     const btnEdits = document.getElementById('tab-btn-edits');
+    const btnRollbacks = document.getElementById('tab-btn-rollbacks');
     const btnHistory = document.getElementById('tab-btn-history');
 
     const secPending = document.getElementById('section-pending');
     const secEdits = document.getElementById('section-edits');
+    const secRollbacks = document.getElementById('section-rollbacks');
     const secHistory = document.getElementById('section-history');
 
     if (btnPending) btnPending.classList.remove('active');
     if (btnEdits) btnEdits.classList.remove('active');
+    if (btnRollbacks) btnRollbacks.classList.remove('active');
     if (btnHistory) btnHistory.classList.remove('active');
 
     if (secPending) secPending.style.display = 'none';
     if (secEdits) secEdits.style.display = 'none';
+    if (secRollbacks) secRollbacks.style.display = 'none';
     if (secHistory) secHistory.style.display = 'none';
 
     if (tab === 'pending') {
@@ -257,6 +269,9 @@ function switchTab(tab) {
     } else if (tab === 'edits') {
         if (btnEdits) btnEdits.classList.add('active');
         if (secEdits) secEdits.style.display = 'block';
+    } else if (tab === 'rollbacks') {
+        if (btnRollbacks) btnRollbacks.classList.add('active');
+        if (secRollbacks) secRollbacks.style.display = 'block';
     } else if (tab === 'history') {
         if (btnHistory) btnHistory.classList.add('active');
         if (secHistory) secHistory.style.display = 'block';
@@ -271,11 +286,62 @@ document.addEventListener('DOMContentLoaded', function() {
         switchTab('history');
     } else if (urlParams.has('edits_page')) {
         switchTab('edits');
+    } else if (urlParams.has('rollbacks_page') || urlParams.get('tab') === 'rollbacks') {
+        switchTab('rollbacks');
     }
 });
 
+window.cancelRollback = function(reqId, userName) {
+    Swal.fire({
+        title: 'Cancel Rollback Request?',
+        text: `Are you sure you want to cancel and remove the rollback request for ${userName}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, Cancel Rollback'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Canceling Rollback...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch(`/api/edit-requests/${reqId}/cancel-rollback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Rollback Canceled',
+                    text: data.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire('Error', data.message || 'Could not cancel rollback.', 'error');
+            }
+        })
+        .catch(() => {
+            Swal.fire('Error', 'A server connection error occurred.', 'error');
+        });
+    });
+};
+
 let lastPendingHtml = null;
 let lastEditsHtml = null;
+let lastRollbacksHtml = null;
 
 function pollPendingApprovalsSilently() {
     const activeModal = document.querySelector('.modal-overlay:not([style*="display: none"]), .swal2-container, #signature-warning-overlay:not([style*="display: none"])');
@@ -283,7 +349,8 @@ function pollPendingApprovalsSilently() {
 
     const pageParam = new URLSearchParams(window.location.search).get('pending_page') || 1;
     const editsPageParam = new URLSearchParams(window.location.search).get('edits_page') || 1;
-    const fetchUrl = window.location.pathname + '?pending_page=' + pageParam + '&edits_page=' + editsPageParam;
+    const rollbacksPageParam = new URLSearchParams(window.location.search).get('rollbacks_page') || 1;
+    const fetchUrl = window.location.pathname + '?pending_page=' + pageParam + '&edits_page=' + editsPageParam + '&rollbacks_page=' + rollbacksPageParam;
 
     fetch(fetchUrl, {
         headers: {
@@ -306,6 +373,11 @@ function pollPendingApprovalsSilently() {
         const editsBadgeEl = document.getElementById('tab-edits-count');
         if (editsBadgeEl && typeof data.edits_count !== 'undefined' && editsBadgeEl.innerText !== String(data.edits_count)) {
             editsBadgeEl.innerText = data.edits_count;
+        }
+
+        const rollbacksBadgeEl = document.getElementById('tab-rollbacks-count');
+        if (rollbacksBadgeEl && typeof data.rollbacks_count !== 'undefined' && rollbacksBadgeEl.innerText !== String(data.rollbacks_count)) {
+            rollbacksBadgeEl.innerText = data.rollbacks_count;
         }
 
         const totalPending = (parseInt(data.pending_count) || 0) + (parseInt(data.edits_count) || 0);
@@ -339,6 +411,20 @@ function pollPendingApprovalsSilently() {
             if (lastEditsHtml !== newEditsHtmlTrimmed) {
                 lastEditsHtml = newEditsHtmlTrimmed;
                 editsContainer.innerHTML = data.edits_html;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
+        const rollbacksContainer = document.getElementById('section-rollbacks');
+        if (rollbacksContainer && typeof data.rollbacks_html !== 'undefined') {
+            if (lastRollbacksHtml === null) {
+                lastRollbacksHtml = rollbacksContainer.innerHTML.trim();
+            }
+
+            const newRollbacksHtmlTrimmed = data.rollbacks_html.trim();
+            if (lastRollbacksHtml !== newRollbacksHtmlTrimmed) {
+                lastRollbacksHtml = newRollbacksHtmlTrimmed;
+                rollbacksContainer.innerHTML = data.rollbacks_html;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         }

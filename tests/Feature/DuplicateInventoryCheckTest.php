@@ -329,4 +329,53 @@ class DuplicateInventoryCheckTest extends TestCase
         $this->assertCount(1, $payload['items']);
         $this->assertEquals('A4SHEET', $payload['items'][0]['description']);
     }
+
+    public function test_admin_can_view_rollbacks_tab_and_cancel_rollback()
+    {
+        $admin = User::create([
+            'name' => 'Head of Stores Admin',
+            'username' => 'hos_admin_test',
+            'role' => 'Head of Stores',
+            'is_admin' => true,
+            'can_add_inventory' => true,
+            'is_active' => true,
+            'password' => \Illuminate\Support\Facades\Hash::make('Password123'),
+        ]);
+
+        $rollbackReq = EditRequest::create([
+            'user_id' => $admin->id,
+            'item_id' => 0,
+            'item_type' => 'batch_creation',
+            'request_type' => 'sra_creation',
+            'reason' => 'Inventory Submission',
+            'status' => 'rollback',
+            'payload' => json_encode([
+                'ledge_category' => 'A',
+                'supplier_name' => 'Test Supplier',
+                'items' => [
+                    ['description' => 'TEST ITEM', 'qty' => 10]
+                ]
+            ]),
+            'rollback_fields' => json_encode([
+                'flagged' => ['supplier_name' => 'Incorrect supplier name'],
+                'note' => 'Please fix supplier name'
+            ])
+        ]);
+
+        $this->actingAs($admin);
+
+        // 1. Verify Item Entry Approval page includes rollbacks
+        $viewResponse = $this->get(route('stores.item-entry-approval'));
+        $viewResponse->assertStatus(200);
+        $viewResponse->assertSee('Rollback List');
+        $viewResponse->assertSee('RB-' . str_pad($rollbackReq->id, 5, '0', STR_PAD_LEFT));
+
+        // 2. Admin cancels the rollback request
+        $cancelResponse = $this->postJson(route('api.edit-requests.cancel-rollback', ['id' => $rollbackReq->id]));
+        $cancelResponse->assertStatus(200);
+        $cancelResponse->assertJson(['success' => true]);
+
+        $rollbackReq->refresh();
+        $this->assertEquals('canceled', $rollbackReq->status);
+    }
 }

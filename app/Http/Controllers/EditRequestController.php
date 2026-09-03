@@ -1634,6 +1634,45 @@ class EditRequestController extends Controller
         return redirect()->route('dashboard')->with('success', 'Rollback request submitted successfully.');
     }
 
+    public function cancelRollback(\Illuminate\Http\Request $request, $id)
+    {
+        $isAuthorized = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
+        if (!$isAuthorized) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Only Head of Stores or Admin can cancel a rollback.'], 403);
+        }
+
+        $editReq = EditRequest::findOrFail($id);
+
+        if (!in_array($editReq->status, ['rollback', 'resubmitted'])) {
+            return response()->json(['success' => false, 'message' => 'This request is not in a rollback state.'], 422);
+        }
+
+        $editReq->status = 'canceled';
+        $editReq->save();
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'CANCEL_ROLLBACK',
+            'description' => "Admin " . auth()->user()->name . " canceled rollback request #{$id} for " . ($editReq->user->name ?? 'Personnel') . ".",
+            'severity' => 'info',
+            'ip_address' => request()->ip()
+        ]);
+
+        \App\Models\Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $editReq->user_id,
+            'message' => "<div class='personnel-view' style='padding: 15px; border: 1px solid #ef4444; border-radius: 12px; background: rgba(239, 68, 68, 0.05);'><b style='color: #ef4444;'>ROLLBACK CANCELED</b><br>The rollback/correction request for entry #{$id} has been canceled by the Head of Stores.</div>",
+            'is_automated' => true,
+            'edit_request_id' => $editReq->id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Rollback request #{$id} has been canceled successfully."
+        ]);
+    }
+
     public function itemEntryIndex(\Illuminate\Http\Request $request)
     {
         $user = auth()->user();
@@ -1673,6 +1712,11 @@ class EditRequestController extends Controller
             ->orderBy('updated_at', 'desc')
             ->paginate(15, ['*'], 'history_page');
 
+        $rollbacks = EditRequest::with(['user', 'batch.items'])
+            ->whereIn('status', ['rollback', 'resubmitted'])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(15, ['*'], 'rollbacks_page');
+
         $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
             ? \App\Models\Setting::getCategories() 
             : [
@@ -1694,15 +1738,18 @@ class EditRequestController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $pendingHtml = view('edit-requests._pending_table', compact('pending'))->render();
             $editsHtml = view('edit-requests._pending_edits_table', compact('pendingEdits'))->render();
+            $rollbacksHtml = view('edit-requests._rollback_table', compact('rollbacks'))->render();
             return response()->json([
-                'pending_count' => $pending->total() + $pendingServiceSras->count(),
-                'edits_count'   => $pendingEdits->total(),
-                'pending_html'  => $pendingHtml,
-                'edits_html'    => $editsHtml,
+                'pending_count'   => $pending->total() + $pendingServiceSras->count(),
+                'edits_count'     => $pendingEdits->total(),
+                'rollbacks_count' => $rollbacks->total(),
+                'pending_html'    => $pendingHtml,
+                'edits_html'      => $editsHtml,
+                'rollbacks_html'  => $rollbacksHtml,
             ]);
         }
 
-        return view('edit-requests.item_entry_approval', compact('pending', 'pendingEdits', 'history', 'ledgeMap', 'pendingServiceSras'));
+        return view('edit-requests.item_entry_approval', compact('pending', 'pendingEdits', 'history', 'rollbacks', 'ledgeMap', 'pendingServiceSras'));
     }
 
     public function rollbackRequestsIndex(Request $request)
