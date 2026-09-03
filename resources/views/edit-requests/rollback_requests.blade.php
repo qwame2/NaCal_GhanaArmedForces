@@ -293,7 +293,7 @@
                                     'supplier_status' => 'Delivery Status',
                                 ];
 
-                                $resumeUrl = route('inventory.create') . '?rollback=' . $req->id;
+                                $resumeUrl = route('inventory.create', [], false) . '?rollback=' . $req->id;
                             @endphp
                             <tr class="rb-table-row">
                                 

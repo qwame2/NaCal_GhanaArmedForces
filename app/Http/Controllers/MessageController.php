@@ -13,8 +13,15 @@ class MessageController extends Controller
     {
         $authId = auth()->id();
         
-        $messages = Message::where('is_archived', false)
-            ->where('is_automated', false)
+        $messages = Message::with('editRequest')
+            ->where('is_archived', false)
+            ->where(function($q) {
+                $q->where('is_automated', false)
+                  ->orWhere(function($sq) {
+                      $sq->where('is_automated', true)
+                         ->where('message', 'like', '%rollback-notification%');
+                  });
+            })
             ->where(function($q) use ($authId, $userId) {
                 $q->where(function($sq) use ($authId, $userId) {
                     $sq->where('sender_id', $authId)->where('receiver_id', $userId);

@@ -376,6 +376,107 @@ class DuplicateInventoryCheckTest extends TestCase
         $cancelResponse->assertJson(['success' => true]);
 
         $rollbackReq->refresh();
-        $this->assertEquals('canceled', $rollbackReq->status);
+        $this->assertEquals('pending', $rollbackReq->status);
+    }
+
+    public function test_store_officer_can_resubmit_rollback_without_field_locks()
+    {
+        $officer = User::create([
+            'name' => 'Store Officer Test',
+            'username' => 'officer_rollback_test',
+            'role' => 'Store Officer',
+            'is_admin' => false,
+            'can_add_inventory' => true,
+            'is_active' => true,
+            'password' => \Illuminate\Support\Facades\Hash::make('Password123'),
+        ]);
+
+        $rollbackReq = EditRequest::create([
+            'user_id' => $officer->id,
+            'item_id' => 0,
+            'item_type' => 'batch_creation',
+            'request_type' => 'sra_creation',
+            'reason' => 'New Inventory Entry Submission',
+            'status' => 'rollback',
+            'payload' => json_encode([
+                'ledge_category' => 'A',
+                'supplier_name' => 'Supplier XYZ',
+                'supplier_status' => 'Full Delivery',
+                'acquisition_type' => 'Supplier',
+                'arrival_date' => date('Y-m-d'),
+                'items' => [
+                    [
+                        'description' => 'A4 PAPER REAM',
+                        'unit' => 'REAM',
+                        'stock_balance' => '50',
+                        'qty' => '50',
+                        'variance' => '0',
+                        'store_location' => 'Store A'
+                    ],
+                    [
+                        'description' => 'PEN PACK',
+                        'unit' => 'BOXES',
+                        'stock_balance' => '20',
+                        'qty' => '20',
+                        'variance' => '0',
+                        'store_location' => 'Store A'
+                    ]
+                ]
+            ]),
+            'rollback_fields' => json_encode([
+                'flagged' => ['supplier_name' => 'Verify supplier name'],
+                'note' => 'Please confirm supplier name',
+                'items' => ['A4 PAPER REAM']
+            ])
+        ]);
+
+        $this->actingAs($officer);
+
+        // Store officer resubmits the rollback with all items maintained
+        $resubmitData = [
+            'rollback_id' => $rollbackReq->id,
+            'ledge_category' => 'A',
+            'supplier_name' => 'Supplier XYZ Corrected',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => date('Y-m-d'),
+            'items' => [
+                [
+                    'ledge_category' => 'A',
+                    'description' => 'A4 PAPER REAM',
+                    'unit' => 'REAM',
+                    'stock_balance' => '50',
+                    'qty' => '50',
+                    'variance' => '0',
+                    'store_location' => 'Store A'
+                ],
+                [
+                    'ledge_category' => 'A',
+                    'description' => 'PEN PACK',
+                    'unit' => 'BOXES',
+                    'stock_balance' => '20',
+                    'qty' => '20',
+                    'variance' => '0',
+                    'store_location' => 'Store A'
+                ]
+            ]
+        ];
+
+        $response = $this->postJson(route('inventory.store'), $resubmitData);
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true, 'is_pending' => true]);
+
+        $rollbackReq->refresh();
+        $this->assertEquals('resubmitted', $rollbackReq->status);
+
+        $payload = json_decode($rollbackReq->payload, true);
+        $this->assertCount(2, $payload['items']);
+        $this->assertEquals('Supplier XYZ Corrected', $payload['supplier_name']);
+        $this->assertEquals('A4 PAPER REAM', $payload['items'][0]['description']);
+        $this->assertEquals('50', $payload['items'][0]['qty']);
+        $this->assertEquals('50', $payload['items'][0]['stock_balance']);
+        $this->assertEquals('PEN PACK', $payload['items'][1]['description']);
+        $this->assertEquals('20', $payload['items'][1]['qty']);
     }
 }

@@ -13,36 +13,7 @@
     $ledgeName = $data['ledge_name'] ?? ($batch['ledge_category'] ?? 'N/A');
     $items = $batch['items'] ?? [];
 
-    // Filter items in the main table to only show modified items for rollback/resubmitted reviews
     $isRollbackFlow = in_array($status, ['rollback', 'resubmitted']);
-    if ($isRollbackFlow && isset($data['previous_batch']['items'])) {
-        $filteredItems = [];
-        foreach ($items as $idx => $item) {
-            $isQtyChanged = false;
-            $isStockChanged = false;
-            $isDescChanged = false;
-            $isRemarksChanged = false;
-
-            $prevItem = collect($data['previous_batch']['items'])->firstWhere('id', $item['id'] ?? null);
-            if (!$prevItem && isset($data['previous_batch']['items'][$idx])) {
-                $prevItem = $data['previous_batch']['items'][$idx];
-            }
-
-            if ($prevItem) {
-                if (floatval($item['qty'] ?? 0) !== floatval($prevItem['qty'] ?? 0)) $isQtyChanged = true;
-                if (floatval($item['stock_balance'] ?? 0) !== floatval($prevItem['stock_balance'] ?? 0)) $isStockChanged = true;
-                if (trim($item['description'] ?? '') !== trim($prevItem['description'] ?? '')) $isDescChanged = true;
-                $itemRem = ($item['discrepancy_explanation'] ?? '') ?: ($item['remarks'] ?? '');
-                $prevItemRem = ($prevItem['discrepancy_explanation'] ?? '') ?: ($prevItem['remarks'] ?? '');
-                if (trim($itemRem) !== trim($prevItemRem)) $isRemarksChanged = true;
-            }
-
-            if ($isQtyChanged || $isStockChanged || $isDescChanged || $isRemarksChanged) {
-                $filteredItems[] = $item;
-            }
-        }
-        $items = $filteredItems;
-    }
 
     // Check if it has any discrepancies (book_qty differs from qty or is set)
     $isDiscrepancy = false;

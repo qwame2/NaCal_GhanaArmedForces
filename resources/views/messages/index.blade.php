@@ -398,14 +398,19 @@
                     if (processedMessage && processedMessage.includes('rollback-notification')) {
                         processedMessage = processedMessage.replace(/style='display: none;/g, "style='display: block;");
 
-                        if (msg.edit_request && msg.edit_request.status === 'approved') {
-                            // Disable the resume button
+                        const editReqStatus = (msg.edit_request && msg.edit_request.status) ? msg.edit_request.status : (msg.edit_request_status || null);
+                        if (editReqStatus && editReqStatus !== 'rollback') {
+                            let statusLabel = 'Correction Submitted';
+                            if (editReqStatus === 'approved') statusLabel = 'Correction Approved';
+                            if (editReqStatus === 'canceled') statusLabel = 'Rollback Canceled';
+
+                            // Disable the resume button when no longer in rollback state
                             processedMessage = processedMessage.replace(/class='rollback-resume-btn'/g, "class='rollback-resume-btn disabled' style='pointer-events: none; opacity: 0.6; background: #cbd5e1; box-shadow: none; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px 20px; color: #475569; text-decoration: none; border-radius: 14px; font-weight: 800; font-size: 0.95rem; box-sizing: border-box;'");
                             // Remove href and hover events
                             processedMessage = processedMessage.replace(/href='[^']*'/g, "href='javascript:void(0);'");
                             processedMessage = processedMessage.replace(/onmouseover="[^"]*"/g, "");
                             processedMessage = processedMessage.replace(/onmouseout="[^"]*"/g, "");
-                            processedMessage = processedMessage.replace(/Resume &amp; Correct Entry/g, "Correction Approved");
+                            processedMessage = processedMessage.replace(/Resume &amp; Correct Entry/g, statusLabel);
                         }
                     }
 

@@ -1494,7 +1494,7 @@ class EditRequestController extends Controller
             $fieldListHtml .= "</ul>";
         }
 
-        $dashboardRollbackUrl = route('inventory.create') . '?rollback=' . $editReq->id;
+        $dashboardRollbackUrl = route('inventory.create', [], false) . '?rollback=' . $editReq->id;
 
         $userMsg = "
             <div class='rollback-notification personnel-view' data-req-id='{$editReq->id}' style='display: none; padding: 0; border-radius: 20px; overflow: hidden; border: 2px solid #fca5a5; box-shadow: 0 8px 24px rgba(239,68,68,0.1); font-family: inherit;'>
@@ -1647,14 +1647,14 @@ class EditRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'This request is not in a rollback state.'], 422);
         }
 
-        $editReq->status = 'canceled';
+        $editReq->status = 'pending';
         $editReq->save();
 
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'CANCEL_ROLLBACK',
-            'description' => "Admin " . auth()->user()->name . " canceled rollback request #{$id} for " . ($editReq->user->name ?? 'Personnel') . ".",
+            'description' => "Admin " . auth()->user()->name . " canceled rollback request #{$id} for " . ($editReq->user->name ?? 'Personnel') . ". Request moved back to pending approval.",
             'severity' => 'info',
             'ip_address' => request()->ip()
         ]);
@@ -1662,14 +1662,14 @@ class EditRequestController extends Controller
         \App\Models\Message::create([
             'sender_id' => auth()->id(),
             'receiver_id' => $editReq->user_id,
-            'message' => "<div class='personnel-view' style='padding: 15px; border: 1px solid #ef4444; border-radius: 12px; background: rgba(239, 68, 68, 0.05);'><b style='color: #ef4444;'>ROLLBACK CANCELED</b><br>The rollback/correction request for entry #{$id} has been canceled by the Head of Stores.</div>",
+            'message' => "<div class='personnel-view' style='padding: 15px; border: 1px solid #3b82f6; border-radius: 12px; background: rgba(59, 130, 246, 0.05);'><b style='color: #2563eb;'>ROLLBACK REVERTED TO PENDING</b><br>The rollback for entry #{$id} was canceled by the Head of Stores and returned to the Pending Approval table for review.</div>",
             'is_automated' => true,
             'edit_request_id' => $editReq->id
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => "Rollback request #{$id} has been canceled successfully."
+            'message' => "Rollback request #{$id} canceled. The item entry has been moved back to the Pending Approval table."
         ]);
     }
 

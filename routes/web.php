@@ -1749,16 +1749,17 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         $user = auth()->user();
         $isStoresUser = $user->is_admin
             || $user->isMainAdminOrSub()
-            || $user->role === 'Officer'
-            || $user->role === 'Store Officer'
-            || $user->role === 'Head of Stores'
+            || $user->isDelegatedApprover()
+            || (method_exists($user, 'isStoresHeadUser') && $user->isStoresHeadUser())
+            || in_array($user->role, ['Officer', 'Store Officer', 'Head of Stores', 'Dept. Head (Stores)', 'Requisitioner', 'Personnel'])
             || strcasecmp($user->department ?? '', 'Stores') === 0
             || strcasecmp($user->department ?? '', 'Store') === 0;
 
         if ($user->id !== $editReq->user_id && !$isStoresUser) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
-        $payload = $editReq->payload;
+        $payloadRaw = !empty($editReq->payload) ? $editReq->payload : $editReq->original_payload;
+        $payload = $payloadRaw;
         while (is_string($payload)) {
             $decoded = json_decode($payload, true);
             if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {

@@ -810,13 +810,18 @@ jQuery(document).ready(function($) {
                 invalidItemName = desc || 'Unnamed Item';
             }
 
+            const rawQty = $(this).find('.row-qty').val();
+            const rawStock = $(this).find('.row-stock-balance').val();
+            const finalQty = (rawQty !== undefined && rawQty !== null && rawQty !== '') ? rawQty : (rawStock || '0');
+            const finalStock = (rawStock !== undefined && rawStock !== null && rawStock !== '') ? rawStock : finalQty;
+
             const itemObj = {
                 description: desc,
                 serial_number: $(this).find('.row-serial-number').val() || null,
                 unit: unit,
                 store_location: $(this).find('.row-store-location').val() || 'Store A',
-                stock_balance: $(this).find('.row-stock-balance').val(),
-                qty: $(this).find('.row-qty').val(),
+                stock_balance: finalStock,
+                qty: finalQty,
                 variance: $(this).find('.row-variance').val() || '0',
                 remarks: $(this).find('.row-remarks').val(),
                 ledge_category: $(this).find('.row-ledge-category').val()
@@ -937,18 +942,6 @@ jQuery(document).ready(function($) {
         const rollbackId = urlParams.get('rollback');
         if (rollbackId) {
             payload.rollback_id = rollbackId;
-        }
-
-        if (window.originalRollbackPayload) {
-            if (!hasRollbackChanges(payload, window.originalRollbackPayload)) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No Corrections Made',
-                    text: 'You have not made any changes to the flagged fields. Please update the incorrect information before resubmitting.',
-                    confirmButtonColor: '#b91c1c'
-                });
-                return;
-            }
         }
 
         // Loading State
@@ -1444,7 +1437,11 @@ jQuery(document).ready(function($) {
                 if (selectedDesc) {
                     const status = $('#supplierStatusSelect').val();
                     if (status !== 'Partial Delivery') {
-                        stockInput.val(qtyInput.val() || 0);
+                        const currentQty = qtyInput.val() || stockInput.val();
+                        if (currentQty && currentQty !== '0') {
+                            stockInput.val(currentQty);
+                            qtyInput.val(currentQty);
+                        }
                     }
                     qtyInput.removeAttr('placeholder');
                     varianceInput.attr('placeholder', '0');
@@ -1463,16 +1460,19 @@ jQuery(document).ready(function($) {
             // Auto-Calculation Logic
             $row.on('input', '.row-qty, .row-stock-balance', function() {
                 const status = $('#supplierStatusSelect').val();
-                const qtyVal = parseFloat(qtyInput.val()) || 0;
+                const qtyVal = parseFloat(qtyInput.val());
+                const rawStockVal = parseFloat(stockInput.val());
 
                 if (status !== 'Partial Delivery') {
-                    stockInput.val(qtyVal);
+                    const activeVal = (!isNaN(qtyVal) && qtyVal > 0) ? qtyInput.val() : ((!isNaN(rawStockVal) && rawStockVal > 0) ? stockInput.val() : (qtyInput.val() || stockInput.val() || '0'));
+                    stockInput.val(activeVal);
+                    qtyInput.val(activeVal);
                 }
 
                 updateSerialInputs($row);
 
-                const stockVal = parseFloat(stockInput.val()) || 0;
-                const result = stockVal - qtyVal;
+                const finalStockVal = parseFloat(stockInput.val()) || 0;
+                const result = finalStockVal - (qtyVal || 0);
                 varianceInput.val(result);
 
                 if (result > 0) {
@@ -1776,12 +1776,10 @@ jQuery(document).ready(function($) {
             $storeLocationSelect.val(item.store_location).trigger('change.select2').trigger('change');
         }
 
-        if (item.qty) {
-            $row.find('.row-qty').val(item.qty).trigger('input');
-        }
-
-        if (item.stock_balance) {
-            $row.find('.row-stock-balance').val(item.stock_balance).trigger('input');
+        const targetQtyVal = (item.qty !== undefined && item.qty !== null && item.qty !== '') ? item.qty : (item.stock_balance || '');
+        if (targetQtyVal !== '') {
+            $row.find('.row-qty').val(targetQtyVal);
+            $row.find('.row-stock-balance').val(targetQtyVal);
         }
 
         if (item.remarks) {
@@ -1971,21 +1969,18 @@ jQuery(document).ready(function($) {
                 window.originalRollbackPayload = JSON.parse(JSON.stringify(payload));
                 window.rollbackFlaggedItems = flaggedItems;
 
-                // Filter items to show only the ones selected by the Head of Stores for rollback
+                // Render all items from the original submission so all old changes are maintained
                 let renderItems = payload.items || [];
-                if (flaggedItems && flaggedItems.length > 0) {
-                    renderItems = renderItems.filter(itm => flaggedItems.includes(itm.description));
-                }
 
-                // Add a red alert banner above the form controls
+                // Add an alert banner above the form controls
                 const bannerHtml = `
                     <div id="rollback-alert-banner" style="margin-bottom: 2rem; border-radius: 14px; overflow: hidden; border: 2px solid #fca5a5; box-shadow: 0 4px 16px rgba(239,68,68,0.1);">
                         <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 0.85rem 1.1rem; display: flex; align-items: center; gap: 10px;">
                             <svg style="width: 18px; height: 18px; color: white; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                            <span style="font-size: 0.82rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.06em;">Correction Required — Admin Rollback</span>
+                            <span style="font-size: 0.82rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.06em;">Correction Requested — Head of Stores Rollback</span>
                         </div>
                         <div style="background: #fff5f5; padding: 0.75rem 1.1rem; font-size: 0.82rem; color: #7f1d1d; line-height: 1.6;">
-                            Only fields highlighted in <b style="color:#ef4444;">red</b> can be edited per Admin instructions. All other fields remain locked.
+                            The Head of Stores requested corrections on this entry. Flagged items and fields are highlighted in <b style="color:#ef4444;">red</b> below. You may edit any field or resubmit your updated entry details.
                             ${generalNote ? `<div style="margin-top: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fecaca;"><b>Admin Note:</b> ${generalNote}</div>` : ''}
                         </div>
                     </div>`;
@@ -2031,8 +2026,9 @@ jQuery(document).ready(function($) {
                     }
 
                     // 1. Set Ledge Category first
-                    if (payload.ledge_category) {
-                        ledgeSelect.val(payload.ledge_category).trigger('change.select2').trigger('change');
+                    const catVal = payload.ledge_category || (renderItems[0] && renderItems[0].ledge_category) || '';
+                    if (catVal) {
+                        ledgeSelect.val(catVal).trigger('change.select2').trigger('change');
                     }
 
                     // 2. Set Supplier/Donor Acquisition and Details
@@ -2044,7 +2040,8 @@ jQuery(document).ready(function($) {
 
                     if (cleanVal) {
                         const $suppSel = $('#supplierNameSelect');
-                        if ($suppSel.find('option[value="' + cleanVal + '"]').length === 0) {
+                        const exists = $suppSel.find('option').filter(function() { return $(this).val() === cleanVal; }).length > 0;
+                        if (!exists) {
                             $suppSel.append(new Option(cleanVal, cleanVal, true, true));
                         }
                         $suppSel.val(cleanVal).trigger('change.select2').trigger('change');
@@ -2071,7 +2068,8 @@ jQuery(document).ready(function($) {
 
                     if (!isDonor) {
                         const $statSel = $('#supplierStatusSelect');
-                        if ($statSel.find('option[value="' + statusVal + '"]').length === 0) {
+                        const statExists = $statSel.find('option').filter(function() { return $(this).val() === statusVal; }).length > 0;
+                        if (!statExists) {
                             $statSel.append(new Option(statusVal, statusVal, true, true));
                         }
                         $statSel.val(statusVal).trigger('change.select2').trigger('change');
@@ -2099,13 +2097,16 @@ jQuery(document).ready(function($) {
                                 $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
                             }
 
-                            if (itm.qty) {
-                                $row.find('.row-qty').val(itm.qty);
+                            const targetQty = (itm.qty !== undefined && itm.qty !== null && itm.qty !== '') ? itm.qty : (itm.stock_balance || '');
+                            if (targetQty !== '') {
+                                $row.find('.row-qty').val(targetQty);
+                                $row.find('.row-stock-balance').val(targetQty);
                             }
 
                             if (itm.description) {
                                 const descSel = $row.find('.item-select-dynamic');
-                                if (descSel.find('option[value="' + itm.description + '"]').length === 0) {
+                                const descExists = descSel.find('option').filter(function() { return $(this).val() === itm.description; }).length > 0;
+                                if (!descExists) {
                                     descSel.append(new Option(itm.description, itm.description, true, true));
                                 }
                                 descSel.val(itm.description).trigger('change.select2').trigger('change');
@@ -2113,7 +2114,8 @@ jQuery(document).ready(function($) {
 
                             if (itm.unit) {
                                 const uSel = $row.find('.row-unit');
-                                if (uSel.find('option[value="' + itm.unit + '"]').length === 0) {
+                                const uExists = uSel.find('option').filter(function() { return $(this).val() === itm.unit; }).length > 0;
+                                if (!uExists) {
                                     uSel.append(new Option(itm.unit, itm.unit, true, true));
                                 }
                                 uSel.val(itm.unit).trigger('change.select2').trigger('change');
@@ -2121,18 +2123,21 @@ jQuery(document).ready(function($) {
 
                             const locVal = itm.store_location || itm.location;
                             if (locVal) {
-                                const lSel = $row.find('.row-location');
+                                const lSel = $row.find('.row-store-location');
                                 if (lSel.length) {
-                                    if (lSel.find('option[value="' + locVal + '"]').length === 0) {
+                                    const lExists = lSel.find('option').filter(function() { return $(this).val() === locVal; }).length > 0;
+                                    if (!lExists) {
                                         lSel.append(new Option(locVal, locVal, true, true));
                                     }
                                     lSel.val(locVal).trigger('change.select2').trigger('change');
                                 }
                             }
 
-                            if (itm.stock_balance) {
-                                $row.find('.row-stock-balance').val(itm.stock_balance);
+                            if (targetQty !== '') {
+                                $row.find('.row-qty').val(targetQty);
+                                $row.find('.row-stock-balance').val(targetQty);
                             }
+
                             if (itm.variance !== undefined) {
                                 $row.find('.row-variance').val(itm.variance);
                             }
@@ -2164,17 +2169,14 @@ jQuery(document).ready(function($) {
         const RED_BORDER = '2px solid #b91c1c';
         const RED_SHADOW = '0 0 0 4px rgba(185,28,28,0.15)';
 
-        // 0. Lock all general form controls by default during rollback mode
-        $('#ledgeSelect, #supplierNameSelect, #supplierStatusSelect, #arrivalDate, #isDonorCheckbox, #multiQty, .remove-row-btn').prop('disabled', true);
-
-        // 1. Highlight & Enable flagged global fields
+        // 1. Highlight flagged global fields (keep inputs unlocked)
         const GLOBAL_FIELD_MAP = {
-            supplier_name:    () => { $('#supplierNameSelect').prop('disabled', false); return [$('#supplierNameSelect').parent().find('.select2-selection').length ? $('#supplierNameSelect').parent().find('.select2-selection') : $('#supplierNameSelect').closest('.select2-container')]; },
-            supplier_status:  () => { $('#supplierStatusSelect').prop('disabled', false); return [$('#supplierStatusSelect').parent().find('.select2-selection').length ? $('#supplierStatusSelect').parent().find('.select2-selection') : $('#supplierStatusSelect')]; },
-            arrival_date:     () => { $('#arrivalDate').prop('disabled', false); return [$('#arrivalDate')]; },
-            entry_date:       () => { $('#arrivalDate').prop('disabled', false); return [$('#arrivalDate')]; },
-            ledge_category:   () => { $('#ledgeSelect').prop('disabled', false); return [$('#ledgeSelect').parent().find('.select2-selection').length ? $('#ledgeSelect').parent().find('.select2-selection') : $('#ledgeSelect').closest('.select2-container')]; },
-            acquisition_type: () => { $('#isDonorCheckbox').prop('disabled', false); return [$('#isDonorCheckbox').closest('label')]; },
+            supplier_name:    () => [$('#supplierNameSelect').parent().find('.select2-selection').length ? $('#supplierNameSelect').parent().find('.select2-selection') : $('#supplierNameSelect').closest('.select2-container')],
+            supplier_status:  () => [$('#supplierStatusSelect').parent().find('.select2-selection').length ? $('#supplierStatusSelect').parent().find('.select2-selection') : $('#supplierStatusSelect')],
+            arrival_date:     () => [$('#arrivalDate')],
+            entry_date:       () => [$('#arrivalDate')],
+            ledge_category:   () => [$('#ledgeSelect').parent().find('.select2-selection').length ? $('#ledgeSelect').parent().find('.select2-selection') : $('#ledgeSelect').closest('.select2-container')],
+            acquisition_type: () => [$('#isDonorCheckbox').closest('label')],
         };
 
         Object.keys(GLOBAL_FIELD_MAP).forEach(key => {
@@ -2193,7 +2195,7 @@ jQuery(document).ready(function($) {
                     if ($el.parent().find('.' + hintClass).length === 0) {
                         const hintHtml = `<div class="${hintClass}" style="margin-top:5px; font-size:0.76rem; font-weight:700; color:#ef4444; display:flex; align-items:flex-start; gap:5px; line-height:1.4;">
                             <svg style="width:12px;height:12px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
-                            <span><b>Admin:</b> ${$('<div>').text(note).html()}</span>
+                            <span><b>Admin Note:</b> ${$('<div>').text(note).html()}</span>
                         </div>`;
                         $el.parent().after(hintHtml);
                     }
@@ -2201,17 +2203,13 @@ jQuery(document).ready(function($) {
             }
         });
 
-        // 2. Lock item row controls by default and enable ONLY flagged row inputs
+        // 2. Highlight flagged row fields (keep row inputs unlocked)
         const hasFlaggedItems = flaggedItems && flaggedItems.length > 0;
 
         $('.item-entry-row').each(function() {
             const $row = $(this);
             const descVal = ($row.find('.item-select-dynamic').val() || '').trim();
 
-            // Disable all fields in the row by default
-            $row.find('input, select, textarea').prop('disabled', true);
-
-            // If flaggedItems list exists, only apply row highlights & unlock if description matches
             if (hasFlaggedItems && !flaggedItems.includes(descVal)) {
                 return;
             }
@@ -2219,21 +2217,12 @@ jQuery(document).ready(function($) {
             const rowFieldsMap = {
                 item_description: () => { 
                     const $descSel = $row.find('.item-select-dynamic');
-                    $descSel.prop('disabled', false); 
-                    // Enable user custom tag input
-                    $descSel.on('select2:select', function(e) {
-                        const val = e.params.data.id;
-                        if ($descSel.find('option[value="' + val + '"]').length === 0) {
-                            $descSel.append(new Option(val, val, true, true));
-                        }
-                        $descSel.val(val).trigger('change');
-                    });
                     return $descSel.parent().find('.select2-selection').length ? $descSel.parent().find('.select2-selection') : $descSel.closest('.select2-container'); 
                 },
-                item_qty:         () => { $row.find('.row-qty').prop('disabled', false); return $row.find('.row-qty'); },
-                item_unit:        () => { $row.find('.row-unit').prop('disabled', false); return $row.find('.row-unit').parent().find('.select2-selection').length ? $row.find('.row-unit').parent().find('.select2-selection') : $row.find('.row-unit').closest('.select2-container'); },
-                item_remarks:     () => { $row.find('.row-remarks').prop('disabled', false); return $row.find('.row-remarks'); },
-                item_serial_number: () => { $row.find('.row-serial-number, .serial-input-item, .rim-input-item').prop('disabled', false); return $row.find('.serial-inputs-container'); },
+                item_qty:         () => $row.find('.row-qty'),
+                item_unit:        () => $row.find('.row-unit').parent().find('.select2-selection').length ? $row.find('.row-unit').parent().find('.select2-selection') : $row.find('.row-unit').closest('.select2-container'),
+                item_remarks:     () => $row.find('.row-remarks'),
+                item_serial_number: () => $row.find('.serial-inputs-container'),
             };
 
             Object.keys(rowFieldsMap).forEach(key => {
@@ -2247,7 +2236,7 @@ jQuery(document).ready(function($) {
                         if ($el.parent().find('.' + hintClass).length === 0) {
                             const hintHtml = `<div class="${hintClass}" style="margin-top:5px; font-size:0.76rem; font-weight:700; color:#ef4444; display:flex; align-items:flex-start; gap:5px; line-height:1.4;">
                                 <svg style="width:12px;height:12px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
-                                <span><b>Admin:</b> ${$('<div>').text(note).html()}</span>
+                                <span><b>Admin Note:</b> ${$('<div>').text(note).html()}</span>
                             </div>`;
                             $el.parent().after(hintHtml);
                         }

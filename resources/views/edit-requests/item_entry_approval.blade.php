@@ -293,18 +293,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.cancelRollback = function(reqId, userName) {
     Swal.fire({
-        title: 'Cancel Rollback Request?',
-        text: `Are you sure you want to cancel and remove the rollback request for ${userName}?`,
-        icon: 'warning',
+        title: 'Cancel Rollback & Move to Pending?',
+        text: `Are you sure you want to cancel the rollback for ${userName}? The entry request will be moved back to the Pending Approval table for review.`,
+        icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#ef4444',
+        confirmButtonColor: '#059669',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Yes, Cancel Rollback'
+        confirmButtonText: 'Yes, Move to Pending Approval'
     }).then(result => {
         if (!result.isConfirmed) return;
 
         Swal.fire({
-            title: 'Canceling Rollback...',
+            title: 'Moving to Pending Approval...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
@@ -322,7 +322,7 @@ window.cancelRollback = function(reqId, userName) {
             if (data.success) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Rollback Canceled',
+                    title: 'Moved to Pending Approval',
                     text: data.message,
                     timer: 1500,
                     showConfirmButton: false
