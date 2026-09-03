@@ -250,6 +250,9 @@
                             @endif
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Total System</th>
                             <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 20%;">{{ $isDiscrepancy ? 'Explanation' : 'Remarks' }}</th>
+                            @if($status === 'pending' || $status === 'resubmitted')
+                                <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; width: 80px;">Action</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -322,6 +325,13 @@
                             <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; {!! $isRemarksChanged ? 'background: rgba(59, 130, 246, 0.08); border-left: 2px solid #2563eb;' : '' !!}">
                                 {{ ($item['discrepancy_explanation'] ?? '') ?: ($item['remarks'] ?? '') ?: '-- No specific notes --' }}
                             </td>
+                            @if($status === 'pending' || $status === 'resubmitted')
+                                <td style="padding: 1rem 1.5rem; text-align: center;">
+                                    <button type="button" onclick="window.removeItemFromEntry({{ $reqId }}, {{ $loop->index }}, '{{ addslashes($item['description'] ?? '') }}')" title="Remove item from this entry" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#ef4444';">
+                                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                    </button>
+                                </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>
@@ -347,6 +357,9 @@
                             @endif
                             <td style="padding: 1rem 1.5rem;"></td>
                             <td style="padding: 1rem 1.5rem;"></td>
+                            @if($status === 'pending' || $status === 'resubmitted')
+                                <td style="padding: 1rem 1.5rem;"></td>
+                            @endif
                         </tr>
                     </tfoot>
                 </table>
@@ -921,6 +934,58 @@
             if (rejectBtn) rejectBtn.disabled = false;
         });
     }
+
+    window.removeItemFromEntry = function(reqId, itemIndex, itemDesc) {
+        Swal.fire({
+            title: 'Remove Item from Entry?',
+            text: `Are you sure you want to remove "${itemDesc}" from this pending submission before approving?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Remove Item'
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Removing Item...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch(`/api/edit-requests/${reqId}/remove-item`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    item_index: itemIndex,
+                    description: itemDesc
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Item Removed',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Removal Failed', data.message || 'Could not remove item.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'A server connection error occurred.', 'error');
+            });
+        });
+    };
 </script>
 
 <style>

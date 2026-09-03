@@ -872,16 +872,34 @@ class InventoryController extends Controller
      */
     private function checkForDuplicateItemEntry(array $items, string $arrivalDate): ?array
     {
-        foreach ($items as $item) {
+        $seenInPayload = [];
+
+        foreach ($items as $index => $item) {
             $desc = trim(strtoupper($item['description'] ?? ''));
             if (empty($desc)) continue;
+
+            // Normalize spaces by removing all whitespace characters for a space-insensitive check
+            $normalizedDesc = preg_replace('/\s+/', '', $desc);
+
+            // 0. Check Intra-Payload Duplicates (Multiple rows of identical items within the same submission)
+            if (isset($seenInPayload[$normalizedDesc])) {
+                $firstSeen = $seenInPayload[$normalizedDesc];
+                $firstRow = $firstSeen['index'] + 1;
+                $currentRow = $index + 1;
+                $firstDesc = $firstSeen['description'];
+                return [
+                    'duplicate' => true,
+                    'message' => "Duplicate Entry Blocked: Item '{$item['description']}' in Row #{$currentRow} is a duplicate of '{$firstDesc}' in Row #{$firstRow} within this submission. Please merge these entries or remove the duplicate row."
+                ];
+            }
+            $seenInPayload[$normalizedDesc] = [
+                'description' => $item['description'] ?? $desc,
+                'index' => $index
+            ];
 
             $rawQty = $item['qty'] ?? ($item['stock_balance'] ?? 0);
             $qtyVal = floatval(str_replace(',', '', $rawQty));
             if ($qtyVal <= 0) continue;
-
-            // Normalize spaces by removing all whitespace characters for a space-insensitive check
-            $normalizedDesc = preg_replace('/\s+/', '', $desc);
 
             // 1. Check Pending Approval Queue (EditRequest)
             $pendingRequests = \App\Models\EditRequest::with('user')

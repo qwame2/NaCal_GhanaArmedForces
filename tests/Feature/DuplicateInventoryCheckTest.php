@@ -177,4 +177,156 @@ class DuplicateInventoryCheckTest extends TestCase
             'status' => 'pending',
         ]);
     }
+
+    public function test_intra_payload_duplicate_check_blocks_multiple_entries_with_space_differences()
+    {
+        $user = User::create([
+            'name' => 'Store Officer',
+            'username' => 'store_officer_intra',
+            'role' => 'Store Officer',
+            'is_admin' => false,
+            'can_add_inventory' => true,
+            'is_active' => true,
+            'password' => \Illuminate\Support\Facades\Hash::make('Password123'),
+        ]);
+
+        $this->actingAs($user);
+
+        // Submit multiple items in the same payload where Row 1 is "A4SHEET" and Row 2 is "A4 SHEET"
+        $response = $this->json('GET', route('api.inventory.check-duplicate'), [
+            'arrival_date' => date('Y-m-d'),
+            'items' => [
+                [
+                    'description' => 'A4SHEET',
+                    'qty' => '45'
+                ],
+                [
+                    'description' => 'A4 SHEET',
+                    'qty' => '45'
+                ]
+            ]
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'duplicate' => true
+        ]);
+        $this->assertStringContainsString('Duplicate Entry Blocked', $response->json('message'));
+        $this->assertStringContainsString('Row #2', $response->json('message'));
+    }
+
+    public function test_discrepancy_store_blocks_intra_payload_duplicate_items()
+    {
+        $user = User::create([
+            'name' => 'Store Officer',
+            'username' => 'store_officer_disc_dup',
+            'role' => 'Store Officer',
+            'is_admin' => false,
+            'can_add_inventory' => true,
+            'is_active' => true,
+            'password' => \Illuminate\Support\Facades\Hash::make('Password123'),
+        ]);
+
+        $this->actingAs($user);
+
+        $payload = [
+            'ledge_category' => 'A',
+            'supplier_name' => 'Test Supplier',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'entry_date' => now()->format('Y-m-d H:i:s'),
+            'arrival_date' => date('Y-m-d'),
+            'items' => [
+                [
+                    'ledge_category' => 'A',
+                    'description' => 'A4SHEET',
+                    'unit' => 'REAM',
+                    'stock_balance' => '45',
+                    'qty' => '45',
+                    'variance' => '0',
+                    'book_qty' => 45,
+                    'store_location' => 'Store A',
+                    'discrepancy_explanation' => 'None'
+                ],
+                [
+                    'ledge_category' => 'A',
+                    'description' => 'A4 SHEET',
+                    'unit' => 'REAM',
+                    'stock_balance' => '45',
+                    'qty' => '45',
+                    'variance' => '0',
+                    'book_qty' => 45,
+                    'store_location' => 'Store A',
+                    'discrepancy_explanation' => 'None'
+                ]
+            ]
+        ];
+
+        $response = $this->postJson(route('inventory.discrepancy.store'), $payload);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'success' => false
+        ]);
+        $this->assertStringContainsString('Duplicate Entry Blocked', $response->json('message'));
+    }
+
+    public function test_admin_can_remove_item_from_pending_entry_payload()
+    {
+        $admin = User::create([
+            'name' => 'Head of Stores',
+            'username' => 'head_of_stores_test',
+            'role' => 'Head of Stores',
+            'is_admin' => true,
+            'can_add_inventory' => true,
+            'is_active' => true,
+            'password' => \Illuminate\Support\Facades\Hash::make('Password123'),
+        ]);
+
+        $editReq = EditRequest::create([
+            'user_id' => $admin->id,
+            'item_id' => 0,
+            'item_type' => 'batch_creation',
+            'request_type' => 'sra_creation',
+            'reason' => 'New Inventory Submission',
+            'status' => 'pending',
+            'payload' => json_encode([
+                'ledge_category' => 'A',
+                'items' => [
+                    [
+                        'description' => 'A4SHEET',
+                        'unit' => 'REAM',
+                        'qty' => '45',
+                        'stock_balance' => '45'
+                    ],
+                    [
+                        'description' => 'DUPLICATE ITEM TO REMOVE',
+                        'unit' => 'PIECE(S)',
+                        'qty' => '10',
+                        'stock_balance' => '10'
+                    ]
+                ]
+            ])
+        ]);
+
+        $this->actingAs($admin);
+
+        // Remove item at index 1 ("DUPLICATE ITEM TO REMOVE")
+        $response = $this->postJson(route('api.edit-requests.remove-item', ['id' => $editReq->id]), [
+            'item_index' => 1,
+            'description' => 'DUPLICATE ITEM TO REMOVE'
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'remaining_count' => 1
+        ]);
+
+        $editReq->refresh();
+        $payload = json_decode($editReq->payload, true);
+
+        $this->assertCount(1, $payload['items']);
+        $this->assertEquals('A4SHEET', $payload['items'][0]['description']);
+    }
 }

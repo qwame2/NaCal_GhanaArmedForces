@@ -1085,6 +1085,31 @@
                 missing.push("At least one item type row is required");
             }
 
+            // Client-side intra-payload duplicate check
+            const seenItemDescs = {};
+            let duplicateRowError = null;
+            items.forEach((it, idx) => {
+                if (duplicateRowError) return;
+                const norm = (it.description || '').toUpperCase().replace(/\s+/g, '');
+                if (norm) {
+                    if (seenItemDescs[norm]) {
+                        duplicateRowError = `Row #${idx + 1} ("${it.description}") is a duplicate of Row #${seenItemDescs[norm].rowNum} ("${seenItemDescs[norm].desc}"). Please combine these entries or remove the duplicate row.`;
+                    } else {
+                        seenItemDescs[norm] = { rowNum: idx + 1, desc: it.description };
+                    }
+                }
+            });
+
+            if (duplicateRowError) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Duplicate Item Entry Blocked',
+                    text: duplicateRowError,
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+
             if (missing.length > 0) {
                 const hasSupplierErrors = missing.some(m => 
                     m.includes("Contact Person Number") || 

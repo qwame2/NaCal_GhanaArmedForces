@@ -394,6 +394,80 @@ class EditRequestController extends Controller
         return response()->json(['allowed' => false, 'status' => $editReq->status]);
     }
 
+    public function removeItemFromPayload(Request $request, $id)
+    {
+        $isAuthorized = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
+        if (!$isAuthorized) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Only Head of Stores or Admin can remove items.'], 403);
+        }
+
+        $editReq = EditRequest::findOrFail($id);
+
+        if (!in_array($editReq->status, ['pending', 'resubmitted'])) {
+            return response()->json(['success' => false, 'message' => 'Cannot remove items from an entry that has already been processed.'], 422);
+        }
+
+        $itemIndex = $request->input('item_index');
+        $itemDescription = $request->input('description');
+
+        $data = $editReq->payload;
+        while (is_string($data)) {
+            $decoded = json_decode($data, true);
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {
+                $data = $decoded;
+            } else {
+                break;
+            }
+        }
+
+        if (!is_array($data) || !isset($data['items']) || !is_array($data['items'])) {
+            return response()->json(['success' => false, 'message' => 'Invalid entry payload.'], 422);
+        }
+
+        $removed = false;
+        $removedDesc = '';
+
+        // Try removing by index first
+        if ($itemIndex !== null && isset($data['items'][$itemIndex])) {
+            $removedDesc = $data['items'][$itemIndex]['description'] ?? '';
+            array_splice($data['items'], $itemIndex, 1);
+            $removed = true;
+        } else if ($itemDescription) {
+            $targetDesc = trim(strtoupper($itemDescription));
+            foreach ($data['items'] as $i => $item) {
+                if (trim(strtoupper($item['description'] ?? '')) === $targetDesc) {
+                    $removedDesc = $item['description'] ?? '';
+                    array_splice($data['items'], $i, 1);
+                    $removed = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$removed) {
+            return response()->json(['success' => false, 'message' => 'Target item was not found in entry.'], 404);
+        }
+
+        $data['items'] = array_values($data['items']);
+        $editReq->payload = json_encode($data);
+        $editReq->save();
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'REMOVE_ENTRY_ITEM',
+            'description' => "Admin " . auth()->user()->name . " removed item '{$removedDesc}' from pending entry REQ-{$editReq->id}.",
+            'severity' => 'info',
+            'ip_address' => request()->ip()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Item '{$removedDesc}' successfully removed from entry.",
+            'remaining_count' => count($data['items'])
+        ]);
+    }
+
 
     public function processSraCreation(Request $request, $id)
     {
