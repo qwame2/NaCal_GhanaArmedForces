@@ -76,6 +76,7 @@
                 <div class="col-id">Users</div>
                 <div class="col-ctrl">Item Entry</div>
                 <div class="col-ctrl">Confirm Collection</div>
+                <div class="col-ctrl">Make Requests</div>
                 <div class="col-ctrl">Report Access</div>
                 @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
                 <div class="col-ctrl" style="color: #059669; font-weight: 800;">Delegation</div>
@@ -139,6 +140,19 @@
                             <div class="toggle-text">
                                 <span class="t-main">Confirm Collection</span>
                                 <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Allow or block this store officer from submitting requisition requests">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_make_requisition')" {{ ($user->can_make_requisition ?? true) ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">{{ ($user->can_make_requisition ?? true) ? 'Allowed' : 'Blocked' }}</span>
+                                <span class="t-sub">Submit requests</span>
                             </div>
                         </div>
                     </div>

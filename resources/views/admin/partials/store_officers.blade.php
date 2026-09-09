@@ -1,4 +1,4 @@
-﻿@forelse($storeOfficers as $user)
+@forelse($storeOfficers as $user)
 <div class="m-row" data-user-id="{{ $user->id }}">
     <div class="col-id">
         <div class="m-avatar">
@@ -85,13 +85,13 @@
 
     <div class="col-ctrl">
         <div class="toggle-group-wrap">
-            <label class="normal-toggle" title="Allow this store officer to place requisition requests">
-                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_make_requisition')" {{ ($user->can_make_requisition ?? false) ? 'checked' : '' }}>
+            <label class="normal-toggle" title="Allow or block this store officer from submitting requisition requests">
+                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_make_requisition')" {{ ($user->can_make_requisition ?? true) ? 'checked' : '' }}>
                 <div class="toggle-slider"></div>
             </label>
             <div class="toggle-text">
-                <span class="t-main">{{ ($user->can_make_requisition ?? false) ? 'Enabled' : 'Disabled' }}</span>
-                <span class="t-sub">Place requests</span>
+                <span class="t-main">{{ ($user->can_make_requisition ?? true) ? 'Allowed' : 'Blocked' }}</span>
+                <span class="t-sub">Submit requests</span>
             </div>
         </div>
     </div>

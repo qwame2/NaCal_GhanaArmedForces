@@ -755,7 +755,7 @@ class AdminController extends Controller
             ->get(['id', 'name', 'username', 'role', 'department', 'avatar',
                    'is_active', 'is_online',
                    'can_add_inventory', 'can_operate_logistics',
-                   'can_generate_reports', 'can_verify_stock']);
+                   'can_generate_reports', 'can_verify_stock', 'can_make_requisition']);
 
         return response()->json([
             'success' => true,
@@ -772,6 +772,7 @@ class AdminController extends Controller
                 'can_operate_logistics' => (bool) $u->can_operate_logistics,
                 'can_generate_reports'  => (bool) $u->can_generate_reports,
                 'can_verify_stock'      => (bool) $u->can_verify_stock,
+                'can_make_requisition'  => (bool) ($u->can_make_requisition ?? true),
             ]),
         ]);
     }
