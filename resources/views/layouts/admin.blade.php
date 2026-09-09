@@ -852,6 +852,16 @@
                         <span>User Details</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions') ? 'active' : '' }}" title="Permissions">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Permissions</span>
+                        @php $pendingRegCount = \App\Models\User::where('registration_status','pending')->count(); @endphp
+                        <span id="sidebar-badge-registrations" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ $pendingRegCount <= 0 ? 'display: none;' : '' }}">
+                            {{ $pendingRegCount }}
+                        </span>
+                    </a>
+                </li>
 
                 <li>
                     <a href="{{ route('admin.inventory') }}" class="nav-link {{ request()->routeIs('admin.inventory') ? 'active' : '' }}" title="Inventory Oversight">
@@ -954,16 +964,6 @@
                 </li>
                 @endif
                 @if(auth()->user()->is_admin)
-                <li>
-                    <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions') ? 'active' : '' }}" title="Permissions">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Permissions</span>
-                        @php $pendingRegCount = \App\Models\User::where('registration_status','pending')->count(); @endphp
-                        <span id="sidebar-badge-registrations" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ $pendingRegCount <= 0 ? 'display: none;' : '' }}">
-                            {{ $pendingRegCount }}
-                        </span>
-                    </a>
-                </li>
                 <li>
                     <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}" title="Password Resets">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4.1"/><path d="m10.5 12.5 2.8 2.8a1 1 0 0 0 1.4 0l2.8-2.8"/><circle cx="7" cy="17" r="5"/></svg>
