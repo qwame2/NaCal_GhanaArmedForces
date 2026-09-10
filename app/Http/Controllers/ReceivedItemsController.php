@@ -626,6 +626,151 @@ class ReceivedItemsController extends Controller
         ));
     }
 
+    public function printReport(Request $request)
+    {
+        try {
+            \App\Http\Controllers\ReturnController::selfHealRequisitions();
+            \App\Http\Controllers\StoreRequisitionController::checkOverdueTemporaryItems();
+        } catch (\Exception $e) {
+            // Keep page loading resilient
+        }
+
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
+        }
+
+        $ledgeMap = $this->getLedgeMap();
+
+        $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where(function($q) {
+                $q->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                  ->orWhereNull('inventory_batches.supplier_status');
+            })
+            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type', 'inventory_batches.approval_status as batch_approval_status', 'inventory_batches.auditor_status as batch_auditor_status', 'inventory_batches.admin_status as batch_admin_status');
+
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('inventory_batches.entry_date', '>=', $request->date_from);
+        }
+
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('inventory_batches.entry_date', '<=', $request->date_to);
+        }
+
+        if ($request->has('supplier') && $request->supplier) {
+            $query->where('inventory_batches.supplier_name', 'LIKE', '%' . $request->supplier . '%');
+        }
+
+        if ($request->has('donor') && $request->donor) {
+            $query->where('inventory_batches.donor_name', 'LIKE', '%' . $request->donor . '%');
+        }
+
+        if ($request->has('status') && $request->status === 'partial') {
+            $query->where(function($q) {
+                $q->where('inventory_batches.supplier_status', 'LIKE', '%Partial%')
+                  ->orWhere('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%');
+            });
+        } elseif ($request->has('status') && $request->status === 'pending_approval') {
+            $query->whereIn('inventory_batches.id', function($q) {
+                $q->select('item_id')
+                  ->from('edit_requests')
+                  ->where('item_type', 'batch')
+                  ->where('status', 'pending');
+            });
+        } elseif ($request->has('status') && $request->status === 'baseline') {
+            $query->where(function($q) {
+                $q->whereNotNull('inventory_items.book_qty')
+                  ->orWhereNotNull('inventory_items.discrepancy_explanation')
+                  ->orWhereIn('inventory_batches.id', function($sub) {
+                      $sub->select('item_id')
+                          ->from('edit_requests')
+                          ->where(function($eq) {
+                              $eq->where('request_type', 'discrepancy_creation')
+                                ->orWhere('reason', 'LIKE', '%Discrepancy%')
+                                ->orWhere('reason', 'LIKE', '%Baseline%')
+                                ->orWhere('payload', 'LIKE', '%"is_discrepancy":true%')
+                                ->orWhere('payload', 'LIKE', '%"is_discrepancy": true%');
+                          });
+                  });
+            });
+        }
+
+        if ($request->has('ledge_category') && $request->ledge_category) {
+            $query->where('inventory_batches.ledge_category', $request->ledge_category);
+        }
+
+        if ($request->has('store_location') && $request->store_location) {
+            $loc = $request->store_location;
+            if ($loc === 'Store A' || $loc === 'Stores A') {
+                $query->where(function($q) {
+                    $q->where('inventory_items.store_location', 'Store A')
+                      ->orWhere('inventory_items.store_location', 'Stores A')
+                      ->orWhereNull('inventory_items.store_location');
+                });
+            } else {
+                $query->where(function($q) use ($loc) {
+                    $q->where('inventory_items.store_location', $loc)
+                      ->orWhere('inventory_items.store_location', 'Stores B');
+                });
+            }
+        }
+
+        if ($request->has('search') && $request->search) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('inventory_items.description', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('inventory_items.batch_id', 'LIKE', '%' . $searchTerm . '%');
+            });
+        }
+
+        $mockedItems = collect();
+        if ($request->has('status') && $request->status === 'pending_approval') {
+            $pendingCreations = \App\Models\EditRequest::where('item_type', 'batch_creation')
+                ->where('status', 'pending')
+                ->get();
+                
+            foreach ($pendingCreations as $req) {
+                $payload = json_decode($req->payload, true);
+                if (!$payload) continue;
+                
+                $items = $payload['items'] ?? [];
+                foreach ($items as $index => $itemData) {
+                    $mockItem = new \App\Models\InventoryItem();
+                    $mockItem->id = 'pending-' . $req->id . '-' . $index;
+                    $mockItem->batch_id = 'Pending Approval';
+                    $mockItem->description = $itemData['description'] ?? '';
+                    $mockItem->unit = $itemData['unit'] ?? '';
+                    $mockItem->qty = $itemData['qty'] ?? 0;
+                    $mockItem->stock_balance = $itemData['stock_balance'] ?? 0;
+                    $mockItem->variance = $itemData['variance'] ?? 0;
+                    $mockItem->remarks = $itemData['remarks'] ?? 'Awaiting Admin Approval';
+                    
+                    $mockItem->entry_date = $payload['entry_date'] ?? $req->created_at;
+                    $mockItem->arrival_date = $payload['arrival_date'] ?? $req->created_at;
+                    $mockItem->ledge_category = $payload['ledge_category'] ?? '';
+                    $mockItem->supplier_name = $payload['supplier_name'] ?? '';
+                    $mockItem->supplier_status = 'Pending Approval';
+                    $mockItem->donor_name = $payload['donor_name'] ?? null;
+                    $mockItem->acquisition_type = $payload['acquisition_type'] ?? '';
+                    
+                    $mockItem->is_pending_creation = true;
+                    $mockItem->edit_request_id = $req->id;
+                    
+                    $mockedItems->push($mockItem);
+                }
+            }
+        }
+
+        if ($request->has('status') && $request->status === 'pending_approval') {
+            $dbItems = $query->orderBy('inventory_batches.entry_date', 'desc')->get();
+            $receivedItems = $mockedItems->merge($dbItems);
+        } else {
+            $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->get();
+        }
+
+        return view('received-items.print_report', compact('receivedItems', 'ledgeMap', 'request'));
+    }
+
     public function update(Request $request, $id)
     {
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {

@@ -24,12 +24,15 @@
             <p style="color: var(--text-muted);">View all items received into the inventory system.</p>
         </div>
 
-        <div style="display: flex; gap: 1rem;">
-            <button onclick="window.location.reload()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main);">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <a href="{{ route('receiveditems.print-report', request()->all()) }}" target="_blank" id="headerPrintBtn" class="glass-card" style="padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #059669; text-decoration: none; border: 1.5px solid #059669; background: rgba(5, 150, 105, 0.08); border-radius: 12px; transition: all 0.3s;" onmouseover="this.style.background='rgba(5, 150, 105, 0.18)'; this.style.color='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';" title="Print Received Items Table (Supports Current Filters)">
+                <i data-lucide="printer" style="width: 18px; color: inherit;"></i>
+                <span style="color: inherit; font-weight: 700;">Print Table</span>
+            </a>
+            <button onclick="window.location.reload()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main); border-radius: 12px;">
                 <i data-lucide="refresh-cw" style="width: 18px;"></i>
                 Refresh
             </button>
-
         </div>
     </div>
 
@@ -89,7 +92,11 @@
             </div>
             <div class="filter-buttons-mobile" style="display: flex; gap: 0.5rem;">
                 <button type="submit" class="btn-primary" style="flex: 1; padding: 0.75rem; border-radius: 10px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 600;">Filter</button>
-                <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem; border-radius: 10px; color: var(--text-main); display: flex; align-items: center; justify-content: center; width: 44px; text-decoration: none;">
+                <a href="{{ route('receiveditems.print-report', request()->all()) }}" target="_blank" id="filterPrintBtn" class="glass-card" style="padding: 0.75rem 1rem; border-radius: 10px; color: #059669; border: 1px solid #059669; background: rgba(5, 150, 105, 0.08); display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(5, 150, 105, 0.18)'; this.style.color='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';" title="Print Filtered Items">
+                    <i data-lucide="printer" style="width: 18px; color: inherit;"></i>
+                    <span style="color: inherit; font-weight: 700;">Print</span>
+                </a>
+                <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem; border-radius: 10px; color: var(--text-main); display: flex; align-items: center; justify-content: center; width: 44px; text-decoration: none;" title="Reset Filters">
                     <i data-lucide="x" style="width: 18px;"></i>
                 </a>
             </div>

@@ -694,6 +694,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/inventory/low-stock', [InventoryController::class, 'lowStockMonitor'])->name('inventory.low-stock');
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('receiveditems');
+    Route::get('/received-items/print-report', [ReceivedItemsController::class, 'printReport'])->name('receiveditems.print-report');
     Route::get('/issue-items', [IssueItemsController::class, 'index'])->name('issueitems');
     Route::post('/issue-items/store', [IssueItemsController::class, 'store'])->name('issueitems.store');
     Route::get('/api/issued-items-history', [IssueItemsController::class, 'history'])->name('api.issued-items-history');
