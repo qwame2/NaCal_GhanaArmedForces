@@ -25,7 +25,7 @@
         </div>
 
         <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-            <a href="{{ route('receiveditems.print-report', request()->all()) }}" target="_blank" id="headerPrintBtn" class="glass-card" style="padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #059669; text-decoration: none; border: 1.5px solid #059669; background: rgba(5, 150, 105, 0.08); border-radius: 12px; transition: all 0.3s;" onmouseover="this.style.background='rgba(5, 150, 105, 0.18)'; this.style.color='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';" title="Print Received Items Table (Supports Current Filters)">
+            <a href="{{ route('receiveditems.print-report', request()->all()) }}" target="_blank" id="headerPrintBtn" onclick="this.href = getPrintReportUrl();" class="glass-card" style="padding: 0.75rem 1.25rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #059669; text-decoration: none; border: 1.5px solid #059669; background: rgba(5, 150, 105, 0.08); border-radius: 12px; transition: all 0.3s;" onmouseover="this.style.background='rgba(5, 150, 105, 0.18)'; this.style.color='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';" title="Print Received Items Table (Supports Current Filters)">
                 <i data-lucide="printer" style="width: 18px; color: inherit;"></i>
                 <span style="color: inherit; font-weight: 700;">Print Table</span>
             </a>
@@ -69,7 +69,7 @@
 
     <!-- Filters -->
     <div class="glass-card search-container-mobile" style="padding: 1.5rem; margin-bottom: 2rem;">
-        <form id="filterForm" action="{{ route('receiveditems') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+        <form id="filterForm" action="{{ route('receiveditems') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: flex-end;">
             <input type="hidden" name="ledge_category" id="ledgeCategoryInput" value="{{ request('ledge_category') }}">
             <div>
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Search Items</label>
@@ -77,6 +77,15 @@
                     <i data-lucide="search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted);"></i>
                     <input type="text" name="search" id="searchInput" value="{{ request('search') }}" placeholder="Description or Batch ID..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main);">
                 </div>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Category</label>
+                <select id="categorySelect" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main); font-weight: 600;">
+                    <option value="">All Categories / Groups</option>
+                    @foreach($ledgeMap as $code => $name)
+                        <option value="{{ $code }}" {{ request('ledge_category') == $code ? 'selected' : '' }}>Category {{ $code }} - {{ $name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div>
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Supplier</label>
@@ -89,13 +98,8 @@
             <div>
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Date To</label>
                 <input type="date" name="date_to" id="dateToInput" value="{{ request('date_to') }}" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main);">
-            </div>
-            <div class="filter-buttons-mobile" style="display: flex; gap: 0.5rem;">
+            </div>            <div class="filter-buttons-mobile" style="display: flex; gap: 0.5rem;">
                 <button type="submit" class="btn-primary" style="flex: 1; padding: 0.75rem; border-radius: 10px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 600;">Filter</button>
-                <a href="{{ route('receiveditems.print-report', request()->all()) }}" target="_blank" id="filterPrintBtn" class="glass-card" style="padding: 0.75rem 1rem; border-radius: 10px; color: #059669; border: 1px solid #059669; background: rgba(5, 150, 105, 0.08); display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-weight: 700; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(5, 150, 105, 0.18)'; this.style.color='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';" title="Print Filtered Items">
-                    <i data-lucide="printer" style="width: 18px; color: inherit;"></i>
-                    <span style="color: inherit; font-weight: 700;">Print</span>
-                </a>
                 <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem; border-radius: 10px; color: var(--text-main); display: flex; align-items: center; justify-content: center; width: 44px; text-decoration: none;" title="Reset Filters">
                     <i data-lucide="x" style="width: 18px;"></i>
                 </a>
@@ -146,7 +150,7 @@
                 <i data-lucide="chevron-left" style="width: 18px;"></i>
             </button>
 
-            <div class="quick-filters-container" id="ledgeScroll" style="display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem 0.25rem; white-space: nowrap; scroll-behavior: smooth;">
+            <div class="quick-filters-container" id="ledgeScroll" style="display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem 0.25rem; white-space: nowrap; scroll-behavior: smooth; align-items: center;">
                 <button type="button" class="quick-ledge-btn {{ !request('ledge_category') ? 'active' : '' }}" data-ledge="" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 800; cursor: pointer; transition: all 0.3s; font-size: 0.85rem;">All Groups</button>
                 @foreach($ledgeMap as $code => $name)
                 <button type="button" class="quick-ledge-btn {{ request('ledge_category') == $code ? 'active' : '' }}" data-ledge="{{ $code }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
@@ -2665,6 +2669,33 @@
 
     let debounceTimer;
 
+    function getPrintReportUrl() {
+        const printReportBaseUrl = "{{ route('receiveditems.print-report') }}";
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            const formData = new FormData(filterForm);
+            for (const [key, value] of formData.entries()) {
+                if (value !== '' && value !== null) {
+                    urlParams.set(key, value);
+                } else if (!value) {
+                    urlParams.delete(key);
+                }
+            }
+        }
+
+        const activeLedgeBtn = document.querySelector('.quick-ledge-btn.active');
+        if (activeLedgeBtn && activeLedgeBtn.dataset.ledge) {
+            urlParams.set('ledge_category', activeLedgeBtn.dataset.ledge);
+        } else if (activeLedgeBtn && activeLedgeBtn.dataset.ledge === '') {
+            urlParams.delete('ledge_category');
+        }
+
+        const queryString = urlParams.toString();
+        return queryString ? `${printReportBaseUrl}?${queryString}` : printReportBaseUrl;
+    }
+
     function performSearch(isSilent = false) {
         // Skip history updates and UI dimming during silent background sync
         if (!isSilent) {
@@ -2676,6 +2707,13 @@
         const formData = new FormData(filterForm);
         const params = new URLSearchParams(formData).toString();
         const url = `${window.location.pathname}?${params}`;
+
+        // Sync Print links dynamically with current filters
+        const currentPrintUrl = getPrintReportUrl();
+        const headerPrintBtn = document.getElementById('headerPrintBtn');
+        const filterPrintBtn = document.getElementById('filterPrintBtn');
+        if (headerPrintBtn) headerPrintBtn.href = currentPrintUrl;
+        if (filterPrintBtn) filterPrintBtn.href = currentPrintUrl;
 
         fetch(url, {
                 headers: {
@@ -2707,11 +2745,23 @@
 
     // Background Sync Engine (Silent Pulse) removed as per user request
 
+    const categorySelect = document.getElementById('categorySelect');
+
     if (searchInput) {
-        [searchInput, supplierInput, dateFromInput, dateToInput].forEach(input => {
+        [searchInput, supplierInput, dateFromInput, dateToInput, categorySelect].forEach(input => {
             if (input) {
-                const eventType = input.type === 'date' ? 'change' : 'input';
+                const eventType = (input.type === 'date' || input.tagName === 'SELECT') ? 'change' : 'input';
                 input.addEventListener(eventType, () => {
+                    if (input === categorySelect && ledgeInput) {
+                        ledgeInput.value = categorySelect.value;
+                        ledgeBtns.forEach(b => {
+                            if (b.dataset.ledge === categorySelect.value) {
+                                b.classList.add('active');
+                            } else {
+                                b.classList.remove('active');
+                            }
+                        });
+                    }
                     clearTimeout(debounceTimer);
                     debounceTimer = setTimeout(performSearch, eventType === 'change' ? 100 : 400);
                 });
@@ -2735,7 +2785,8 @@
             ledgeBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            ledgeInput.value = btn.dataset.ledge;
+            if (ledgeInput) ledgeInput.value = btn.dataset.ledge;
+            if (categorySelect) categorySelect.value = btn.dataset.ledge;
             performSearch();
         });
     });
