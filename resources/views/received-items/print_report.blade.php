@@ -275,7 +275,7 @@
     </div>
 
     <div class="doc-title">
-        <h2>Received Items Master Ledger</h2>
+        <h2>Received Items</h2>
         <div class="filter-tags">
             @php $hasFilter = false; @endphp
             @if(request('search'))
