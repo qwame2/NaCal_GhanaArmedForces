@@ -319,7 +319,7 @@
         }
 
         // Merge both collections, normalise fields, then sort by date desc
-        $rawTransactions = $recentReceivals->map(function($r) use ($ledgeMap) {
+        $rawTransactions = $recentReceivals->toBase()->map(function($r) use ($ledgeMap) {
             $source = $r->acquisition_type === 'Donor' ? ($r->donor_name ?: $r->supplier_name) : $r->supplier_name;
             return [
                 'date_received' => $r->entry_date,
@@ -339,7 +339,7 @@
                 'department'    => '—',
                 'sources'       => null,
             ];
-        })->merge($recentIssues->map(function($i) use ($ledgeMap, $itemSources) {
+        })->concat($recentIssues->toBase()->map(function($i) use ($ledgeMap, $itemSources) {
             return [
                 'date_received' => $i->received_date,
                 'date_issued'   => $i->entry_date,
@@ -387,7 +387,7 @@
                 }
                 $sortedGroup[$key] = $t;
             }
-            $processedTransactions = $processedTransactions->merge($sortedGroup);
+            $processedTransactions = $processedTransactions->concat($sortedGroup->values());
         }
 
         $allTransactions = $processedTransactions->sortByDesc(function($item) {

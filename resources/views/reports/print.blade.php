@@ -559,7 +559,7 @@
         }
 
         // Merge both collections, normalise fields, then sort by date desc
-        $allTransactions = $recentReceivals->map(function($r) use ($ledgeMap) {
+        $allTransactions = $recentReceivals->toBase()->map(function($r) use ($ledgeMap) {
             $source = $r->acquisition_type === 'Donor' ? ($r->donor_name ?: $r->supplier_name) : $r->supplier_name;
             return [
                 'date_received' => $r->entry_date,
@@ -571,13 +571,13 @@
                 'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'ref_label'     => 'Supplier / Source',
                 'quantity'      => $r->qty ?? 0,
-                'stock_bal'     => !is_null($r->book_qty) ? $r->book_qty : ($r->stock_balance ?? 'â€”'),
-                'variance'      => $r->variance ?? 'â€”',
-                'status'        => 'â€”',
-                'department'    => 'â€”',
+                'stock_bal'     => !is_null($r->book_qty) ? $r->book_qty : ($r->stock_balance ?? '—'),
+                'variance'      => $r->variance ?? '—',
+                'status'        => '—',
+                'department'    => '—',
                 'sources'       => null,
             ];
-        })->merge($recentIssues->map(function($i) use ($ledgeMap, $itemSources) {
+        })->concat($recentIssues->toBase()->map(function($i) use ($ledgeMap, $itemSources) {
             return [
                 'date_received' => $i->received_date,
                 'date_issued'   => $i->entry_date,
@@ -585,13 +585,13 @@
                 'category'      => $ledgeMap[$i->ledge_category] ?? ('Category ' . $i->ledge_category),
                 'description'   => $i->description,
                 'serial_number' => null,
-                'ref'           => $i->beneficiary ?? 'â€”',
+                'ref'           => $i->beneficiary ?? '—',
                 'ref_label'     => 'Beneficiary / Dept.',
                 'quantity'      => $i->original_quantity ?? $i->quantity ?? 0,
-                'stock_bal'     => 'â€”',
-                'variance'      => 'â€”',
+                'stock_bal'     => '—',
+                'variance'      => '—',
                 'status'        => $i->issuance_type ?? 'Permanent',
-                'department'    => $i->department ?? 'â€”',
+                'department'    => $i->department ?? '—',
                 'sources'       => $itemSources[trim($i->description)] ?? null,
             ];
         }))->sortByDesc(function($item) {
