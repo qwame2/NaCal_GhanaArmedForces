@@ -179,6 +179,8 @@
 
     <div class="auth-page-wrapper">
         @yield('content')
+
+        @include('partials._developer_footer')
     </div>
 
     <script>

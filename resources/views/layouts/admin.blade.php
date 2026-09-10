@@ -1183,6 +1183,8 @@
         </header>
 
         @yield('content')
+
+        @include('partials._developer_footer')
     </main>
 
     <script>

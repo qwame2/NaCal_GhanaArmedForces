@@ -676,6 +676,8 @@
 
         <div class="content-body">
             @yield('content')
+
+            @include('partials._developer_footer')
         </div>
     </div>
 
