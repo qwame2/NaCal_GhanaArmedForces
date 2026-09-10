@@ -1,56 +1,18 @@
-{{-- Blank Footer Region (Secret QR Code on Click/Double-Click) --}}
+{{-- Developer Credit Tag - Bottom Right Corner & Visible ONLY on direct hover of the text location --}}
 <footer class="app-system-footer" 
-        onclick="showDeveloperQrModal()" 
-        ondblclick="showDeveloperQrModal()" 
-        style="margin-top: 3rem; padding: 1.5rem 0; min-height: 40px; border-top: 1px solid var(--border-color, rgba(226, 232, 240, 0.5)); cursor: default; user-select: none;">
+        style="margin-top: 3rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color, rgba(226, 232, 240, 0.4)); display: flex; justify-content: flex-end; align-items: center; background: transparent; min-height: 45px; pointer-events: none;">
+    <div class="dev-attribution-tag" 
+         style="opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease; font-size: 0.75rem; color: var(--text-muted, #64748b); font-weight: 600; user-select: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 10px; background: var(--bg-card, rgba(255,255,255,0.85)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border-color, #e2e8f0); pointer-events: auto; cursor: default;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+        <span>System developed by <strong style="color: var(--primary, #059669); font-weight: 800;">Adomako Emmanuel</strong></span>
+    </div>
 </footer>
 
-<!-- Minimalist QR Code Modal (Only QR Code image displayed on click/double-click) -->
-<div id="developerQrModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 999999; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
-    <div style="background: white; padding: 1.25rem; border-radius: 24px; text-align: center; box-shadow: 0 25px 70px rgba(0,0,0,0.3); position: relative; animation: devQrPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: inline-block;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=System%20developed%20by%20Adomako%20Emmanuel" 
-             alt="Developer QR Code" 
-             onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23059669\' stroke-width=\'1.5\'><rect width=\'5\' height=\'5\' x=\'3\' y=\'3\' rx=\'1\'/><rect width=\'5\' height=\'5\' x=\'16\' y=\'3\' rx=\'1\'/><rect width=\'5\' height=\'5\' x=\'3\' y=\'16\' rx=\'1\'/><path d=\'M21 16h-3a2 2 0 0 0-2 2v3\'/><path d=\'M12 7v3a2 2 0 0 1-2 2H7\'/></svg>'"
-             style="width: 200px; height: 200px; display: block; border-radius: 16px;">
-    </div>
-</div>
-
 <style>
-@keyframes devQrPop {
-    0% { transform: scale(0.85); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+/* Reveal developer attribution ONLY when hovering directly on the exact text badge location */
+.dev-attribution-tag:hover {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(-2px);
 }
 </style>
-
-<script>
-function showDeveloperQrModal() {
-    const modal = document.getElementById('developerQrModal');
-    if (!modal) return;
-    modal.style.display = 'flex';
-    requestAnimationFrame(() => {
-        modal.style.opacity = '1';
-    });
-}
-
-function hideDeveloperQrModal() {
-    const modal = document.getElementById('developerQrModal');
-    if (!modal) return;
-    modal.style.opacity = '0';
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
-}
-
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById('developerQrModal');
-    if (modal && e.target === modal) {
-        hideDeveloperQrModal();
-    }
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        hideDeveloperQrModal();
-    }
-});
-</script>
