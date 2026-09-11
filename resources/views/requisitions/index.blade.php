@@ -4,9 +4,37 @@
     @php
         $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Auditor'])
             && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
-        $dgCategories = \App\Models\Setting::get('dg_approval_categories', []);
-        if (!is_array($dgCategories)) {
-            $dgCategories = [];
+        $dgCategoriesRaw = \App\Models\Setting::get('dg_approval_categories', []);
+        if (!is_array($dgCategoriesRaw)) {
+            $dgCategoriesRaw = json_decode($dgCategoriesRaw, true) ?? [];
+        }
+        $activeDgCatCodes = [];
+        foreach ($dgCategoriesRaw as $cat) {
+            $code = strtoupper(trim(\App\Models\Setting::getCategoryCode($cat) ?? $cat));
+            if ($code) $activeDgCatCodes[] = $code;
+            $activeDgCatCodes[] = strtoupper(trim($cat));
+        }
+        $activeDgCatCodes = array_values(array_unique(array_filter($activeDgCatCodes)));
+
+        $dgItemsRaw = \App\Models\Setting::get('dg_approval_items', []);
+        if (!is_array($dgItemsRaw)) {
+            $dgItemsRaw = json_decode($dgItemsRaw, true) ?? [];
+        }
+        $dgItems = array_map('strtolower', array_map('trim', $dgItemsRaw));
+
+        $categorySpecificDgItems = [];
+        if (isset($availableItems)) {
+            foreach ($availableItems as $invItem) {
+                $dClean = strtolower(trim($invItem->description));
+                if (in_array($dClean, $dgItems)) {
+                    $cClean = strtoupper(trim($invItem->ledge_category));
+                    $cCodeClean = strtoupper(trim(\App\Models\Setting::getCategoryCode($invItem->ledge_category) ?? $cClean));
+                    $categorySpecificDgItems[$cClean][$dClean] = true;
+                    if ($cCodeClean) {
+                        $categorySpecificDgItems[$cCodeClean][$dClean] = true;
+                    }
+                }
+            }
         }
     @endphp
     <style>
@@ -1814,7 +1842,28 @@
                             <div class="product-body">
                                 <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 0.5rem;">
                                     <span class="product-cat-tag" style="margin-bottom: 0;">{{ $catName }}</span>
-                                    @if(in_array($item->ledge_category, $dgCategories))
+                                    @php
+                                        $descClean = strtolower(trim($item->description));
+                                        $catClean = strtoupper(trim($item->ledge_category));
+                                        $catCodeClean = strtoupper(trim(\App\Models\Setting::getCategoryCode($item->ledge_category) ?? ''));
+
+                                        $isCatActiveInDg = in_array($catClean, $activeDgCatCodes) || (!empty($catCodeClean) && in_array($catCodeClean, $activeDgCatCodes));
+
+                                        $needsDgBadge = false;
+                                        if ($isCatActiveInDg) {
+                                            $specificItemsInCat = array_keys(array_merge(
+                                                $categorySpecificDgItems[$catClean] ?? [],
+                                                $categorySpecificDgItems[$catCodeClean] ?? []
+                                            ));
+
+                                            if (!empty($specificItemsInCat)) {
+                                                $needsDgBadge = in_array($descClean, $specificItemsInCat);
+                                            } else {
+                                                $needsDgBadge = true;
+                                            }
+                                        }
+                                    @endphp
+                                    @if($needsDgBadge)
                                         <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #047857; background: rgba(139, 92, 246, 0.08); padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(139, 92, 246, 0.18);" title="This item requires Director General's approval prior to collection.">
                                             <i data-lucide="shield-alert" style="width: 11px; height: 11px; color: #047857;"></i> Needs DG's Approval
                                         </span>
@@ -2403,5 +2452,117 @@
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
+
+        // 3-Second Silent Auto-Polling Interval for Store Requisitions Dashboard
+        async function silentPollRequisitions() {
+            try {
+                // Do not interrupt if user is actively in middle of modal forms
+                if (window.Swal && Swal.isVisible() && document.querySelector('.swal2-input, .swal2-textarea, #swal-prof-name')) {
+                    return;
+                }
+
+                const res = await fetch(window.location.href, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+                if (!res.ok) return;
+                const htmlText = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                // Map existing product card wrappers by title for robust matching
+                const existingMap = new Map();
+                document.querySelectorAll('.product-card-wrapper').forEach(el => {
+                    const t = (el.getAttribute('data-title') || '').trim().toLowerCase();
+                    if (t) existingMap.set(t, el);
+                });
+
+                let hasChanges = false;
+
+                // 1. Update Product Cards stock, badges & buttons without destroying active inputs or user selections
+                const newCardWrappers = doc.querySelectorAll('.product-card-wrapper');
+                newCardWrappers.forEach(newWrapper => {
+                    const title = (newWrapper.getAttribute('data-title') || '').trim().toLowerCase();
+                    if (!title) return;
+
+                    const existingWrapper = existingMap.get(title);
+                    if (!existingWrapper) return;
+
+                    // Update stock badge
+                    const newStockEl = newWrapper.querySelector('.product-stock');
+                    const existingStockEl = existingWrapper.querySelector('.product-stock');
+                    if (newStockEl && existingStockEl && existingStockEl.innerHTML !== newStockEl.innerHTML) {
+                        existingStockEl.className = newStockEl.className;
+                        existingStockEl.innerHTML = newStockEl.innerHTML;
+                        hasChanges = true;
+                    }
+
+                    // Update Category & DG Badges Row
+                    const newCatRow = newWrapper.querySelector('.product-body > div');
+                    const existingCatRow = existingWrapper.querySelector('.product-body > div');
+                    if (newCatRow && existingCatRow && existingCatRow.innerHTML !== newCatRow.innerHTML) {
+                        existingCatRow.innerHTML = newCatRow.innerHTML;
+                        hasChanges = true;
+                    }
+
+                    // Update Actions / Buttons if stock state changed
+                    const newActions = newWrapper.querySelector('.product-actions');
+                    const existingActions = existingWrapper.querySelector('.product-actions');
+                    
+                    const isInputFocused = existingActions && existingActions.contains(document.activeElement);
+                    if (!isInputFocused && newActions && existingActions) {
+                        const newInput = newActions.querySelector('.qty-val');
+                        const existingInput = existingActions.querySelector('.qty-val');
+                        if (newInput && existingInput) {
+                            const newMax = newInput.getAttribute('max');
+                            if (existingInput.getAttribute('max') !== newMax) {
+                                existingInput.setAttribute('max', newMax);
+                            }
+                        }
+                        
+                        const newBtn = newActions.querySelector('button.add-cart-btn');
+                        const existingBtn = existingActions.querySelector('button.add-cart-btn');
+                        if (newBtn && existingBtn && (existingBtn.disabled !== newBtn.disabled || existingBtn.textContent.trim() !== newBtn.textContent.trim())) {
+                            existingBtn.disabled = newBtn.disabled;
+                            existingBtn.className = newBtn.className;
+                            existingBtn.style.cssText = newBtn.style.cssText;
+                            existingBtn.innerHTML = newBtn.innerHTML;
+                            hasChanges = true;
+                        }
+                    }
+                });
+
+                // 2. Update Category Counts in Sidebar
+                const newCatCounts = doc.querySelectorAll('.category-count');
+                const existingCatCounts = document.querySelectorAll('.category-count');
+                newCatCounts.forEach((newCount, idx) => {
+                    if (existingCatCounts[idx] && existingCatCounts[idx].textContent !== newCount.textContent) {
+                        existingCatCounts[idx].textContent = newCount.textContent;
+                    }
+                });
+
+                // 3. Update Requisition History Panel silently
+                const newHistory = doc.querySelector('.history-container');
+                const existingHistory = document.querySelector('.history-container');
+                if (newHistory && existingHistory) {
+                    const isHistoryInputFocused = existingHistory.contains(document.activeElement);
+                    if (!isHistoryInputFocused && existingHistory.innerHTML !== newHistory.innerHTML) {
+                        existingHistory.innerHTML = newHistory.innerHTML;
+                        hasChanges = true;
+                    }
+                }
+
+                if (hasChanges && typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                // Silent fail: background poll error
+            }
+        }
+
+        // Start 3-Second Silent Polling
+        setInterval(silentPollRequisitions, 3000);
     </script>
 @endsection

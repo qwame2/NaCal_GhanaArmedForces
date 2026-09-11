@@ -54,6 +54,9 @@ class ReceivedItemsController extends Controller
                   });
             });
 
+        $dateFrom = $request->input('date_from');
+        $dateTo   = $request->input('date_to');
+
         if ($search) {
             $inventoryQuery->where(function($q) use ($search) {
                 $q->where('supplier_name', 'like', "%{$search}%")
@@ -68,6 +71,23 @@ class ReceivedItemsController extends Controller
 
         if ($category) {
             $inventoryQuery->where('ledge_category', $category);
+        }
+
+        if ($dateFrom) {
+            $inventoryQuery->where(function($q) use ($dateFrom) {
+                $q->whereDate('arrival_date', '>=', $dateFrom)
+                  ->orWhere(function($sub) use ($dateFrom) {
+                      $sub->whereNull('arrival_date')->whereDate('entry_date', '>=', $dateFrom);
+                  });
+            });
+        }
+        if ($dateTo) {
+            $inventoryQuery->where(function($q) use ($dateTo) {
+                $q->whereDate('arrival_date', '<=', $dateTo)
+                  ->orWhere(function($sub) use ($dateTo) {
+                      $sub->whereNull('arrival_date')->whereDate('entry_date', '<=', $dateTo);
+                  });
+            });
         }
 
         $inventorySras = $inventoryQuery->orderBy('updated_at', 'desc')->get();
@@ -92,12 +112,49 @@ class ReceivedItemsController extends Controller
                 });
             }
 
+            if ($dateFrom) {
+                $serviceQuery->whereDate('date_of_delivery', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $serviceQuery->whereDate('date_of_delivery', '<=', $dateTo);
+            }
+
             $serviceSras = $serviceQuery->orderBy('updated_at', 'desc')->get();
         }
 
         $totalInventoryCount = $inventorySras->count();
         $totalServiceCount = $serviceSras->count();
         $totalCombinedCount = $totalInventoryCount + $totalServiceCount;
+
+        // 3. Fetch collected/approved store requisition vouches
+        $vouchQuery = \App\Models\StoreRequisition::with(['items', 'requester', 'processor'])
+            ->whereIn('status', ['approved', 'partially_approved'])
+            ->whereNotNull('collected_at');
+
+        if ($search) {
+            $vouchQuery->where(function ($q) use ($search) {
+                $parsedId = preg_replace('/[^0-9]/', '', $search);
+                if (!empty($parsedId)) {
+                    $q->where('id', 'like', "%{$parsedId}%");
+                }
+                $q->orWhere('requester_name', 'like', "%{$search}%")
+                  ->orWhere('department', 'like', "%{$search}%")
+                  ->orWhere('purpose', 'like', "%{$search}%")
+                  ->orWhereHas('items', function ($iq) use ($search) {
+                      $iq->where('description', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($dateFrom) {
+            $vouchQuery->whereDate('collected_at', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $vouchQuery->whereDate('collected_at', '<=', $dateTo);
+        }
+
+        $requisitionVouches = $vouchQuery->orderBy('collected_at', 'desc')->get();
+        $totalVouchesCount  = $requisitionVouches->count();
 
         $ledgeMap = $this->getLedgeMap();
 
@@ -107,6 +164,8 @@ class ReceivedItemsController extends Controller
             'totalInventoryCount',
             'totalServiceCount',
             'totalCombinedCount',
+            'requisitionVouches',
+            'totalVouchesCount',
             'search',
             'type',
             'category',

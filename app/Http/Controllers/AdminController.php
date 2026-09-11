@@ -1370,7 +1370,8 @@ class AdminController extends Controller
 
     public function settings()
     {
-        if (!auth()->user()->is_admin) {
+        $user = auth()->user();
+        if (!$user->is_admin && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -1431,19 +1432,39 @@ class AdminController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory', 'stockByKeyword', 'storeOfficers'));
+        $allItems = \App\Models\InventoryItem::select('description')
+            ->distinct()
+            ->get()
+            ->pluck('description')
+            ->map(fn($d) => trim($d))
+            ->filter()
+            ->unique(fn($d) => strtolower($d))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory', 'stockByKeyword', 'storeOfficers', 'allItems'));
     }
 
     public function updateSettings(\Illuminate\Http\Request $request)
     {
-        if (!auth()->user()->is_admin && auth()->user()->role !== 'Director General') {
+        $user = auth()->user();
+        if (!$user->is_admin && $user->role !== 'Director General' && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $inputs = $request->except(['_token', 'settings_form', 'stores_dept_head_approval_categories_present', 'dg_approval_categories_present']);
+        $inputs = $request->except(['_token', 'settings_form', 'stores_dept_head_approval_categories_present', 'dg_approval_categories_present', 'dg_approval_items_present']);
 
         foreach ($inputs as $key => $value) {
             $setting = \App\Models\Setting::where('key', $key)->first();
+            if (!$setting && in_array($key, ['stores_dept_head_approval_categories', 'dg_approval_categories', 'dg_approval_items'])) {
+                $setting = \App\Models\Setting::create([
+                    'key' => $key,
+                    'value' => is_array($value) ? json_encode(array_values($value)) : $value,
+                    'type' => 'json',
+                    'group' => 'inventory',
+                    'description' => 'Workflow settings'
+                ]);
+            }
             if ($setting) {
                 $oldValue = $setting->value;
 
@@ -1451,7 +1472,8 @@ class AdminController extends Controller
                 if ($setting->type === 'boolean') {
                     $setting->value = $value ? 'true' : 'false';
                 } elseif (is_array($value)) {
-                    $setting->value = json_encode($value);
+                    $setting->value = json_encode(array_values($value));
+                    $setting->type = 'json';
                 } else {
                     $setting->value = $value;
                 }
@@ -1513,6 +1535,7 @@ class AdminController extends Controller
                 $catSetting = \App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->first();
                 if ($catSetting) {
                     $catSetting->value = json_encode([]);
+                    $catSetting->type = 'json';
                     $catSetting->save();
                 }
             }
@@ -1522,7 +1545,18 @@ class AdminController extends Controller
                 $dgCatSetting = \App\Models\Setting::where('key', 'dg_approval_categories')->first();
                 if ($dgCatSetting) {
                     $dgCatSetting->value = json_encode([]);
+                    $dgCatSetting->type = 'json';
                     $dgCatSetting->save();
+                }
+            }
+
+            // Handle dg_approval_items multi-select clear
+            if ($request->has('dg_approval_items_present') && !$request->has('dg_approval_items')) {
+                $dgItemSetting = \App\Models\Setting::where('key', 'dg_approval_items')->first();
+                if ($dgItemSetting) {
+                    $dgItemSetting->value = json_encode([]);
+                    $dgItemSetting->type = 'json';
+                    $dgItemSetting->save();
                 }
             }
         }

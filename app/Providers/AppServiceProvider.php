@@ -133,6 +133,15 @@ class AppServiceProvider extends ServiceProvider
                             'description' => 'Categories of items that require Director General (DG) approval before going to the Head of Stores.'
                         ]);
                     }
+                    if (!\App\Models\Setting::where('key', 'dg_approval_items')->exists()) {
+                        \App\Models\Setting::create([
+                            'key' => 'dg_approval_items',
+                            'value' => '[]',
+                            'type' => 'json',
+                            'group' => 'inventory',
+                            'description' => 'Specific item descriptions that require Director General (DG) approval before going to the Head of Stores.'
+                        ]);
+                    }
                     if (!\App\Models\Setting::where('key', 'delegated_approver_id')->exists()) {
                         \App\Models\Setting::create([
                             'key' => 'delegated_approver_id',

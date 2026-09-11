@@ -144,6 +144,82 @@ class DGRequisitionTest extends TestCase
     }
 
     /**
+     * Test admin can update DG approval items configuration setting.
+     */
+    public function test_admin_can_update_dg_approval_items_setting(): void
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'role' => 'Head of Stores',
+            'registration_status' => 'approved',
+        ]);
+
+        $response = $this->actingAs($admin)->post('/admin/settings', [
+            'settings_form' => '1',
+            'dg_approval_items_present' => '1',
+            'dg_approval_items' => ['Special Drone Model X', 'Tactical Helmet'],
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertEquals(['Special Drone Model X', 'Tactical Helmet'], Setting::get('dg_approval_items', []));
+    }
+
+    /**
+     * Test that requisition with matching item description requires DG approval regardless of category.
+     */
+    public function test_requisition_with_matching_item_description_requires_dg_approval(): void
+    {
+        // 1. Configure "Special Drone Model X" as a DG approval item under active DG category "A"
+        Setting::updateOrCreate(
+            ['key' => 'dg_approval_categories'],
+            ['value' => json_encode(['A'])]
+        );
+        Setting::updateOrCreate(
+            ['key' => 'dg_approval_items'],
+            ['value' => json_encode(['Special Drone Model X'])]
+        );
+
+        $user = User::factory()->create([
+            'name' => 'Test Requester',
+            'username' => 'requester1',
+            'phone' => '0241112222',
+            'role' => 'Staff',
+            'service_number' => 'SRV123',
+            'registration_status' => 'approved',
+        ]);
+
+        // Create stock under category A (which is NOT a DG approval category)
+        $this->createStock('Special Drone Model X', 'A', 10);
+
+        // 2. Submit requisition containing "Special Drone Model X"
+        $response = $this->actingAs($user)->postJson('/requisitions', [
+            'requester_name' => 'Test Requester',
+            'department' => 'Intelligence',
+            'rank_or_title' => 'Sergeant',
+            'purpose' => 'Special ops',
+            'priority' => 'normal',
+            'usage_type' => 'permanent',
+            'items' => [
+                [
+                    'description' => 'Special Drone Model X',
+                    'category' => 'A',
+                    'unit' => 'Piece',
+                    'quantity_requested' => 1,
+                    'remarks' => '',
+                ]
+            ]
+        ]);
+
+        $response->assertStatus(200);
+
+        $requisition = StoreRequisition::first();
+        $this->assertNotNull($requisition);
+        $this->assertTrue((bool)$requisition->requires_dg_approval, 'Requisition with DG-restricted item description must require DG approval.');
+        $this->assertEquals('pending', $requisition->dg_status);
+    }
+
+    /**
      * Test that requisition with matching category requires DG approval.
      */
     public function test_requisition_with_matching_category_requires_dg_approval(): void
@@ -711,5 +787,120 @@ class DGRequisitionTest extends TestCase
         $this->assertTrue((bool)$requisition->requires_dg_approval, 'Head of HR request for DG category must require DG approval.');
         $this->assertEquals('pending', $requisition->dg_status);
         $this->assertTrue((bool)$requisition->is_ready_for_dg_approval, 'Requisition must be ready for DG approval.');
+    }
+
+    /**
+     * Test stores delegator (Officer with active delegation) can access settings page
+     * and view Director General's Approval Workflow section.
+     */
+    public function test_stores_delegator_can_access_settings_and_dg_workflow_section(): void
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        Setting::set('delegated_approver_id', $officer->id);
+
+        $this->assertTrue($officer->isDelegatedApprover());
+
+        $response = $this->actingAs($officer)->get('/admin/settings');
+        $response->assertStatus(200);
+        $response->assertSee("Director General");
+        $response->assertSee("Approval Workflow");
+    }
+
+    /**
+     * Test stores delegator can update DG approval workflow settings.
+     */
+    public function test_stores_delegator_can_update_dg_approval_settings(): void
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        Setting::set('delegated_approver_id', $officer->id);
+
+        $response = $this->actingAs($officer)->post('/admin/settings', [
+            'settings_form' => '1',
+            'dg_approval_categories_present' => '1',
+            'dg_approval_categories' => ['C', 'D'],
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals(['C', 'D'], Setting::get('dg_approval_categories', []));
+    }
+
+    /**
+     * Test that selecting a specific item for DG approval does not force DG approval on other items in the same category.
+     */
+    public function test_item_override_does_not_force_dg_approval_on_other_items_in_same_category(): void
+    {
+        // Category 'A' IS in dg_approval_categories
+        Setting::set('dg_approval_categories', ['A']);
+
+        // Only "A4 Sheet" is in dg_approval_items
+        Setting::set('dg_approval_items', ['A4 Sheet']);
+
+        $user = User::factory()->create([
+            'name' => 'Test Requester',
+            'username' => 'requester_item_override',
+            'phone' => '0249998888',
+            'role' => 'Staff',
+            'service_number' => 'SRV999',
+            'registration_status' => 'approved',
+        ]);
+
+        $this->createStock('A4 Sheet', 'A', 50);
+        $this->createStock('Pencil HB', 'A', 50);
+
+        // 1. Requisition with A4 Sheet MUST require DG approval
+        $res1 = $this->actingAs($user)->postJson('/requisitions', [
+            'requester_name' => 'Test Requester',
+            'department' => 'Intelligence',
+            'rank_or_title' => 'Sergeant',
+            'purpose' => 'Printing documents',
+            'priority' => 'normal',
+            'usage_type' => 'permanent',
+            'items' => [
+                [
+                    'description' => 'A4 Sheet',
+                    'category' => 'A',
+                    'unit' => 'Piece',
+                    'quantity_requested' => 1,
+                    'remarks' => '',
+                ]
+            ]
+        ]);
+        $res1->assertStatus(200);
+        $req1 = StoreRequisition::orderBy('id', 'desc')->first();
+        $this->assertTrue((bool)$req1->requires_dg_approval, 'A4 Sheet must require DG approval.');
+
+        // 2. Requisition with Pencil HB MUST NOT require DG approval
+        $res2 = $this->actingAs($user)->postJson('/requisitions', [
+            'requester_name' => 'Test Requester',
+            'department' => 'Intelligence',
+            'rank_or_title' => 'Sergeant',
+            'purpose' => 'Note taking',
+            'priority' => 'normal',
+            'usage_type' => 'permanent',
+            'items' => [
+                [
+                    'description' => 'Pencil HB',
+                    'category' => 'A',
+                    'unit' => 'Piece',
+                    'quantity_requested' => 1,
+                    'remarks' => '',
+                ]
+            ]
+        ]);
+        $res2->assertStatus(200);
+        $req2 = StoreRequisition::orderBy('id', 'desc')->first();
+        $this->assertFalse((bool)$req2->requires_dg_approval, 'Pencil HB in same category must NOT require DG approval.');
     }
 }

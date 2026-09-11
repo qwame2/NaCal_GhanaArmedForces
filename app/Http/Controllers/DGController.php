@@ -313,6 +313,16 @@ class DGController extends Controller
 
         $ledgeMap = Setting::getCategories();
 
+        $allItems = InventoryItem::select('description')
+            ->distinct()
+            ->get()
+            ->pluck('description')
+            ->map(fn($d) => trim($d))
+            ->filter()
+            ->unique(fn($d) => strtolower($d))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
         return view('dg.index', compact(
             'totalItemsCount',
             'totalVariance',
@@ -326,7 +336,8 @@ class DGController extends Controller
             'returnedItems',
             'reqReceipts',
             'sraReceipts',
-            'ledgeMap'
+            'ledgeMap',
+            'allItems'
         ));
     }
 

@@ -114,6 +114,12 @@ class Setting extends Model
                     $val = json_decode($setting->value, true);
                     break;
             }
+            if (is_string($val) && (in_array($key, ['stores_dept_head_approval_categories', 'dg_approval_categories', 'dg_approval_items', 'inventory_categories']) || str_starts_with(trim($val), '['))) {
+                $decoded = json_decode($val, true);
+                if (is_array($decoded)) {
+                    $val = $decoded;
+                }
+            }
             return $val;
         });
 
@@ -186,6 +192,24 @@ class Setting extends Model
             unset($categories[$code]);
             self::set('inventory_categories', $categories, 'json', 'inventory', 'Dynamic inventory categories');
         }
+    }
+
+    /**
+     * Get the code for a category name or code.
+     */
+    public static function getCategoryCode($name)
+    {
+        if (empty($name)) {
+            return null;
+        }
+        $categories = self::getCategories();
+        $nameTrimmed = strtolower(trim($name));
+        foreach ($categories as $code => $catName) {
+            if (strtolower(trim($code)) === $nameTrimmed || strtolower(trim($catName)) === $nameTrimmed) {
+                return strtoupper($code);
+            }
+        }
+        return null;
     }
 
     /**

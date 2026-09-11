@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'System Configuration')
 
@@ -898,7 +898,7 @@
             <input type="hidden" name="settings_form" value="1">
 
             @foreach($settings as $group => $groupSettings)
-            @php if($group === 'inventory') continue; @endphp
+            @php if(in_array($group, ['inventory', 'general'])) continue; @endphp
 
             @php
             $colorMap = [
@@ -990,7 +990,14 @@
             </div>{{-- /cfg-card --}}
             @endforeach
 
-            @if(auth()->user()->role === 'Main Admin' && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']))
+            @php
+                $canAccessDgWorkflow = auth()->user()->is_admin 
+                    || auth()->user()->isDelegatedApprover() 
+                    || auth()->user()->isStoresHeadUser() 
+                    || in_array(auth()->user()->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)']) 
+                    || ((auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Main Admin') && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            @endphp
+            @if($canAccessDgWorkflow)
             {{-- Stores Department Head Approval Workflow --}}
             <div class="workflow-card-modern" style="display: none;">
                 @php
@@ -1144,13 +1151,44 @@
             </div>
             @endif
 
-            @if(auth()->user()->role === 'Main Admin' && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']))
+            @php
+                $canAccessDgWorkflow = auth()->user()->is_admin 
+                    || auth()->user()->isDelegatedApprover() 
+                    || auth()->user()->isStoresHeadUser() 
+                    || in_array(auth()->user()->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)']) 
+                    || ((auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Main Admin') && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            @endphp
+            @if($canAccessDgWorkflow)
             {{-- Director General's Approval Workflow --}}
             <div class="workflow-card-modern dg-workflow-container" style="margin-top: 1.5rem;">
                 @php
                 $dgSelectedCats = \App\Models\Setting::get('dg_approval_categories', []);
-                if (!is_array($dgSelectedCats)) {
+                if (is_string($dgSelectedCats)) {
                     $dgSelectedCats = json_decode($dgSelectedCats, true) ?? [];
+                }
+                if (!is_array($dgSelectedCats)) {
+                    $dgSelectedCats = [];
+                }
+
+                $dgSelectedItems = \App\Models\Setting::get('dg_approval_items', []);
+                if (is_string($dgSelectedItems)) {
+                    $dgSelectedItems = json_decode($dgSelectedItems, true) ?? [];
+                }
+                if (!is_array($dgSelectedItems)) {
+                    $dgSelectedItems = [];
+                }
+
+                $itemCategoryMap = [];
+                foreach ($itemsByCategory ?? [] as $catCode => $itemsList) {
+                    foreach ($itemsList as $itemDesc) {
+                        $cleanDesc = strtolower(trim($itemDesc));
+                        if (!isset($itemCategoryMap[$cleanDesc])) {
+                            $itemCategoryMap[$cleanDesc] = [];
+                        }
+                        if (!in_array($catCode, $itemCategoryMap[$cleanDesc])) {
+                            $itemCategoryMap[$cleanDesc][] = $catCode;
+                        }
+                    }
                 }
                 @endphp
                 <div class="cfg-card-header" style="background: #ffffff; padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
@@ -1160,12 +1198,12 @@
                         </div>
                         <div>
                             <h3 style="font-weight: 955; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Director General's Approval Workflow</h3>
-                            <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review and sign-off by the Director General.</p>
+                            <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select specific item categories and/or individual items that require intermediate review and sign-off by the Director General.</p>
                         </div>
                     </div>
                     <span id="dg-workflow-active-badge" style="background: rgba(5, 150, 105,0.08); color: #0ea5e9; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(5, 150, 105,0.15); box-shadow: 0 2px 4px rgba(5, 150, 105,0.02); transition: all 0.3s ease;">
                         <span style="width: 6px; height: 6px; border-radius: 50%; background: #059669; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
-                        <span id="dg-workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($dgSelectedCats) }}</span>
+                        <span id="dg-workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($dgSelectedCats) }} | Specific Items: {{ count($dgSelectedItems) }}</span>
                     </span>
                 </div>
                 <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
@@ -1209,6 +1247,80 @@
                                 </div>
                             </div>
                             @endforeach
+                        </div>
+
+                        <!-- Specific Items Section -->
+                        <div style="margin-top: 1rem; border-top: 1.5px dashed #e2e8f0; padding-top: 1.75rem;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 38px; height: 38px; background: rgba(5, 150, 105, 0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #059669;">
+                                        <i data-lucide="package-search" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="font-weight: 850; font-size: 1.05rem; color: #0f172a; margin: 0;">Specific Items Requiring Director General Approval</h4>
+                                        <p style="font-weight: 600; font-size: 0.8rem; color: #64748b; margin: 2px 0 0;">Select individual inventory items that will trigger DG approval regardless of their category.</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <select id="dgItemCategoryFilter" onchange="filterDgItems()" style="padding: 0.5rem 1rem; font-size: 0.82rem; height: 38px; border: 1.5px solid #cbd5e1; border-radius: 10px; outline: none; background: white; font-weight: 600; color: #1e293b; cursor: pointer;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='#cbd5e1'">
+                                        <option value="">All Categories</option>
+                                        @foreach($categories ?? [] as $code => $name)
+                                            <option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div style="position: relative; width: 240px;">
+                                        <i data-lucide="search" style="width: 15px; height: 15px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                                        <input type="text" id="dgItemSearchInput" placeholder="Search item description..." oninput="filterDgItems()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.4rem; font-size: 0.82rem; height: 38px; border: 1.5px solid #cbd5e1; border-radius: 10px; outline: none; background: white; transition: all 0.2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='#cbd5e1'">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <input type="hidden" name="dg_approval_items_present" value="1">
+                            <select name="dg_approval_items[]" id="dg_approval_items" multiple="multiple" style="display: none;">
+                                @foreach($allItems ?? [] as $itemDesc)
+                                    @php $isSelected = in_array(strtolower(trim($itemDesc)), array_map('strtolower', array_map('trim', $dgSelectedItems))); @endphp
+                                    <option value="{{ $itemDesc }}" {{ $isSelected ? 'selected' : '' }}>{{ $itemDesc }}</option>
+                                @endforeach
+                            </select>
+
+                            <!-- Interactive Items Badge Grid -->
+                            <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; max-height: 320px; overflow-y: auto; padding: 4px;" id="dgItemsGrid">
+                                @forelse($allItems ?? [] as $itemDesc)
+                                    @php
+                                        $isItemActive = in_array(strtolower(trim($itemDesc)), array_map('strtolower', array_map('trim', $dgSelectedItems)));
+                                        $catsForItem = $itemCategoryMap[strtolower(trim($itemDesc))] ?? [];
+                                        $catsStr = implode(',', $catsForItem);
+                                    @endphp
+                                    <div class="dg-item-card {{ $isItemActive ? 'active' : '' }}" data-desc="{{ strtolower(trim($itemDesc)) }}" data-categories="{{ $catsStr }}" onclick="toggleDGWorkflowItem('{{ addslashes($itemDesc) }}', this)" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0.75rem 1rem; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; cursor: pointer; transition: all 0.2s ease;">
+                                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                                            <div class="item-icon-pill" style="width: 32px; height: 32px; border-radius: 8px; background: {{ $isItemActive ? '#059669' : '#cbd5e1' }}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem; flex-shrink: 0; transition: all 0.2s;">
+                                                <i data-lucide="package" style="width: 15px; height: 15px;"></i>
+                                            </div>
+                                            <div style="min-width: 0; flex: 1;">
+                                                <div style="font-weight: 750; font-size: 0.84rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $itemDesc }}">{{ $itemDesc }}</div>
+                                                @if(!empty($catsForItem))
+                                                    <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px;">
+                                                        @foreach($catsForItem as $cCode)
+                                                            <span class="cat-pill-badge" style="font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: rgba(5, 150, 105, 0.1); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2);">Category {{ $cCode }}</span>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="item-check-indicator" style="width: 22px; height: 22px; border-radius: 50%; background: {{ $isItemActive ? '#059669' : 'transparent' }}; border: 2px solid {{ $isItemActive ? '#059669' : '#cbd5e1' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;">
+                                            <i data-lucide="check" style="width: 12px; height: 12px; color: white; display: {{ $isItemActive ? 'block' : 'none' }};"></i>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.85rem; font-weight: 600;">
+                                        No item descriptions registered in stock or received items.
+                                    </div>
+                                @endforelse
+                                <div id="dgNoItemsMessage" style="display: none; grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.85rem; font-weight: 600;">
+                                    No items match the currently selected category or search filter.
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Workflow Explainer Graphic and Logic Info Card -->
@@ -1689,7 +1801,7 @@
 </div>
 
 <script>
-    const isHeadOfStores = {{ auth()->user()->role === 'Head of Stores' ? 'true' : 'false' }};
+    const isHeadOfStores = {{ (auth()->user()->isStoresHeadUser() || in_array(auth()->user()->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) ? 'true' : 'false' }};
     const itemsByCategory = @json($itemsByCategory ?? []);
     const stockByKeyword = @json($stockByKeyword ?? []);
 
@@ -1866,6 +1978,9 @@
         // Initialize interactive category cards and flowchart state
         if (typeof updateWorkflowFlowchart === 'function') {
             updateWorkflowFlowchart();
+        }
+        if (typeof updateItemLockStates === 'function') {
+            updateItemLockStates();
         }
 
 
@@ -2125,8 +2240,129 @@
         updateWorkflowFlowchart();
     }
 
+    function filterDgItems() {
+        const selectCats = document.getElementById('dg_approval_categories');
+        const activeDgCats = selectCats ? Array.from(selectCats.selectedOptions).map(o => o.value) : [];
+
+        const query = (document.getElementById('dgItemSearchInput')?.value || '').toLowerCase().trim();
+        const selectedCat = (document.getElementById('dgItemCategoryFilter')?.value || '').trim();
+        const cards = document.querySelectorAll('#dgItemsGrid .dg-item-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const desc = (card.getAttribute('data-desc') || '').toLowerCase();
+            const itemCatsStr = card.getAttribute('data-categories') || '';
+            const itemCats = itemCatsStr.split(',').map(c => c.trim()).filter(Boolean);
+
+            const isCategoryActive = itemCats.some(c => activeDgCats.includes(c));
+            const matchesSearch = !query || desc.includes(query);
+            const matchesCat = !selectedCat || itemCats.includes(selectedCat);
+
+            if (isCategoryActive && matchesSearch && matchesCat) {
+                card.style.display = 'flex';
+                card.style.opacity = '1';
+                card.style.cursor = 'pointer';
+                card.setAttribute('title', 'Click to toggle DG approval for this item');
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const noItemsMsg = document.getElementById('dgNoItemsMessage');
+        if (noItemsMsg) {
+            if (visibleCount === 0) {
+                noItemsMsg.style.display = 'block';
+                if (activeDgCats.length === 0) {
+                    noItemsMsg.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 1.5rem 1rem;"><i data-lucide="lock" style="width: 24px; height: 24px; color: #94a3b8;"></i><span style="font-weight: 700; color: #475569;">Select and activate a Category in the Director General\'s Approval Workflow above to view and configure its specific items.</span></div>';
+                } else {
+                    noItemsMsg.innerHTML = 'No items match the currently selected category or search filter.';
+                }
+                if (window.lucide) lucide.createIcons();
+            } else {
+                noItemsMsg.style.display = 'none';
+            }
+        }
+    }
+
+    function updateItemLockStates() {
+        filterDgItems();
+    }
+
+    function toggleDGWorkflowItem(desc, card) {
+        const selectCats = document.getElementById('dg_approval_categories');
+        const selectedCats = selectCats ? Array.from(selectCats.selectedOptions).map(o => o.value) : [];
+
+        const itemCatsStr = card.getAttribute('data-categories') || '';
+        const itemCats = itemCatsStr.split(',').map(c => c.trim()).filter(Boolean);
+        const isCatActive = itemCats.some(c => selectedCats.includes(c));
+
+        if (!isCatActive) {
+            const msg = 'Please select and activate the Category in the Director General\'s Approval Workflow above first before selecting specific items.';
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Category Activation Required',
+                    text: msg,
+                    confirmButtonColor: '#059669'
+                });
+            } else {
+                alert(msg);
+            }
+            return;
+        }
+
+        const selectItems = document.getElementById('dg_approval_items');
+        if (!selectItems) return;
+
+        const cleanDesc = desc.trim().toLowerCase();
+        let itemOpt = Array.from(selectItems.options).find(opt => opt.value.trim().toLowerCase() === cleanDesc);
+
+        const isCurrentlyActive = card.classList.contains('active');
+
+        if (isCurrentlyActive) {
+            // Deselect item
+            card.classList.remove('active');
+            const iconPill = card.querySelector('.item-icon-pill');
+            if (iconPill) iconPill.style.background = '#cbd5e1';
+            const indicator = card.querySelector('.item-check-indicator');
+            if (indicator) {
+                indicator.style.background = 'transparent';
+                indicator.style.borderColor = '#cbd5e1';
+                const check = indicator.querySelector('i, svg');
+                if (check) check.style.display = 'none';
+            }
+            if (itemOpt) {
+                itemOpt.selected = false;
+            }
+        } else {
+            // Select item
+            card.classList.add('active');
+            const iconPill = card.querySelector('.item-icon-pill');
+            if (iconPill) iconPill.style.background = '#059669';
+            const indicator = card.querySelector('.item-check-indicator');
+            if (indicator) {
+                indicator.style.background = '#059669';
+                indicator.style.borderColor = '#059669';
+                const check = indicator.querySelector('i, svg');
+                if (check) check.style.display = 'block';
+            }
+            if (itemOpt) {
+                itemOpt.selected = true;
+            } else {
+                itemOpt = new Option(desc, desc, true, true);
+                selectItems.add(itemOpt);
+            }
+        }
+
+        selectItems.dispatchEvent(new Event('change'));
+        updateWorkflowFlowchart();
+    }
+
+
     function toggleDGWorkflowCategory(code, card) {
         const select = document.getElementById('dg_approval_categories');
+        if (!select) return;
         const option = select.querySelector(`option[value="${code}"]`);
 
         if (!option) return;
@@ -2134,7 +2370,7 @@
         const isCurrentlyActive = card.classList.contains('active');
 
         if (isCurrentlyActive) {
-            // Deactivate
+            // Deactivate category
             card.classList.remove('active');
 
             const label = card.querySelector('.status-label');
@@ -2149,8 +2385,37 @@
             }
 
             option.selected = false;
+
+            // Deselect any specific items belonging exclusively to this deactivated category
+            const selectItems = document.getElementById('dg_approval_items');
+            const remainingCats = Array.from(select.selectedOptions).map(o => o.value);
+
+            document.querySelectorAll('#dgItemsGrid .dg-item-card').forEach(itemCard => {
+                const itemCatsStr = itemCard.getAttribute('data-categories') || '';
+                const itemCats = itemCatsStr.split(',').map(c => c.trim()).filter(Boolean);
+                if (itemCats.includes(code)) {
+                    const hasOtherActiveCat = itemCats.some(c => remainingCats.includes(c));
+                    if (!hasOtherActiveCat) {
+                        itemCard.classList.remove('active');
+                        const iconPill = itemCard.querySelector('.item-icon-pill');
+                        if (iconPill) iconPill.style.background = '#cbd5e1';
+                        const indicator = itemCard.querySelector('.item-check-indicator');
+                        if (indicator) {
+                            indicator.style.background = 'transparent';
+                            indicator.style.borderColor = '#cbd5e1';
+                            const check = indicator.querySelector('i, svg');
+                            if (check) check.style.display = 'none';
+                        }
+                        const itemDesc = itemCard.getAttribute('data-desc') || '';
+                        if (selectItems && itemDesc) {
+                            const opt = Array.from(selectItems.options).find(o => o.value.trim().toLowerCase() === itemDesc.trim().toLowerCase());
+                            if (opt) opt.selected = false;
+                        }
+                    }
+                }
+            });
         } else {
-            // Activate
+            // Activate category
             card.classList.add('active');
 
             const label = card.querySelector('.status-label');
@@ -2170,6 +2435,12 @@
         // Trigger change event on select to ensure any listeners match
         select.dispatchEvent(new Event('change'));
 
+        // Update item lock states visually
+        updateItemLockStates();
+
+        // Filter items grid to update visible items
+        filterDgItems();
+
         // Update the visual flowchart in real-time
         updateWorkflowFlowchart();
     }
@@ -2180,6 +2451,8 @@
 
         const selectDG = document.getElementById('dg_approval_categories');
         const activeCountDG = selectDG ? Array.from(selectDG.selectedOptions).length : 0;
+        const selectDGItems = document.getElementById('dg_approval_items');
+        const activeCountDGItems = selectDGItems ? Array.from(selectDGItems.selectedOptions).length : 0;
 
         // Update HOD header badge
         const badgeTextStores = document.getElementById('workflow-badge-text');
@@ -2206,8 +2479,8 @@
         const badgeTextDG = document.getElementById('dg-workflow-badge-text');
         const badgeDotDG = document.getElementById('dg-workflow-badge-dot');
         const badgeContainerDG = document.getElementById('dg-workflow-active-badge');
-        if (badgeTextDG) badgeTextDG.textContent = `Active Categories: ${activeCountDG}`;
-        if (activeCountDG > 0) {
+        if (badgeTextDG) badgeTextDG.textContent = `Active Categories: ${activeCountDG} | Specific Items: ${activeCountDGItems}`;
+        if (activeCountDG > 0 || activeCountDGItems > 0) {
             if (badgeDotDG) badgeDotDG.style.background = '#047857';
             if (badgeContainerDG) {
                 badgeContainerDG.style.background = 'rgba(139, 92, 246, 0.08)';

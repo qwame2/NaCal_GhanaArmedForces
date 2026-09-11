@@ -72,18 +72,94 @@
         background: var(--primary); color: #fff; border-color: var(--primary);
         box-shadow: 0 4px 14px rgba(16,185,129,.28);
     }
+    .vault-tab.tab-amber {
+        border-color: rgba(245, 158, 11, .45);
+        color: #d97706;
+    }
+    .vault-tab.tab-amber:hover {
+        border-color: #d97706;
+        color: #b45309;
+        background: rgba(245, 158, 11, .08);
+    }
+    .vault-tab.tab-amber.active {
+        background: #d97706 !important;
+        color: #ffffff !important;
+        border-color: #d97706 !important;
+        box-shadow: 0 4px 14px rgba(217,119,6,.28) !important;
+    }
+
+    /* ── Date range filter & Search control group ──────────── */
+    .vault-filter-controls {
+        display: flex; align-items: center; gap: .6rem; flex-wrap: nowrap;
+    }
+    .vault-date-wrap {
+        position: relative;
+        display: inline-flex; align-items: center; gap: 5px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: 50px;
+        padding: 0 .8rem;
+        height: 38px;
+        box-sizing: border-box;
+        box-shadow: 0 1px 4px rgba(0,0,0,.04);
+        transition: border-color .25s, box-shadow .25s;
+        flex-shrink: 0;
+    }
+    .vault-date-wrap:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(16,185,129,.13);
+    }
+    .vault-date-icon {
+        width: 14px; height: 14px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+    .vault-date-label {
+        font-size: .7rem; font-weight: 800; color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: .03em;
+    }
+    .vault-date-input {
+        border: none;
+        background: transparent;
+        color: var(--text-main);
+        font-size: .78rem; font-weight: 700;
+        outline: none;
+        font-family: inherit;
+        padding: 0;
+        cursor: pointer;
+        max-width: 110px;
+    }
+    .vault-date-input::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: .6;
+        filter: invert(0.4);
+    }
+    .vault-date-clear {
+        background: rgba(100,116,139,.18);
+        border: none; border-radius: 50%;
+        width: 18px; height: 18px;
+        display: none; align-items: center; justify-content: center;
+        color: var(--text-muted);
+        font-size: .75rem; font-weight: 900;
+        cursor: pointer; line-height: 1;
+        transition: background .2s, color .2s;
+        padding: 0; margin-left: 2px;
+        flex-shrink: 0;
+    }
+    .vault-date-clear.visible { display: inline-flex; }
+    .vault-date-clear:hover { background: rgba(239,68,68,.15); color: #ef4444; }
     /* ── Search input — premium redesign ─────────────── */
     .vault-search-wrap {
         position: relative;
-        width: 100%;
-        max-width: 320px;
+        width: 240px;
+        flex-shrink: 1;
     }
     .vault-search-icon {
         position: absolute;
         left: 13px;
         top: 50%;
         transform: translateY(-50%);
-        width: 16px; height: 16px;
+        width: 15px; height: 15px;
         color: var(--text-muted);
         pointer-events: none;
         transition: color .25s;
@@ -113,12 +189,13 @@
     .vault-search-clear.visible { display: flex; }
     .vault-search-input {
         width: 100%;
-        padding: .65rem 2.5rem .65rem 2.55rem;
+        height: 38px;
+        padding: 0 2.2rem 0 2.3rem;
         border-radius: 50px;
         border: 1.5px solid var(--border-color);
         background: var(--bg-card);
         color: var(--text-main);
-        font-size: .83rem;
+        font-size: .81rem;
         font-weight: 600;
         outline: none;
         transition: border-color .25s, box-shadow .25s, background .25s;
@@ -320,6 +397,15 @@
                 <div class="vault-stat-lbl">Service SRAs</div>
             </div>
         </div>
+        <div class="vault-stat-card" style="border-top: 3px solid #f59e0b;">
+            <div class="vault-stat-icon" style="background:rgba(245,158,11,.12); color:#d97706;">
+                <i data-lucide="file-check" style="width:22px;height:22px;"></i>
+            </div>
+            <div>
+                <div class="vault-stat-num">{{ $totalVouchesCount }}</div>
+                <div class="vault-stat-lbl">Req. Vouches</div>
+            </div>
+        </div>
     </div>
 
     {{-- ══ Table Card ══ --}}
@@ -337,14 +423,31 @@
                 <button onclick="filterSraType('service')"   class="vault-tab {{ $type==='service'   ? 'active':'' }}" id="tab-service">
                     <i data-lucide="file-text" style="width:14px;height:14px;"></i> Service &nbsp;<span style="opacity:.7;">({{ $totalServiceCount }})</span>
                 </button>
+                <button onclick="filterSraType('vouches')" class="vault-tab tab-amber {{ $type==='vouches' ? 'active':'' }}" id="tab-vouches">
+                    <i data-lucide="file-check" style="width:14px;height:14px;"></i> Requisitioner Vouches &nbsp;<span style="opacity:.8;">({{ $totalVouchesCount }})</span>
+                </button>
             </div>
-            <div class="vault-search-wrap">
-                <svg class="vault-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" id="sraSearchInput" class="vault-search-input"
-                       value="{{ $search }}" placeholder="Search SRA #, supplier…"
-                       oninput="handleSraSearch(this); toggleClear(this);">
-                <button class="vault-search-clear{{ $search ? ' visible' : '' }}" id="sraSearchClear" onclick="clearSearch()" title="Clear search">&times;</button>
+            <div class="vault-filter-controls">
+                {{-- Date Filter Range --}}
+                <div class="vault-date-wrap">
+                    <i data-lucide="calendar" class="vault-date-icon"></i>
+                    <span class="vault-date-label">From</span>
+                    <input type="date" id="sraDateFrom" class="vault-date-input" value="{{ request('date_from') }}" onchange="handleDateFilter()" title="Filter From Date">
+                    <span class="vault-date-label">To</span>
+                    <input type="date" id="sraDateTo" class="vault-date-input" value="{{ request('date_to') }}" onchange="handleDateFilter()" title="Filter To Date">
+                    <button class="vault-date-clear{{ (request('date_from') || request('date_to')) ? ' visible' : '' }}" id="sraDateClear" onclick="clearDateFilter()" title="Clear date filter">&times;</button>
+                </div>
+
+                {{-- Search Input --}}
+                <div class="vault-search-wrap">
+                    <svg class="vault-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" id="sraSearchInput" class="vault-search-input"
+                           value="{{ $search }}" placeholder="Search SRA #, supplier…"
+                           oninput="handleSraSearch(this); toggleClear(this);">
+                    <button class="vault-search-clear{{ $search ? ' visible' : '' }}" id="sraSearchClear" onclick="clearSearch()" title="Clear search">&times;</button>
+                </div>
             </div>
+
         </div>
 
         {{-- Table --}}
@@ -380,7 +483,7 @@
                                 $firstItem    = $batch->items->first()?->description ?? 'No items recorded';
                                 $sraNo        = 'SRA-'.str_pad($batch->id, 6, '0', STR_PAD_LEFT);
                             @endphp
-                            <tr class="sra-row sra-type-inventory">
+                            <tr class="sra-row sra-type-inventory" data-date="{{ \Carbon\Carbon::parse($batch->arrival_date ?: $batch->entry_date)->format('Y-m-d') }}">
                                 <td>
                                     <div class="v-main" style="font-family:monospace; letter-spacing:.04em; font-size:.9rem;">{{ $sraNo }}</div>
                                     <div>
@@ -449,7 +552,7 @@
                     @if($type === 'all' || $type === 'service')
                         @foreach($serviceSras as $svc)
                             @php $hasResults = true; @endphp
-                            <tr class="sra-row sra-type-service">
+                            <tr class="sra-row sra-type-service" data-date="{{ $svc->date_of_delivery ? \Carbon\Carbon::parse($svc->date_of_delivery)->format('Y-m-d') : '' }}">
                                 <td>
                                     <div class="v-main" style="font-family:monospace; letter-spacing:.04em; font-size:.9rem;">{{ $svc->sra_number }}</div>
                                     <div>
@@ -501,6 +604,94 @@
                         @endforeach
                     @endif
 
+                    {{-- ── Requisitioner Vouches ── --}}
+                    @if($type === 'all' || $type === 'vouches')
+                        @foreach($requisitionVouches as $vouch)
+                            @php $hasResults = true; @endphp
+                            <tr class="sra-row sra-type-vouch" style="border-left: 3px solid #f59e0b;" data-date="{{ $vouch->collected_at ? \Carbon\Carbon::parse($vouch->collected_at)->format('Y-m-d') : '' }}">
+                                <td>
+                                    <div class="v-main" style="font-family:monospace; letter-spacing:.04em; font-size:.9rem; color:#d97706;">
+                                        {{ $vouch->unique_id }}
+                                    </div>
+                                    <div>
+                                        <span class="v-pill" style="background:rgba(245,158,11,.1); color:#b45309; border:1px solid rgba(245,158,11,.22); margin-top:5px;">
+                                            <i data-lucide="file-check" style="width:9px;height:9px;"></i> Req. Vouch
+                                        </span>
+                                        @if($vouch->usage_type === 'temporary')
+                                            <span class="v-pill" style="background:rgba(234,88,12,.1); color:#c2410c; border:1px solid rgba(234,88,12,.22); margin-top:5px;">
+                                                Temporary
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="v-main">{{ $vouch->requester_name }}</div>
+                                    <div class="v-sub">{{ $vouch->department }}</div>
+                                </td>
+                                <td>
+                                    <div class="v-main" style="color:#d97706; font-size:.82rem;">
+                                        {{ ucfirst(str_replace('_', ' ', $vouch->status)) }}
+                                    </div>
+                                    <div class="v-sub">Requisition</div>
+                                </td>
+                                <td>
+                                    @php
+                                        $vItems = $vouch->items;
+                                        $vFirst = $vItems->first();
+                                    @endphp
+                                    <div class="v-main" style="font-size:.82rem; font-weight:750;">
+                                        {{ $vFirst ? \Illuminate\Support\Str::limit($vFirst->description, 14) : '—' }}
+                                    </div>
+                                    <div class="v-sub">
+                                        @if($vItems->count() > 1)+{{ $vItems->count() - 1 }} more
+                                        @elseif($vItems->count() === 1) 1 item
+                                        @else No items
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="v-main" style="font-size:.82rem;">
+                                        {{ \Carbon\Carbon::parse($vouch->collected_at)->format('d M Y') }}
+                                    </div>
+                                    <div class="v-sub">{{ \Carbon\Carbon::parse($vouch->collected_at)->format('h:i A') }}</div>
+                                </td>
+                                <td>
+                                    <div class="sig-stack">
+                                        @if($vouch->origin_approved_by)
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">HOD</span>
+                                            <span class="sig-name">{{ $vouch->origin_approved_by }}</span>
+                                        </div>
+                                        @endif
+                                        @if($vouch->stores_approved_by)
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Auth.</span>
+                                            <span class="sig-name">{{ $vouch->stores_approved_by }}</span>
+                                        </div>
+                                        @endif
+                                        <div class="sig-line">
+                                            <span class="sig-check">&#10003;</span>
+                                            <span class="sig-role">Stores</span>
+                                            <span class="sig-name">{{ $vouch->processor?->name ?? 'Head of Stores' }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="td-center">
+                                    @if(!is_null($vouch->collected_at))
+                                        <a href="{{ route('requisitions.receipt.print', $vouch->id) }}" target="_blank"
+                                           class="v-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; box-shadow:0 4px 14px rgba(245,158,11,.28);">
+                                            <i data-lucide="receipt" style="width:13px;height:13px;"></i> View Vouch
+                                        </a>
+                                    @else
+                                        <span style="font-size:.74rem; color:var(--text-muted); font-weight:700;">Awaiting Collection</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endif
+
                     {{-- ── Empty state ── --}}
                     @if(!$hasResults)
                         <tr>
@@ -509,8 +700,8 @@
                                     <div class="vault-empty-icon">
                                         <i data-lucide="archive-x" style="width:26px;height:26px;stroke-width:1.4;"></i>
                                     </div>
-                                    <div style="font-weight:800;font-size:.97rem;color:var(--text-main);">No Approved SRA Receipts Found</div>
-                                    <div style="font-size:.81rem;color:var(--text-muted);margin-top:5px;">No fully-authorized SRA receipts matched your current filters.</div>
+                                    <div style="font-weight:800;font-size:.97rem;color:var(--text-main);">No Records Found</div>
+                                    <div style="font-size:.81rem;color:var(--text-muted);margin-top:5px;">No records matched your current filters.</div>
                                 </div>
                             </td>
                         </tr>
@@ -544,10 +735,26 @@
 
     function visibleRows() {
         const q = document.getElementById('sraSearchInput').value.toLowerCase().trim();
+        const dateFrom = document.getElementById('sraDateFrom')?.value || '';
+        const dateTo   = document.getElementById('sraDateTo')?.value || '';
+
         return allRows().filter(row => {
-            const typeOk   = activeType === 'all' || row.classList.contains('sra-type-' + activeType);
+            let typeOk;
+            if (activeType === 'all') {
+                typeOk = true;
+            } else if (activeType === 'vouches') {
+                typeOk = row.classList.contains('sra-type-vouch');
+            } else {
+                typeOk = row.classList.contains('sra-type-' + activeType);
+            }
+
+            const rowDate = row.getAttribute('data-date') || '';
+            let dateOk = true;
+            if (dateFrom && rowDate && rowDate < dateFrom) dateOk = false;
+            if (dateTo && rowDate && rowDate > dateTo) dateOk = false;
+
             const searchOk = !q || row.innerText.toLowerCase().includes(q);
-            return typeOk && searchOk;
+            return typeOk && dateOk && searchOk;
         });
     }
 
@@ -604,6 +811,26 @@
     }
 
     function handleSraSearch() { renderPage(1); }
+
+    function handleDateFilter() {
+        const from = document.getElementById('sraDateFrom')?.value;
+        const to   = document.getElementById('sraDateTo')?.value;
+        const clearBtn = document.getElementById('sraDateClear');
+        if (clearBtn) {
+            clearBtn.classList.toggle('visible', !!(from || to));
+        }
+        renderPage(1);
+    }
+
+    function clearDateFilter() {
+        const from = document.getElementById('sraDateFrom');
+        const to   = document.getElementById('sraDateTo');
+        const clearBtn = document.getElementById('sraDateClear');
+        if (from) from.value = '';
+        if (to)   to.value = '';
+        if (clearBtn) clearBtn.classList.remove('visible');
+        renderPage(1);
+    }
 
     function toggleClear(input) {
         const btn = document.getElementById('sraSearchClear');

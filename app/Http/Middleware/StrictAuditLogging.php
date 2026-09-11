@@ -202,6 +202,14 @@ class StrictAuditLogging
                 return "{$role} updated the Director General approval workflow categories to: " . implode(', ', $cats) . ".";
             }
 
+            if ($request->has('dg_approval_items_present')) {
+                $items = $request->input('dg_approval_items', []);
+                if (empty($items)) {
+                    return "{$role} updated the Director General approval workflow items to clear all specific item restrictions.";
+                }
+                return "{$role} updated the Director General approval workflow items to: " . implode(', ', $items) . ".";
+            }
+
             // General settings form
             $inputs = $request->except(['_token', 'settings_form']);
             if (!empty($inputs)) {

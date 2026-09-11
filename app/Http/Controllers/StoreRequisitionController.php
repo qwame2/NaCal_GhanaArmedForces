@@ -184,8 +184,70 @@ class StoreRequisitionController extends Controller
             $dgApprovalCategories = json_decode($dgApprovalCategories, true) ?? [];
         }
         $dgApprovalCategories = array_map('strtoupper', array_map('trim', $dgApprovalCategories));
+
+        $dgApprovalItems = \App\Models\Setting::get('dg_approval_items', []);
+        if (!is_array($dgApprovalItems)) {
+            $dgApprovalItems = json_decode($dgApprovalItems, true) ?? [];
+        }
+        $dgApprovalItems = array_map('strtolower', array_map('trim', $dgApprovalItems));
+
         foreach ($request->items as $item) {
-            if (!empty($item['category']) && in_array(strtoupper(trim($item['category'])), $dgApprovalCategories)) {
+            $desc = trim($item['description'] ?? '');
+            $cat  = strtoupper(trim($item['category'] ?? ''));
+
+            // Resolve item category code
+            $itemCatCode = null;
+            if (!empty($cat)) {
+                if (in_array($cat, $dgApprovalCategories)) {
+                    $itemCatCode = $cat;
+                } else {
+                    $code = strtoupper(\App\Models\Setting::getCategoryCode($cat) ?? '');
+                    if (in_array($code, $dgApprovalCategories)) {
+                        $itemCatCode = $code;
+                    }
+                }
+            }
+
+            if (!$itemCatCode && !empty($desc)) {
+                $dbCats = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                    ->whereRaw('LOWER(TRIM(inventory_items.description)) = ?', [strtolower($desc)])
+                    ->pluck('inventory_batches.ledge_category')
+                    ->filter()
+                    ->unique()
+                    ->map(fn($c) => strtoupper(trim($c)))
+                    ->toArray();
+
+                foreach ($dbCats as $dbCat) {
+                    if (in_array($dbCat, $dgApprovalCategories)) {
+                        $itemCatCode = $dbCat;
+                        break;
+                    }
+                }
+            }
+
+            // Rule 1: If category is NOT in dgApprovalCategories -> Category is Bypassed -> Item does NOT require DG approval
+            if (!$itemCatCode) {
+                continue;
+            }
+
+            // Rule 2: Category IS in dgApprovalCategories.
+            // Check if there are any specific items selected under this active category in dgApprovalItems.
+            $categoryHasSpecificItems = false;
+            if (!empty($dgApprovalItems)) {
+                $categoryHasSpecificItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                    ->whereRaw('UPPER(TRIM(inventory_batches.ledge_category)) = ?', [$itemCatCode])
+                    ->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(TRIM(inventory_items.description))'), $dgApprovalItems)
+                    ->exists();
+            }
+
+            if ($categoryHasSpecificItems) {
+                // Specific items ARE configured for this active category: ONLY items explicitly listed in dgApprovalItems require DG approval
+                if (!empty($desc) && in_array(strtolower($desc), $dgApprovalItems)) {
+                    $requiresDgApproval = true;
+                    break;
+                }
+            } else {
+                // NO specific items configured for this active category: ALL items in this category require DG approval
                 $requiresDgApproval = true;
                 break;
             }
