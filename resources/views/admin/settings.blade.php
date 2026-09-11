@@ -1221,8 +1221,23 @@
                         <!-- Premium Interactive Card Selection Grid -->
                         <div class="workflow-cat-grid-modern">
                             @foreach($categories ?? [] as $code => $name)
-                            @php $isActive = in_array($code, $dgSelectedCats); @endphp
+                            @php
+                                $isActive = in_array($code, $dgSelectedCats);
+                                $catItemsForCode = [];
+                                if ($isActive && !empty($dgSelectedItems)) {
+                                    foreach ($allItems ?? [] as $itemDesc) {
+                                        $cleanD = strtolower(trim($itemDesc));
+                                        if (in_array($cleanD, array_map('strtolower', array_map('trim', $dgSelectedItems)))) {
+                                            $cArr = $itemCategoryMap[$cleanD] ?? [];
+                                            if (in_array($code, $cArr)) {
+                                                $catItemsForCode[] = $itemDesc;
+                                            }
+                                        }
+                                    }
+                                }
+                            @endphp
                             <div class="workflow-cat-card-modern {{ $isActive ? 'active' : '' }}"
+                                data-category-code="{{ $code }}"
                                 onclick="toggleDGWorkflowCategory('{{ $code }}', this)">
 
                                 <!-- Glowing corner accent for active state -->
@@ -1238,6 +1253,22 @@
                                     <div style="font-weight: 855; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $name }}</div>
                                     <div class="status-label">
                                         {{ $isActive ? 'Requires DG' : 'Bypasses DG' }}
+                                    </div>
+                                    <div class="category-selected-items-list" style="margin-top: 4px;">
+                                        @if($isActive)
+                                            @if(empty($catItemsForCode))
+                                                <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(5, 150, 105, 0.08); color: #059669; padding: 2px 7px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; border: 1px solid rgba(5, 150, 105, 0.15);"><i data-lucide="check-circle" style="width: 10px; height: 10px;"></i> All items in category require DG</span>
+                                            @else
+                                                <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                                    @foreach(array_slice($catItemsForCode, 0, 2) as $sItem)
+                                                        <span style="font-size: 0.64rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; background: rgba(14, 165, 233, 0.08); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.2); display: inline-flex; align-items: center; gap: 3px;" title="{{ $sItem }}"><i data-lucide="package" style="width: 10px; height: 10px;"></i> {{ $sItem }}</span>
+                                                    @endforeach
+                                                    @if(count($catItemsForCode) > 2)
+                                                        <span style="font-size: 0.64rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">+{{ count($catItemsForCode) - 2 }} more</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        @endif
                                     </div>
                                 </div>
 
@@ -2287,6 +2318,63 @@
 
     function updateItemLockStates() {
         filterDgItems();
+        updateCategoryItemBadges();
+    }
+
+    function updateCategoryItemBadges() {
+        const selectCats = document.getElementById('dg_approval_categories');
+        const activeCats = selectCats ? Array.from(selectCats.selectedOptions).map(o => o.value) : [];
+
+        const itemsByCatCode = {};
+        document.querySelectorAll('#dgItemsGrid .dg-item-card').forEach(card => {
+            if (!card.classList.contains('active')) return;
+            const titleEl = card.querySelector('[title]');
+            const rawTitle = titleEl ? titleEl.getAttribute('title') : (card.getAttribute('data-desc') || '');
+            if (!rawTitle) return;
+
+            const itemCatsStr = card.getAttribute('data-categories') || '';
+            const itemCats = itemCatsStr.split(',').map(c => c.trim()).filter(Boolean);
+            itemCats.forEach(cCode => {
+                if (!itemsByCatCode[cCode]) itemsByCatCode[cCode] = [];
+                if (!itemsByCatCode[cCode].includes(rawTitle)) {
+                    itemsByCatCode[cCode].push(rawTitle);
+                }
+            });
+        });
+
+        document.querySelectorAll('.workflow-cat-card-modern').forEach(card => {
+            const catCode = card.getAttribute('data-category-code');
+            if (!catCode) return;
+
+            const isCatActive = activeCats.includes(catCode);
+            const itemsContainer = card.querySelector('.category-selected-items-list');
+            if (!itemsContainer) return;
+
+            if (!isCatActive) {
+                itemsContainer.innerHTML = '';
+                return;
+            }
+
+            const catItems = itemsByCatCode[catCode] || [];
+            if (catItems.length === 0) {
+                itemsContainer.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(5, 150, 105, 0.08); color: #059669; padding: 2px 7px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; border: 1px solid rgba(5, 150, 105, 0.15);"><i data-lucide="check-circle" style="width: 10px; height: 10px;"></i> All items in category require DG</span>`;
+            } else {
+                let tagsHtml = '<div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">';
+                const maxDisplay = 2;
+                const displayItems = catItems.slice(0, maxDisplay);
+                displayItems.forEach(item => {
+                    tagsHtml += `<span style="font-size: 0.64rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; background: rgba(14, 165, 233, 0.08); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.2); display: inline-flex; align-items: center; gap: 3px;" title="${item}"><i data-lucide="package" style="width: 10px; height: 10px;"></i> ${item}</span>`;
+                });
+                if (catItems.length > maxDisplay) {
+                    const extra = catItems.length - maxDisplay;
+                    tagsHtml += `<span style="font-size: 0.64rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">+${extra} more</span>`;
+                }
+                tagsHtml += '</div>';
+                itemsContainer.innerHTML = tagsHtml;
+            }
+        });
+
+        if (window.lucide) lucide.createIcons();
     }
 
     function toggleDGWorkflowItem(desc, card) {
@@ -2356,6 +2444,7 @@
         }
 
         selectItems.dispatchEvent(new Event('change'));
+        updateCategoryItemBadges();
         updateWorkflowFlowchart();
     }
 
