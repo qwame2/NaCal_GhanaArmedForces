@@ -1,0 +1,135 @@
+{
+  "info": {
+    "_postman_id": "nacal-api-collection-id",
+    "name": "NaCal API Test Collection",
+    "description": "Automated Postman & Newman API Collection for NaCal system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Check Password Reset Status (Public)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/check-reset-status?username=testuser",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "check-reset-status"
+          ],
+          "query": [
+            {
+              "key": "username",
+              "value": "testuser"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response contains rejected property', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('rejected');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Check Forgot Eligibility (Public)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/check-forgot-eligibility?username=testuser",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "check-forgot-eligibility"
+          ],
+          "query": [
+            {
+              "key": "username",
+              "value": "testuser"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response contains eligible property', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('eligible');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unit Rules (Protected - Unauthenticated check)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/unit-rules",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "unit-rules"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Unauthenticated access responds with 401 or redirect', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([401, 302, 200]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
