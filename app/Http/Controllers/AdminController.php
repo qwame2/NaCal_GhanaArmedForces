@@ -373,7 +373,10 @@ class AdminController extends Controller
 
     public function updateUser(Request $request, $id)
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || auth()->user()->isStoresHeadUser() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -540,7 +543,10 @@ class AdminController extends Controller
 
     public function toggleUserStatus($id)
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || auth()->user()->isStoresHeadUser() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -659,12 +665,12 @@ class AdminController extends Controller
 
     public function toggleDepartmentPermission(Request $request)
     {
-        if (!auth()->user()->is_admin) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
+        $user = auth()->user();
+        $userRole = $user->role ?? '';
+        $isAuthorized = ($user->is_admin || $user->isDelegatedApprover() || $user->isMainAdminOrSub() || $userRole === 'Head of Stores' || $user->isStoresHeadUser() || strcasecmp($user->department ?? '', 'Stores') === 0);
 
-        if (auth()->user()->role !== 'Head of Stores') {
-            return response()->json(['success' => false, 'message' => 'Unauthorized. Only the Head of Stores can modify department requisition access.'], 403);
+        if (!$isAuthorized) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Only authorized store administrators can modify department requisition access.'], 403);
         }
 
         $request->validate([
@@ -745,7 +751,10 @@ class AdminController extends Controller
 
     public function getStoreOfficers()
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || auth()->user()->isStoresHeadUser() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -779,7 +788,10 @@ class AdminController extends Controller
 
     public function updatePermission(Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || auth()->user()->isStoresHeadUser() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -834,7 +846,10 @@ class AdminController extends Controller
 
     public function updateGlobalSetting(Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || auth()->user()->isStoresHeadUser() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -872,9 +887,14 @@ class AdminController extends Controller
 
     public function updateUserRole(Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || auth()->user()->isStoresHeadUser() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }        $request->validate([
+        }
+
+        $request->validate([
             'user_id' => 'required|exists:users,id',
             'role' => 'required|string|in:Main Admin,Sub Main Admin,Department Head,Dept Head HR,Head of Welfare,Requisitioner,Officer,Auditor,External Auditor,Director General',
             'department' => 'nullable|string|max:255'
@@ -947,7 +967,10 @@ class AdminController extends Controller
 
     public function updateUserDepartment(Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        $userRole = auth()->user()->role ?? '';
+        $isAuthorized = (auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isMainAdminOrSub() || $userRole === 'Head of Stores' || auth()->user()->isStoresHeadUser() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0);
+
+        if (!$isAuthorized) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
