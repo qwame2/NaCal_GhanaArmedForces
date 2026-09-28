@@ -1,18 +1,22 @@
-@if($items->hasPages())
+@if(isset($items) && $items)
 <div class="audit-pagination-container" @if(isset($id) && $id) id="{{ $id }}" @endif>
     <div class="audit-pagination-info">
-        Showing <span>{{ number_format($items->firstItem() ?? 0) }}</span> to <span>{{ number_format($items->lastItem() ?? 0) }}</span> of <span>{{ number_format($items->total()) }}</span> records
+        @if($items->total() > 0)
+            Showing <span>{{ number_format($items->firstItem() ?? 0) }}</span> to <span>{{ number_format($items->lastItem() ?? 0) }}</span> of <span>{{ number_format($items->total()) }}</span> records
+        @else
+            <span>0</span> records found
+        @endif
     </div>
     <div class="audit-pagination-buttons">
-        @if ($items->onFirstPage())
-            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-        @else
+        @if ($items->total() > 0 && !$items->onFirstPage() && $items->hasPages())
             <a href="{{ $items->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
+        @else
+            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
         @endif
 
         @php
-            $currentPage = $items->currentPage();
-            $lastPage = $items->lastPage();
+            $currentPage = $items->currentPage() ?: 1;
+            $lastPage = $items->lastPage() ?: 1;
             $start = max(1, $currentPage - 2);
             $end = min($lastPage, $currentPage + 2);
         @endphp
@@ -23,7 +27,11 @@
             @endif
         @endif
         @for ($p = $start; $p <= $end; $p++)
-            <a href="{{ $items->appends(request()->query())->url($p) }}" class="audit-page-btn {{ $p == $currentPage ? 'active-page' : '' }}">{{ $p }}</a>
+            @if($items->total() > 0 && $items->hasPages())
+                <a href="{{ $items->appends(request()->query())->url($p) }}" class="audit-page-btn {{ $p == $currentPage ? 'active-page' : '' }}">{{ $p }}</a>
+            @else
+                <span class="audit-page-btn {{ $p == $currentPage ? 'active-page' : '' }}">{{ $p }}</span>
+            @endif
         @endfor
         @if($end < $lastPage)
             @if($end < $lastPage - 1)
@@ -32,7 +40,7 @@
             <a href="{{ $items->appends(request()->query())->url($lastPage) }}" class="audit-page-btn {{ $currentPage == $lastPage ? 'active-page' : '' }}">{{ $lastPage }}</a>
         @endif
 
-        @if ($items->hasMorePages())
+        @if ($items->total() > 0 && $items->hasMorePages())
             <a href="{{ $items->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
         @else
             <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>

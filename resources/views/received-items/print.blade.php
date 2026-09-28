@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -433,9 +433,9 @@
             <tbody>
                 @foreach($batch->items as $index => $item)
                 @php
-                    $expected = floatval($item->qty);
-                    $verified = floatval($item->stock_balance);
+                    $verified = floatval($item->original_received_qty);
                     $variance = floatval($item->variance);
+                    $expected = $verified - $variance;
 
                     $statusText = 'Verified Match';
                     $statusColor = '#059669'; // Green

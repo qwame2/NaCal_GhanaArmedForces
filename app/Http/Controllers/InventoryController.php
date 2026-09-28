@@ -297,7 +297,9 @@ class InventoryController extends Controller
 
             DB::beginTransaction();
 
-            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
+            $is_admin = (auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)' || auth()->user()->isStoresHeadUser())
+                && !auth()->user()->isDelegatedApprover()
+                && !in_array(auth()->user()->role, ['Officer', 'Store Officer']);
             
             if (!$is_admin) {
                 // Divert to staged approval process
@@ -341,6 +343,7 @@ class InventoryController extends Controller
                     $msgContent .= "</div></div>";
  
                     foreach ($admins as $admin) {
+                        if ($admin->id === auth()->id()) continue;
                         \App\Models\Message::create([
                             'sender_id' => auth()->id(),
                             'receiver_id' => $admin->id,
@@ -352,7 +355,7 @@ class InventoryController extends Controller
                 }
 
                 // Send confirmation back to the user
-                $firstAdmin = \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->first();
+                $firstAdmin = \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->where('id', '!=', auth()->id())->first() ?? \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->first();
                 if ($firstAdmin) {
                     $confirmMsg = "<!-- sra_req_id:{$editReq->id} -->"
                         . "<div class='sra-awaiting-msg personnel-view' style='padding: 15px 18px; border: 1.5px solid #c7d2fe; border-radius: 16px; background: rgba(99,102,241,0.04); display: flex; align-items: center; gap: 12px;'>"
@@ -416,6 +419,7 @@ class InventoryController extends Controller
                     $itemData = $item;
                     unset($itemData['ledge_balance']);
                     unset($itemData['ledge_category']);
+                    $itemData['received_qty'] = floatval(str_replace(',', '', $item['qty'] ?? ($item['stock_balance'] ?? 0)));
                     $batch->items()->create($itemData);
                 }
             }
@@ -511,7 +515,9 @@ class InventoryController extends Controller
 
 
             // Create the Batch or Stage it for Approval
-            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover() || auth()->user()->isStoresHeadUser() || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)';
+            $is_admin = (auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)' || auth()->user()->isStoresHeadUser())
+                && !auth()->user()->isDelegatedApprover()
+                && !in_array(auth()->user()->role, ['Officer', 'Store Officer']);
             
             if (!$is_admin) {
                 // Divert to staged approval process (Don't save items yet)
@@ -573,6 +579,7 @@ class InventoryController extends Controller
                     $msgContent .= "</div></div>";
  
                     foreach ($admins as $admin) {
+                        if ($admin->id === auth()->id()) continue;
                         \App\Models\Message::create([
                             'sender_id' => auth()->id(),
                             'receiver_id' => $admin->id,
@@ -584,7 +591,7 @@ class InventoryController extends Controller
                 }
 
                 // Send confirmation back to the user
-                $firstAdmin = \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->first();
+                $firstAdmin = \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->where('id', '!=', auth()->id())->first() ?? \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->first();
                 if ($firstAdmin) {
                     $confirmMsg = "<!-- sra_req_id:{$editReq->id} -->"
                         . "<div class='sra-awaiting-msg personnel-view' style='padding: 15px 18px; border: 1.5px solid #c7d2fe; border-radius: 16px; background: rgba(99,102,241,0.04); display: flex; align-items: center; gap: 12px;'>"
@@ -655,6 +662,7 @@ class InventoryController extends Controller
                     $itemData = $item;
                     unset($itemData['ledge_balance']);
                     unset($itemData['ledge_category']);
+                    $itemData['received_qty'] = floatval(str_replace(',', '', $item['qty'] ?? ($item['stock_balance'] ?? 0)));
                     $batch->items()->create($itemData);
                 }
             }

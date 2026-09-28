@@ -73,6 +73,173 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
+
+    /* Advanced Pagination & Per-Page Controls */
+    .pagination-footer {
+        padding: 1.5rem 2rem;
+        background: var(--bg-main);
+        border-top: 1px solid var(--border-color);
+    }
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+    }
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+    .pagination-info-badge {
+        background: rgba(5, 150, 105, 0.08);
+        color: var(--primary);
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(5, 150, 105, 0.15);
+        display: inline-flex;
+        align-items: center;
+    }
+    .pagination-stats {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-weight: 700;
+    }
+    .pagination-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .pagination-numbers {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .pagination-arrow, .pagination-number {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        color: var(--text-main);
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 0.85rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .pagination-number.active {
+        background: var(--primary);
+        color: white !important;
+        border-color: var(--primary);
+        box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    }
+    .pagination-arrow:not(.disabled):hover, .pagination-number:not(.active):hover {
+        transform: translateY(-2px);
+        background: rgba(5, 150, 105, 0.06);
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+    }
+    .pagination-arrow.disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        background: var(--bg-main);
+        border-color: var(--border-color);
+    }
+    .pagination-dots {
+        color: var(--text-muted);
+        padding: 0 0.4rem;
+        font-weight: 900;
+    }
+    .modern-pagination-select {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        background: rgba(5, 150, 105, 0.04);
+        border: 1.5px solid rgba(5, 150, 105, 0.15);
+        border-radius: 999px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    .modern-pagination-select:hover {
+        background: rgba(5, 150, 105, 0.08);
+        border-color: rgba(5, 150, 105, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(5, 150, 105, 0.1);
+    }
+    .modern-pagination-select:focus-within {
+        background: var(--bg-main);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.15);
+    }
+    .modern-pagination-select .select-icon-left {
+        position: absolute;
+        left: 14px;
+        color: var(--primary);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        opacity: 0.9;
+    }
+    .modern-pagination-select .select-icon-left i {
+        width: 14px;
+        height: 14px;
+    }
+    .modern-pagination-select select {
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        border: none;
+        color: var(--text-main);
+        font-weight: 800;
+        font-size: 0.8rem;
+        padding: 0.65rem 2.8rem 0.65rem 2.4rem;
+        cursor: pointer;
+        outline: none;
+        width: 100%;
+        font-family: inherit;
+        letter-spacing: 0.2px;
+    }
+    .modern-pagination-select select option {
+        background: var(--bg-card);
+        color: var(--text-main);
+        font-weight: 600;
+    }
+    .modern-pagination-select .select-icon-right {
+        position: absolute;
+        right: 14px;
+        background: var(--bg-card);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        color: var(--text-muted);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color);
+    }
+    .modern-pagination-select .select-icon-right i {
+        width: 12px;
+        height: 12px;
+    }
+    .modern-pagination-select:focus-within .select-icon-right {
+        transform: rotate(180deg);
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
 </style>
 
 <div class="animate-slide-up" style="padding: 2rem; width: 100%; box-sizing: border-box;">
@@ -276,17 +443,26 @@ function switchTab(tab) {
         if (btnHistory) btnHistory.classList.add('active');
         if (secHistory) secHistory.style.display = 'block';
     }
+
+    if (window.history && window.history.replaceState) {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('tab', tab);
+        window.history.replaceState({}, '', currentUrl.toString());
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('history_page')) {
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'pending' || urlParams.has('pending_page') || urlParams.has('pending_per_page')) {
+        switchTab('pending');
+    } else if (urlParams.has('history_page') || tabParam === 'history') {
         switchTab('history');
-    } else if (urlParams.has('edits_page')) {
+    } else if (urlParams.has('edits_page') || tabParam === 'edits') {
         switchTab('edits');
-    } else if (urlParams.has('rollbacks_page') || urlParams.get('tab') === 'rollbacks') {
+    } else if (urlParams.has('rollbacks_page') || tabParam === 'rollbacks') {
         switchTab('rollbacks');
     }
 });
@@ -348,9 +524,10 @@ function pollPendingApprovalsSilently() {
     if (activeModal) return;
 
     const pageParam = new URLSearchParams(window.location.search).get('pending_page') || 1;
+    const pendingPerPageParam = new URLSearchParams(window.location.search).get('pending_per_page') || new URLSearchParams(window.location.search).get('per_page') || 10;
     const editsPageParam = new URLSearchParams(window.location.search).get('edits_page') || 1;
     const rollbacksPageParam = new URLSearchParams(window.location.search).get('rollbacks_page') || 1;
-    const fetchUrl = window.location.pathname + '?pending_page=' + pageParam + '&edits_page=' + editsPageParam + '&rollbacks_page=' + rollbacksPageParam;
+    const fetchUrl = window.location.pathname + '?pending_page=' + pageParam + '&pending_per_page=' + pendingPerPageParam + '&edits_page=' + editsPageParam + '&rollbacks_page=' + rollbacksPageParam;
 
     fetch(fetchUrl, {
         headers: {

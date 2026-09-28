@@ -822,8 +822,7 @@
                                 @endif
                             </td>
                             @php
-                                $expectedQty = !is_null($item->book_qty) ? (float)str_replace(',', '', $item->book_qty) : (float)str_replace(',', '', $item->qty ?? 0);
-                                $receivedQtyDisplay = $expectedQty + (float)str_replace(',', '', $item->variance ?? 0);
+                                $receivedQtyDisplay = (float)$item->original_received_qty;
                             @endphp
                             <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
                                 {{ number_format($receivedQtyDisplay, 0) }}

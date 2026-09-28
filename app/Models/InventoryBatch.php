@@ -104,6 +104,16 @@ class InventoryBatch extends Model
             }
         }
 
+        if (Schema::hasTable('inventory_items') && !Schema::hasColumn('inventory_items', 'received_qty')) {
+            try {
+                Schema::table('inventory_items', function (Blueprint $table) {
+                    $table->decimal('received_qty', 15, 2)->nullable()->after('unit');
+                });
+            } catch (\Exception $e) {
+                $success = false;
+            }
+        }
+
         // Cache the successful validation for 7 days if all schema modifications succeeded
         if ($success) {
             \Illuminate\Support\Facades\Cache::put($cacheKey, true, 86400);

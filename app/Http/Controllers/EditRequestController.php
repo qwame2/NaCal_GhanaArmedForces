@@ -654,6 +654,7 @@ class EditRequestController extends Controller
                             $itemData = $item;
                             unset($itemData['ledge_balance']);
                             unset($itemData['ledge_category']);
+                            $itemData['received_qty'] = floatval(str_replace(',', '', $item['qty'] ?? ($item['stock_balance'] ?? 0)));
                             $batch->items()->create($itemData);
                         }
 
@@ -948,6 +949,10 @@ class EditRequestController extends Controller
                             $inventoryItem->book_qty = max(0, $availableBook - $takeBook);
                         } else {
                             $takeBook = 0;
+                        }
+
+                        if (is_null($inventoryItem->received_qty)) {
+                            $inventoryItem->received_qty = $inventoryItem->original_received_qty;
                         }
 
                         $inventoryItem->qty = max(0, $availableQty - $takeQty);
@@ -1688,6 +1693,11 @@ class EditRequestController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
+        $pendingPerPage = (int) $request->input('pending_per_page', $request->input('per_page', 10));
+        if ($pendingPerPage <= 0 || $pendingPerPage > 100) {
+            $pendingPerPage = 10;
+        }
+
         $pending = EditRequest::with('user')
             ->where(function($q) {
                 $q->where('item_type', 'batch_creation')
@@ -1695,7 +1705,10 @@ class EditRequestController extends Controller
             })
             ->whereIn('status', ['pending', 'resubmitted'])
             ->orderBy('created_at', 'desc')
-            ->paginate(15, ['*'], 'pending_page');
+            ->paginate($pendingPerPage, ['*'], 'pending_page')
+            ->withQueryString();
+
+        $pending->appends(['tab' => 'pending']);
 
         $pendingEdits = EditRequest::with('user')
             ->whereIn('request_type', ['edit', 'edit_submission'])

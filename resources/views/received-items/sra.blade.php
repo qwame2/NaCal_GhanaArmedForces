@@ -568,10 +568,15 @@
                     </td>
                     <td style="text-align: center;">{{ $item->ledger_id ?? '-' }}</td>
                     <td>
+                        @php
+                            $origReceived = (float)$item->original_received_qty;
+                            $variance = (float)($item->variance ?? 0);
+                            $ordered = $origReceived - $variance;
+                        @endphp
                         <div class="qty-sub-grid">
-                            <div class="qty-sub-cell">{{ number_format((float)$item->stock_balance - (float)$item->variance) }}</div>
-                            <div class="qty-sub-cell" style="font-weight: bold;">{{ number_format((float)$item->stock_balance) }}</div>
-                            <div class="qty-sub-cell">{{ $item->variance == 0 ? '-' : number_format(abs((float)$item->variance)) }}</div>
+                            <div class="qty-sub-cell">{{ number_format($ordered) }}</div>
+                            <div class="qty-sub-cell" style="font-weight: bold;">{{ number_format($origReceived) }}</div>
+                            <div class="qty-sub-cell">{{ $variance == 0 ? '-' : number_format(abs($variance)) }}</div>
                         </div>
                     </td>
                 </tr>

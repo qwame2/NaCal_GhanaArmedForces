@@ -232,21 +232,68 @@
         color: var(--text-main);
     }
 
-    /* Stepper/Tabs navigation */
-    .audit-tabs-container {
+    /* Stepper/Tabs navigation wrapper with arrows */
+    .audit-tabs-wrapper {
+        position: relative;
         display: flex;
-        background: rgba(0, 0, 0, 0.03);
-        border: 1px solid var(--border-color);
-        padding: 6px;
-        border-radius: 18px;
-        gap: 6px;
+        align-items: center;
+        gap: 8px;
         margin-bottom: 2rem;
-        width: fit-content;
         max-width: 100%;
-        overflow-x: auto;
-        backdrop-filter: blur(8px);
         animation: auditFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
         animation-delay: 0.40s;
+    }
+
+    .audit-tabs-container {
+        display: flex;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-color);
+        padding: 6px 8px;
+        border-radius: 18px;
+        gap: 6px;
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 0;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        backdrop-filter: blur(8px);
+    }
+    .audit-tabs-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .audit-tab-scroll-btn {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 2;
+    }
+    .audit-tab-scroll-btn:hover:not(.disabled) {
+        background: var(--audit-primary);
+        color: #ffffff;
+        border-color: var(--audit-primary);
+        transform: scale(1.06);
+        box-shadow: 0 6px 16px rgba(5, 150, 105, 0.25);
+    }
+    .audit-tab-scroll-btn:active:not(.disabled) {
+        transform: scale(0.95);
+    }
+    .audit-tab-scroll-btn.disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
     }
 
     .audit-tab-btn {
@@ -263,6 +310,8 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        overflow: visible;
+        position: relative;
     }
 
     .audit-tab-btn:hover:not(.active) {
@@ -582,24 +631,40 @@
     }
     @keyframes blink-danger-pulse {
         0% {
-            opacity: 1;
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 0 2px var(--bg-card, #ffffff);
         }
         70% {
-            opacity: 0.8;
-            box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            transform: scale(1.06);
+            box-shadow: 0 0 0 7px rgba(239, 68, 68, 0), 0 0 0 2px var(--bg-card, #ffffff);
         }
         100% {
-            opacity: 1;
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 2px var(--bg-card, #ffffff);
         }
     }
     .blinking-danger-badge {
-        background: #ef4444 !important;
-        color: white !important;
-        animation: blink-danger-pulse 1.5s infinite;
-        font-weight: 900;
-        display: inline-block;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        color: #ffffff !important;
+        animation: blink-danger-pulse 1.8s infinite;
+        font-weight: 950 !important;
+        font-size: 0.76rem !important;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 7px;
+        border-radius: 999px;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin-left: 8px;
+        position: relative;
+        z-index: 999 !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5), 0 0 0 2px var(--bg-card, #ffffff) !important;
+        flex-shrink: 0;
+        vertical-align: middle;
+        pointer-events: none;
     }
     @keyframes blink-text-red {
         0%, 100% { color: #ef4444; }
@@ -786,44 +851,177 @@
         </div>
     </form>
 
-    {{-- Tabs Menu --}}
-    <div class="audit-tabs-container">
-        <button class="audit-tab-btn active" onclick="switchAuditTab('audit-trail-tab', this)">
-            <i data-lucide="shield-alert" style="width: 16px;"></i>
-            System Audit Trail
-        </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('received-items-tab', this)">
-            <i data-lucide="download" style="width: 16px;"></i>
-            Received Items
-        </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('issued-items-tab', this)">
-            <i data-lucide="upload" style="width: 16px;"></i>
-            Issued Items
-        </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('returned-items-tab', this)">
-            <i data-lucide="undo-2" style="width: 16px;"></i>
-            Returned Items
-        </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('requisitions-tab', this)">
-            <i data-lucide="file-text" style="width: 16px;"></i>
-            Requisitions Log
-        </button>
-        <button class="audit-tab-btn" onclick="switchAuditTab('approved-reqs-tab', this)">
-            <i data-lucide="check-circle" style="width: 16px;"></i>
-            Approved Requests
-        </button>
-        @php
-            $totalPendingSrasCount = $pendingSras->count() + $pendingServiceSras->count() + ($pendingDeptRequisitions->count() ?? 0);
-        @endphp
-        <button class="audit-tab-btn @if($totalPendingSrasCount > 0) pending-sras-active @endif" onclick="switchAuditTab('pending-sra-tab', this)" style="position: relative;">
-            <i data-lucide="file-check" style="width: 16px;"></i>
-            Pending SRA Approvals
-            @if($totalPendingSrasCount > 0)
-                <span class="badge blinking-danger-badge" style="position: absolute; top: -8px; right: -8px; padding: 2.5px 6.5px; border-radius: 99px; font-size: 0.65rem; font-weight: 900; z-index: 10;">{{ $totalPendingSrasCount }}</span>
-            @endif
+    {{-- Tabs Menu with Left & Right Arrow Navigation Buttons --}}
+    <div class="audit-tabs-wrapper">
+        <button type="button" 
+                class="audit-tab-scroll-btn audit-tab-scroll-left" 
+                id="auditTabScrollLeft" 
+                onclick="scrollAuditTabs('left')" 
+                title="Scroll to previous tabs" 
+                aria-label="Previous Tabs">
+            <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
         </button>
 
+        <div class="audit-tabs-container" id="auditTabsContainer">
+            <button class="audit-tab-btn active" onclick="switchAuditTab('audit-trail-tab', this)">
+                <i data-lucide="shield-alert" style="width: 16px;"></i>
+                System Audit Trail
+            </button>
+            <button class="audit-tab-btn" onclick="switchAuditTab('received-items-tab', this)">
+                <i data-lucide="download" style="width: 16px;"></i>
+                Received Items
+            </button>
+            <button class="audit-tab-btn" onclick="switchAuditTab('issued-items-tab', this)">
+                <i data-lucide="upload" style="width: 16px;"></i>
+                Issued Items
+            </button>
+            <button class="audit-tab-btn" onclick="switchAuditTab('returned-items-tab', this)">
+                <i data-lucide="undo-2" style="width: 16px;"></i>
+                Returned Items
+            </button>
+            <button class="audit-tab-btn" onclick="switchAuditTab('requisitions-tab', this)">
+                <i data-lucide="file-text" style="width: 16px;"></i>
+                Requisitions Log
+            </button>
+            <button class="audit-tab-btn" onclick="switchAuditTab('approved-reqs-tab', this)">
+                <i data-lucide="check-circle" style="width: 16px;"></i>
+                Approved Requests
+            </button>
+            @php
+                $totalPendingSrasCount = $pendingSras->count() + $pendingServiceSras->count() + ($pendingDeptRequisitions->count() ?? 0);
+            @endphp
+            <button class="audit-tab-btn @if($totalPendingSrasCount > 0) pending-sras-active @endif" onclick="switchAuditTab('pending-sra-tab', this)">
+                <i data-lucide="file-check" style="width: 16px;"></i>
+                <span>Pending SRA Approvals</span>
+                @if($totalPendingSrasCount > 0)
+                    <span class="badge blinking-danger-badge">{{ $totalPendingSrasCount }}</span>
+                @endif
+            </button>
+        </div>
+
+        <button type="button" 
+                class="audit-tab-scroll-btn audit-tab-scroll-right" 
+                id="auditTabScrollRight" 
+                onclick="scrollAuditTabs('right')" 
+                title="Scroll to next tabs" 
+                aria-label="Next Tabs">
+            <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+        </button>
     </div>
+
+    <script>
+        // Tab switching and smooth scrolling controls defined immediately on window
+        window.scrollAuditTabs = function(direction) {
+            const container = document.getElementById('auditTabsContainer');
+            if (!container) return;
+
+            const scrollAmount = 320;
+            const canScroll = container.scrollWidth > container.clientWidth;
+
+            if (canScroll) {
+                container.scrollBy({
+                    left: direction === 'left' ? -scrollAmount : scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+
+            // Also navigate to next/previous tab if at container edge or on non-overflowing screen
+            const buttons = Array.from(container.querySelectorAll('.audit-tab-btn'));
+            const activeIndex = buttons.findIndex(b => b.classList.contains('active'));
+            if (activeIndex !== -1) {
+                const atLeftEdge = container.scrollLeft <= 10;
+                const atRightEdge = container.scrollLeft >= (container.scrollWidth - container.clientWidth - 10);
+                if (!canScroll || (direction === 'left' && atLeftEdge) || (direction === 'right' && atRightEdge)) {
+                    let targetIndex = direction === 'left' ? activeIndex - 1 : activeIndex + 1;
+                    if (targetIndex >= 0 && targetIndex < buttons.length) {
+                        buttons[targetIndex].click();
+                        return;
+                    }
+                }
+            }
+
+            setTimeout(window.updateAuditTabArrows, 350);
+        };
+
+        window.updateAuditTabArrows = function() {
+            const container = document.getElementById('auditTabsContainer');
+            const leftBtn = document.getElementById('auditTabScrollLeft');
+            const rightBtn = document.getElementById('auditTabScrollRight');
+            if (!container || !leftBtn || !rightBtn) return;
+
+            const canScroll = container.scrollWidth > container.clientWidth;
+            if (!canScroll) {
+                const buttons = Array.from(container.querySelectorAll('.audit-tab-btn'));
+                const activeIndex = buttons.findIndex(b => b.classList.contains('active'));
+                leftBtn.classList.toggle('disabled', activeIndex <= 0);
+                rightBtn.classList.toggle('disabled', activeIndex >= buttons.length - 1);
+                return;
+            }
+
+            const atLeft = container.scrollLeft <= 5;
+            const atRight = container.scrollLeft >= (container.scrollWidth - container.clientWidth - 5);
+
+            leftBtn.classList.toggle('disabled', atLeft);
+            rightBtn.classList.toggle('disabled', atRight);
+        };
+
+        window.switchAuditTab = function(panelId, btn) {
+            // Toggle Buttons
+            document.querySelectorAll('.audit-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            // Toggle Panels
+            document.querySelectorAll('.audit-tab-panel').forEach(p => p.classList.remove('active'));
+            const targetPanel = document.getElementById(panelId);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+
+            // Scroll active tab button smoothly into view
+            if (btn && btn.scrollIntoView) {
+                btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+            setTimeout(window.updateAuditTabArrows, 350);
+
+            // Store active tab in localStorage
+            try {
+                localStorage.setItem('active_auditor_tab', panelId);
+            } catch (e) {}
+        };
+
+        // Attach event listeners immediately and when DOM is ready
+        (function() {
+            function bindAuditTabEvents() {
+                const leftBtn = document.getElementById('auditTabScrollLeft');
+                const rightBtn = document.getElementById('auditTabScrollRight');
+                const container = document.getElementById('auditTabsContainer');
+
+                if (leftBtn) {
+                    leftBtn.onclick = function(e) {
+                        e.preventDefault();
+                        window.scrollAuditTabs('left');
+                    };
+                }
+                if (rightBtn) {
+                    rightBtn.onclick = function(e) {
+                        e.preventDefault();
+                        window.scrollAuditTabs('right');
+                    };
+                }
+                if (container) {
+                    container.addEventListener('scroll', window.updateAuditTabArrows, { passive: true });
+                }
+                window.addEventListener('resize', window.updateAuditTabArrows);
+                window.updateAuditTabArrows();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindAuditTabEvents);
+            } else {
+                bindAuditTabEvents();
+            }
+        })();
+    </script>
 
     {{-- Tab Panels --}}
 
@@ -923,26 +1121,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($systemLogs->hasPages())
-                <div class="audit-pagination-container" id="pager-audit-trail">
-                    <div class="audit-pagination-info">
-                        Showing <span>{{ $systemLogs->firstItem() ?? 0 }}</span> to <span>{{ $systemLogs->lastItem() ?? 0 }}</span> of <span>{{ $systemLogs->total() }}</span> events
-                    </div>
-                    <div class="audit-pagination-buttons">
-                        @if ($systemLogs->onFirstPage())
-                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $systemLogs->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($systemLogs->hasMorePages())
-                            <a href="{{ $systemLogs->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('auditor._tab_pager', ['items' => $systemLogs, 'param' => 'logs_page', 'id' => 'pager-audit-trail'])
         </div>
     </div>
 
@@ -1022,26 +1201,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($receivedItems->hasPages())
-                <div class="audit-pagination-container" id="pager-received-items">
-                    <div class="audit-pagination-info">
-                        Showing <span>{{ $receivedItems->firstItem() ?? 0 }}</span> to <span>{{ $receivedItems->lastItem() ?? 0 }}</span> of <span>{{ $receivedItems->total() }}</span> records
-                    </div>
-                    <div class="audit-pagination-buttons">
-                        @if ($receivedItems->onFirstPage())
-                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $receivedItems->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($receivedItems->hasMorePages())
-                            <a href="{{ $receivedItems->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('auditor._tab_pager', ['items' => $receivedItems, 'param' => 'received_page', 'id' => 'pager-received-items'])
         </div>
     </div>
 
@@ -1155,26 +1315,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($issuedItems->hasPages())
-                <div class="audit-pagination-container" id="pager-issued-items">
-                    <div class="audit-pagination-info">
-                        Showing <span>{{ $issuedItems->firstItem() ?? 0 }}</span> to <span>{{ $issuedItems->lastItem() ?? 0 }}</span> of <span>{{ $issuedItems->total() }}</span> records
-                    </div>
-                    <div class="audit-pagination-buttons">
-                        @if ($issuedItems->onFirstPage())
-                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $issuedItems->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($issuedItems->hasMorePages())
-                            <a href="{{ $issuedItems->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('auditor._tab_pager', ['items' => $issuedItems, 'param' => 'issued_page', 'id' => 'pager-issued-items'])
         </div>
     </div>
 
@@ -1226,26 +1367,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($returnedItems->hasPages())
-                <div class="audit-pagination-container" id="pager-returned-items">
-                    <div class="audit-pagination-info">
-                        Showing <span>{{ $returnedItems->firstItem() ?? 0 }}</span> to <span>{{ $returnedItems->lastItem() ?? 0 }}</span> of <span>{{ $returnedItems->total() }}</span> records
-                    </div>
-                    <div class="audit-pagination-buttons">
-                        @if ($returnedItems->onFirstPage())
-                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $returnedItems->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($returnedItems->hasMorePages())
-                            <a href="{{ $returnedItems->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('auditor._tab_pager', ['items' => $returnedItems, 'param' => 'returned_page', 'id' => 'pager-returned-items'])
         </div>
     </div>
 
@@ -1331,26 +1453,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($requisitions->hasPages())
-                <div class="audit-pagination-container" id="pager-requisitions">
-                    <div class="audit-pagination-info">
-                        Showing <span>{{ $requisitions->firstItem() ?? 0 }}</span> to <span>{{ $requisitions->lastItem() ?? 0 }}</span> of <span>{{ $requisitions->total() }}</span> records
-                    </div>
-                    <div class="audit-pagination-buttons">
-                        @if ($requisitions->onFirstPage())
-                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $requisitions->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($requisitions->hasMorePages())
-                            <a href="{{ $requisitions->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('auditor._tab_pager', ['items' => $requisitions, 'param' => 'requisitions_page', 'id' => 'pager-requisitions'])
         </div>
     </div>
 
@@ -1384,26 +1487,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($approvedRequisitions->hasPages())
-                <div class="audit-pagination-container" id="pager-approved-requisitions">
-                    <div class="audit-pagination-info">
-                        Showing <span>{{ $approvedRequisitions->firstItem() ?? 0 }}</span> to <span>{{ $approvedRequisitions->lastItem() ?? 0 }}</span> of <span>{{ $approvedRequisitions->total() }}</span> records
-                    </div>
-                    <div class="audit-pagination-buttons">
-                        @if ($approvedRequisitions->onFirstPage())
-                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $approvedRequisitions->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($approvedRequisitions->hasMorePages())
-                            <a href="{{ $approvedRequisitions->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('auditor._tab_pager', ['items' => $approvedRequisitions, 'param' => 'approved_reqs_page', 'id' => 'pager-approved-requisitions'])
         </div>
     </div>
 
@@ -1416,6 +1500,7 @@
                         <tr>
                             <th>SRA ID</th>
                             <th>Entry Date</th>
+                            <th>Item(s) Name</th>
                             <th>Ledge Category</th>
                             <th>Supplier Name</th>
                             <th>Acquisition Type</th>
@@ -1434,6 +1519,7 @@
                     </tbody>
                 </table>
             </div>
+            @include('auditor._tab_pager', ['items' => $allPendingItems, 'param' => 'pending_sra_page', 'id' => 'pager-pending-sra'])
         </div>
     </div>
 
@@ -1591,19 +1677,6 @@
         }
     });
 
-    function switchAuditTab(panelId, btn) {
-        // Toggle Buttons
-        document.querySelectorAll('.audit-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Toggle Panels
-        document.querySelectorAll('.audit-tab-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById(panelId).classList.add('active');
-
-        // Store active tab in localStorage
-        localStorage.setItem('active_auditor_tab', panelId);
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
         // Clean up empty parameters from the address bar on load
         const urlObj = new URL(window.location.href);
@@ -1627,6 +1700,14 @@
         if (savedTab) {
             const btn = Array.from(document.querySelectorAll('.audit-tab-btn')).find(b => b.getAttribute('onclick').includes(savedTab));
             if (btn) btn.click();
+        }
+
+        // Initialize tab arrow controls
+        const tabsContainer = document.getElementById('auditTabsContainer');
+        if (tabsContainer) {
+            tabsContainer.addEventListener('scroll', updateAuditTabArrows, { passive: true });
+            window.addEventListener('resize', updateAuditTabArrows);
+            updateAuditTabArrows();
         }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -1677,7 +1758,7 @@
                             returned_items:         { tbody: 'tbody-returned-items',         pager: 'pager-returned-items' },
                             requisitions:           { tbody: 'tbody-requisitions',           pager: 'pager-requisitions' },
                             approved_requisitions: { tbody: 'tbody-approved-requisitions', pager: 'pager-approved-requisitions' },
-                            pending_sra:            { tbody: 'tbody-pending-sra',            pager: null }
+                            pending_sra:            { tbody: 'tbody-pending-sra',            pager: 'pager-pending-sra' }
                         };
 
                         for (const [key, cfg] of Object.entries(_refreshMap)) {
@@ -2280,7 +2361,7 @@
         returned_items: { tbody: 'tbody-returned-items', pager: 'pager-returned-items' },
         requisitions:   { tbody: 'tbody-requisitions',   pager: 'pager-requisitions'   },
         approved_requisitions: { tbody: 'tbody-approved-requisitions', pager: 'pager-approved-requisitions' },
-        pending_sra:    { tbody: 'tbody-pending-sra',    pager: null                   },
+        pending_sra:    { tbody: 'tbody-pending-sra',    pager: 'pager-pending-sra'    },
     };
 
     // Last-seen HTML fingerprints to avoid needless DOM writes
@@ -2404,7 +2485,6 @@
                 } else {
                     const badge = document.createElement('span');
                     badge.className = 'badge blinking-danger-badge';
-                    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;padding:2.5px 6.5px;border-radius:99px;font-size:0.65rem;font-weight:900;z-index:10;';
                     badge.textContent = pendingCount;
                     sraTabBtn.appendChild(badge);
                 }

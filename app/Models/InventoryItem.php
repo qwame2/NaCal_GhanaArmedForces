@@ -20,11 +20,54 @@ class InventoryItem extends Model
         'remarks',
         'store_location',
         'book_qty',
-        'discrepancy_explanation'
+        'discrepancy_explanation',
+        'received_qty'
     ];
+
+    /**
+     * Get the immutable original received quantity entered at receiving time.
+     */
+    public function getOriginalReceivedQtyAttribute(): float
+    {
+        if (!is_null($this->received_qty) && (float)$this->received_qty > 0) {
+            return (float)$this->received_qty;
+        }
+
+        // Look up the creation record in StockHistory
+        $createHistory = \App\Models\StockHistory::where('inventory_item_id', $this->id)
+            ->where('action', 'create')
+            ->first();
+
+        if ($createHistory) {
+            $hQty = floatval(str_replace(',', '', $createHistory->new_qty ?: $createHistory->new_stock_balance ?: 0));
+            if ($hQty > 0) {
+                return $hQty;
+            }
+        }
+
+        $q = floatval(str_replace(',', '', $this->qty ?? 0));
+        if ($q > 0) {
+            return $q;
+        }
+
+        if (!is_null($this->book_qty)) {
+            $bq = floatval(str_replace(',', '', $this->book_qty));
+            if ($bq > 0) {
+                return $bq;
+            }
+        }
+
+        return floatval(str_replace(',', '', $this->stock_balance ?? 0));
+    }
 
     protected static function booted()
     {
+        static::creating(function ($item) {
+            if ($item->received_qty === null || $item->received_qty === '') {
+                $raw = $item->qty ?? ($item->stock_balance ?? 0);
+                $item->received_qty = floatval(str_replace(',', '', $raw));
+            }
+        });
         static::saved(function () {
             Setting::clearInventoryCache();
         });

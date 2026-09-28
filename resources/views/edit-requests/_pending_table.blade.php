@@ -114,9 +114,87 @@
             </tbody>
         </table>
     </div>
-    @if($pending->hasPages())
-        <div class="custom-pagination" style="padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background: var(--bg-main);">
-            {{ $pending->appends(['history_page' => request('history_page')])->links('pagination::bootstrap-4') }}
+    <!-- Advanced Pagination Footer -->
+    <div class="pagination-footer">
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span class="pagination-info-badge">
+                    <i data-lucide="layers" style="width: 14px; height: 14px; display: inline; margin-right: 6px;"></i>
+                    {{ $pending->total() }} Total {{ \Illuminate\Support\Str::plural('Record', $pending->total()) }}
+                </span>
+                <span class="pagination-stats">
+                    Showing {{ $pending->firstItem() ?? 0 }} - {{ $pending->lastItem() ?? 0 }} of {{ $pending->total() }} entries
+                </span>
+            </div>
+
+            <div class="pagination-nav">
+                @if ($pending->onFirstPage())
+                    <span class="pagination-arrow disabled" title="Previous Page">
+                        <i data-lucide="chevron-left" style="width: 20px;"></i>
+                    </span>
+                @else
+                    <a href="{{ $pending->previousPageUrl() }}" class="pagination-arrow" title="Previous Page">
+                        <i data-lucide="chevron-left" style="width: 20px;"></i>
+                    </a>
+                @endif
+
+                <div class="pagination-numbers">
+                    @php
+                        $currentPage = $pending->currentPage();
+                        $lastPage = $pending->lastPage();
+                        $start = max($currentPage - 2, 1);
+                        $end = min($currentPage + 2, $lastPage);
+                    @endphp
+
+                    @if($start > 1)
+                        <a href="{{ $pending->url(1) }}" class="pagination-number">1</a>
+                        @if($start > 2)
+                            <span class="pagination-dots">...</span>
+                        @endif
+                    @endif
+
+                    @for($i = $start; $i <= $end; $i++)
+                        <a href="{{ $pending->url($i) }}"
+                           class="pagination-number {{ $currentPage == $i ? 'active' : '' }}">
+                            {{ $i }}
+                        </a>
+                    @endfor
+
+                    @if($end < $lastPage)
+                        @if($end < $lastPage - 1)
+                            <span class="pagination-dots">...</span>
+                        @endif
+                        <a href="{{ $pending->url($lastPage) }}" class="pagination-number">{{ $lastPage }}</a>
+                    @endif
+                </div>
+
+                @if ($pending->hasMorePages())
+                    <a href="{{ $pending->nextPageUrl() }}" class="pagination-arrow" title="Next Page">
+                        <i data-lucide="chevron-right" style="width: 20px;"></i>
+                    </a>
+                @else
+                    <span class="pagination-arrow disabled" title="Next Page">
+                        <i data-lucide="chevron-right" style="width: 20px;"></i>
+                    </span>
+                @endif
+            </div>
+
+            <div class="pagination-per-page modern-pagination-select">
+                <div class="select-icon-left">
+                    <i data-lucide="sliders-horizontal"></i>
+                </div>
+                <select class="per-page-select" onchange="window.location.href=this.value" title="Entries per page">
+                    @foreach([5, 10, 25, 50, 100] as $perPageOption)
+                        <option value="{{ request()->fullUrlWithQuery(['pending_per_page' => $perPageOption, 'pending_page' => 1, 'tab' => 'pending']) }}"
+                            {{ (request('pending_per_page', request('per_page', 10)) == $perPageOption) ? 'selected' : '' }}>
+                            Show {{ $perPageOption }} entries
+                        </option>
+                    @endforeach
+                </select>
+                <div class="select-icon-right">
+                    <i data-lucide="chevron-down"></i>
+                </div>
+            </div>
         </div>
-    @endif
+    </div>
 @endif

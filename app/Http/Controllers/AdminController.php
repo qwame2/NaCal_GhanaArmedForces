@@ -1217,7 +1217,7 @@ class AdminController extends Controller
             return InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
                 ->where('inventory_batches.approval_status', '=', 'approved')
-                ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
+                ->selectRaw('inventory_items.description, SUM(COALESCE(inventory_items.received_qty, inventory_items.qty, inventory_items.stock_balance)) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
                 ->groupBy('inventory_items.description')
                 ->get()
                 ->keyBy('description');

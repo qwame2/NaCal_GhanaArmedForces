@@ -1449,6 +1449,10 @@ class StoreRequisitionController extends Controller
                                     foreach ($stockItems as $inventoryItem) {
                                         if ($qtyToDeduct <= 0) break;
 
+                                        if (is_null($inventoryItem->received_qty)) {
+                                            $inventoryItem->received_qty = $inventoryItem->original_received_qty;
+                                        }
+
                                         $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
                                         $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
                                         
@@ -1505,6 +1509,10 @@ class StoreRequisitionController extends Controller
 
                                     foreach ($stockItems as $inventoryItem) {
                                         if ($qtyToDeduct <= 0) break;
+
+                                        if (is_null($inventoryItem->received_qty)) {
+                                            $inventoryItem->received_qty = $inventoryItem->original_received_qty;
+                                        }
 
                                         $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
                                         $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));

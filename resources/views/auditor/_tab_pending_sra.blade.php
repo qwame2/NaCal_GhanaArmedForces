@@ -1,11 +1,11 @@
 {{-- Unified Pending SRA Approvals — sorted newest-first across all types --}}
 @php
-    $totalPendingCount = isset($allPendingItems) ? $allPendingItems->count() : ($pendingSras->count() + $pendingServiceSras->count() + (isset($pendingDeptRequisitions) ? $pendingDeptRequisitions->count() : 0));
+    $totalPendingCount = isset($allPendingItems) ? (method_exists($allPendingItems, 'total') ? $allPendingItems->total() : $allPendingItems->count()) : ($pendingSras->count() + $pendingServiceSras->count() + (isset($pendingDeptRequisitions) ? $pendingDeptRequisitions->count() : 0));
 @endphp
 
 @if($totalPendingCount === 0)
     <tr>
-        <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+        <td colspan="8" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
             <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No SRA receipts or requisitions pending verification.</p>
         </td>
     </tr>
@@ -25,6 +25,27 @@
                 </td>
                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
                     {{ \Carbon\Carbon::parse($batch->entry_date)->format('d/m/Y') }}
+                </td>
+                <td>
+                    @if($batch->items && $batch->items->isNotEmpty())
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            @foreach($batch->items->take(3) as $bItem)
+                                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span style="font-weight: 800; color: var(--text-main); font-size: 0.82rem;">{{ $bItem->description }}</span>
+                                    <span style="font-size: 0.72rem; font-weight: 800; color: var(--audit-primary); background: rgba(5, 150, 105, 0.08); padding: 1px 6px; border-radius: 4px; white-space: nowrap;">
+                                        ×{{ number_format((float)$bItem->original_received_qty) }}
+                                    </span>
+                                </div>
+                            @endforeach
+                            @if($batch->items->count() > 3)
+                                <span style="font-size: 0.7rem; font-weight: 700; color: var(--audit-primary); cursor: help;" title="{{ $batch->items->slice(3)->pluck('description')->join(', ') }}">
+                                    +{{ $batch->items->count() - 3 }} more item(s)
+                                </span>
+                            @endif
+                        </div>
+                    @else
+                        <span style="color: var(--text-muted); font-size: 0.78rem;">—</span>
+                    @endif
                 </td>
                 <td style="font-weight: 800; color: var(--text-main);">
                     {{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}
@@ -59,6 +80,11 @@
                 </td>
                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
                     {{ \Carbon\Carbon::parse($sra->created_at)->format('d/m/Y') }}
+                </td>
+                <td>
+                    <div style="font-weight: 800; color: var(--text-main); font-size: 0.82rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $sra->details }}">
+                        {{ $sra->details ?: 'Service Order' }}
+                    </div>
                 </td>
                 <td style="font-weight: 800; color: var(--text-main);">Service SRA</td>
                 <td style="font-weight: 700; color: var(--text-muted);">{{ $sra->supplier_name ?? '—' }}</td>
@@ -113,6 +139,27 @@
                 </td>
                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
                     {{ \Carbon\Carbon::parse($req->created_at)->format('d/m/Y') }}
+                </td>
+                <td>
+                    @if($req->items && $req->items->isNotEmpty())
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            @foreach($req->items->take(3) as $rItem)
+                                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span style="font-weight: 800; color: var(--text-main); font-size: 0.82rem;">{{ $rItem->description }}</span>
+                                    <span style="font-size: 0.72rem; font-weight: 800; color: #6366f1; background: rgba(99, 102, 241, 0.08); padding: 1px 6px; border-radius: 4px; white-space: nowrap;">
+                                        ×{{ number_format((float)$rItem->quantity_requested) }}
+                                    </span>
+                                </div>
+                            @endforeach
+                            @if($req->items->count() > 3)
+                                <span style="font-size: 0.7rem; font-weight: 700; color: #6366f1; cursor: help;" title="{{ $req->items->slice(3)->pluck('description')->join(', ') }}">
+                                    +{{ $req->items->count() - 3 }} more item(s)
+                                </span>
+                            @endif
+                        </div>
+                    @else
+                        <span style="color: var(--text-muted); font-size: 0.78rem;">—</span>
+                    @endif
                 </td>
                 <td style="font-weight: 800; color: var(--text-main);">Store Requisition</td>
                 <td style="font-weight: 700; color: var(--text-muted);">

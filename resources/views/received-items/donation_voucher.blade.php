@@ -344,7 +344,7 @@
                         @endif
                     </td>
                     <td style="text-align: center;">{{ $item->unit }}</td>
-                    <td style="text-align: center; font-weight: bold; font-size: 16px;">{{ number_format((float)($item->qty ?? 0)) }}</td>
+                    <td style="text-align: center; font-weight: bold; font-size: 16px;">{{ number_format((float)$item->original_received_qty) }}</td>
                 </tr>
                 @endforeach
             </tbody>

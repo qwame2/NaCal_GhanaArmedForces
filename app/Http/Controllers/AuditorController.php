@@ -260,7 +260,7 @@ class AuditorController extends Controller
         $ledgeMap = Setting::getCategories();
         $auditUsers = \App\Models\User::where('role', '!=', 'Auditor')->orderBy('name')->get();
 
-        $pendingSras = InventoryBatch::with('storesApprover')
+        $pendingSras = InventoryBatch::with(['storesApprover', 'items'])
             ->where('approval_status', 'pending_auditor_admin')
             ->where('auditor_status', 'pending')
             ->orderBy('created_at', 'desc')
@@ -281,11 +281,28 @@ class AuditorController extends Controller
 
         // Merge all pending items and sort globally by created_at so the newest
         // request always appears at the top regardless of its type.
-        $allPendingItems = $pendingSras->map(fn($b) => ['type' => 'inventory_sra', 'item' => $b, 'created_at' => $b->created_at])
+        $allPendingItemsRaw = $pendingSras->map(fn($b) => ['type' => 'inventory_sra', 'item' => $b, 'created_at' => $b->created_at])
             ->concat($pendingServiceSras->map(fn($s) => ['type' => 'service_sra', 'item' => $s, 'created_at' => $s->created_at]))
             ->concat($pendingDeptRequisitions->map(fn($r) => ['type' => 'dept_req', 'item' => $r, 'created_at' => $r->created_at]))
             ->sortByDesc('created_at')
             ->values();
+
+        $totalPendingSrasCount = $allPendingItemsRaw->count();
+
+        $pendingCurrentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage('pending_sra_page');
+        $pendingPerPage = 15;
+        $currentPendingSlice = $allPendingItemsRaw->slice(($pendingCurrentPage - 1) * $pendingPerPage, $pendingPerPage)->values();
+        $allPendingItems = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPendingSlice,
+            $totalPendingSrasCount,
+            $pendingPerPage,
+            $pendingCurrentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'pending_sra_page'
+            ]
+        );
+        $allPendingItems->withQueryString();
 
         $pendingStaffRegistrationsCount = \App\Models\User::whereIn('department', \App\Models\User::getMatchingDepartments(auth()->user()->department))
             ->where('registration_status', 'pending_hod')
@@ -299,7 +316,7 @@ class AuditorController extends Controller
 
         if ($request->input('format') === 'json' || $request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'pending_count'     => $allPendingItems->count(),
+                'pending_count'     => $totalPendingSrasCount,
                 'total_logs'        => number_format(SystemLog::count()),
                 'total_variance'    => number_format($totalVariance),
                 'active_loans'      => number_format($activeLoansCount),
@@ -335,8 +352,9 @@ class AuditorController extends Controller
                         'total' => $approvedRequisitions->total(),
                     ],
                     'pending_sra'    => [
-                        'tbody' => view('auditor._tab_pending_sra', compact('allPendingItems', 'pendingSras', 'pendingServiceSras', 'pendingDeptRequisitions'))->render(),
-                        'total' => $allPendingItems->count(),
+                        'tbody' => view('auditor._tab_pending_sra', compact('allPendingItems', 'pendingSras', 'pendingServiceSras', 'pendingDeptRequisitions', 'ledgeMap'))->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $allPendingItems, 'param' => 'pending_sra_page', 'id' => 'pager-pending-sra'])->render(),
+                        'total' => $totalPendingSrasCount,
                     ],
                 ],
             ]);
