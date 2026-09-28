@@ -1898,7 +1898,8 @@
                 isProcessed = true;
             }
         } else {
-            isProcessed = (data.origin_admin_status !== 'pending' || data.main_admin_status !== 'pending' || data.status !== 'pending') && (data.alternative_status !== 'proposed');
+            const isOriginPendingOrAutoApproved = (data.origin_admin_status === 'pending') || (data.origin_admin_status === 'approved' && data.origin_approved_by === 'System Auto-Approved' && data.main_admin_status === 'pending');
+            isProcessed = (!isOriginPendingOrAutoApproved || data.main_admin_status !== 'pending' || data.status !== 'pending') && (data.alternative_status !== 'proposed');
         }
 
         document.getElementById('modalSubtitle').textContent = `Requisition Ref: ${data.unique_id || ('REQ-' + String(data.id).padStart(5, '0'))}`;

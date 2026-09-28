@@ -316,13 +316,13 @@
         <div style="display: flex; align-items: center; gap: 8px;">
             <input type="number" 
                    id="globalAutoApproveTimeout"
-                   value="{{ \App\Models\Setting::get('default_hod_auto_approve_timeout_mins', 5) }}" 
-                   min="1" 
+                   value="{{ \App\Models\Setting::get('default_hod_auto_approve_timeout_mins', 0) }}" 
+                   min="0" 
                    onchange="updateGlobalAutoApproveTimeout(this)"
                    style="width: 90px; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-weight: 800; font-size: 0.9rem; color: #0f172a; outline: none; transition: border-color 0.2s; text-align: center;"
                    onfocus="this.style.borderColor='#4f46e5'" 
                    onblur="this.style.borderColor='#cbd5e1'">
-            <span style="font-size: 0.8rem; font-weight: 700; color: #334155;">Minutes</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: #334155;">Minutes (0 = Disabled)</span>
         </div>
     </div>
 
@@ -1138,9 +1138,9 @@
 
     function updateGlobalAutoApproveTimeout(input) {
         const val = parseInt(input.value);
-        if (isNaN(val) || val < 1) {
-            alert('Please enter a valid number of minutes (minimum 1).');
-            input.value = 5;
+        if (isNaN(val) || val < 0) {
+            alert('Please enter a valid number of minutes (0 to disable auto-approval).');
+            input.value = 0;
             return;
         }
 

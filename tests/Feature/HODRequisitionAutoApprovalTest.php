@@ -326,4 +326,110 @@ class HODRequisitionAutoApprovalTest extends TestCase
             ->where('description', 'like', '%timeout: 15 minutes%')
             ->exists());
     }
+
+    public function test_auto_approval_disabled_when_setting_is_zero()
+    {
+        Setting::updateOrCreate(
+            ['key' => 'default_hod_auto_approve_timeout_mins'],
+            ['value' => '0', 'type' => 'integer', 'group' => 'general']
+        );
+
+        $user = User::factory()->create([
+            'name' => 'HR Staff',
+            'role' => 'Requisitioner',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+        ]);
+
+        $requisition = StoreRequisition::create([
+            'requester_name' => $user->name,
+            'department' => 'HR',
+            'requested_by' => $user->id,
+            'purpose' => 'Need stationaries',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'pending',
+        ]);
+        $requisition->created_at = now()->subMinutes(60); // Created 60 minutes ago
+        $requisition->save();
+
+        StoreRequisition::autoApproveOverdueHODRequisitions();
+
+        $requisition->refresh();
+        $this->assertEquals('pending', $requisition->origin_admin_status);
+        $this->assertNull($requisition->origin_approved_by);
+    }
+
+    public function test_hod_can_override_and_approve_system_auto_approved_requisition()
+    {
+        $hod = User::factory()->create([
+            'name' => 'HR HOD',
+            'role' => 'Department Head',
+            'department' => 'HR',
+            'is_active' => true,
+            'registration_status' => 'approved',
+        ]);
+
+        $requisition = StoreRequisition::create([
+            'requester_name' => 'HR Staff',
+            'department' => 'HR',
+            'purpose' => 'Need desk items',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'approved',
+            'origin_approved_by' => 'System Auto-Approved',
+            'main_admin_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($hod)->postJson(route('main-admin.requisitions.process', $requisition->id), [
+            'status' => 'approved',
+            'admin_notes' => 'Confirmed by real HOD',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $requisition->refresh();
+        $this->assertEquals('approved', $requisition->origin_admin_status);
+        $this->assertEquals('HR HOD', $requisition->origin_approved_by);
+    }
+
+    public function test_hod_can_decline_system_auto_approved_requisition()
+    {
+        $hod = User::factory()->create([
+            'name' => 'HR HOD',
+            'role' => 'Department Head',
+            'department' => 'HR',
+            'is_active' => true,
+            'registration_status' => 'approved',
+        ]);
+
+        $requisition = StoreRequisition::create([
+            'requester_name' => 'HR Staff',
+            'department' => 'HR',
+            'purpose' => 'Need desk items',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'approved',
+            'origin_approved_by' => 'System Auto-Approved',
+            'main_admin_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($hod)->postJson(route('main-admin.requisitions.process', $requisition->id), [
+            'status' => 'declined',
+            'decline_reason' => 'Budget exhausted',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $requisition->refresh();
+        $this->assertEquals('declined', $requisition->status);
+        $this->assertEquals('declined', $requisition->origin_admin_status);
+        $this->assertEquals('HR HOD', $requisition->origin_approved_by);
+        $this->assertEquals('Budget exhausted', $requisition->decline_reason);
+    }
 }

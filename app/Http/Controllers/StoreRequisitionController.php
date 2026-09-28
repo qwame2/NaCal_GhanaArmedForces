@@ -1780,7 +1780,14 @@ class StoreRequisitionController extends Controller
                 $query->where(function($q) {
                     $q->where(function($q2) {
                         $q2->where('status', 'pending')
-                           ->where('origin_admin_status', 'pending');
+                           ->where(function($q3) {
+                               $q3->where('origin_admin_status', 'pending')
+                                  ->orWhere(function($q4) {
+                                      $q4->where('origin_admin_status', 'approved')
+                                         ->where('origin_approved_by', 'System Auto-Approved')
+                                         ->where('main_admin_status', 'pending');
+                                  });
+                           });
                     })->orWhere(function($q2) {
                         $q2->where('status', 'pending')
                            ->where('alternative_status', 'proposed');
@@ -2031,7 +2038,14 @@ class StoreRequisitionController extends Controller
                 ->where(function($q) {
                     $q->where(function($q2) {
                         $q2->where('status', 'pending')
-                           ->where('origin_admin_status', 'pending');
+                           ->where(function($q3) {
+                               $q3->where('origin_admin_status', 'pending')
+                                  ->orWhere(function($q4) {
+                                      $q4->where('origin_admin_status', 'approved')
+                                         ->where('origin_approved_by', 'System Auto-Approved')
+                                         ->where('main_admin_status', 'pending');
+                                  });
+                           });
                     })->orWhere(function($q2) {
                         $q2->where('status', 'pending')
                            ->where('alternative_status', 'proposed');
@@ -2123,11 +2137,14 @@ class StoreRequisitionController extends Controller
             || auth()->user()->isMainAdminOrSub()
             || $isBackupActive;
 
+        $isOriginPendingOrAutoApproved = ($req->origin_admin_status === 'pending')
+            || ($req->origin_admin_status === 'approved' && $req->origin_approved_by === 'System Auto-Approved' && $req->main_admin_status === 'pending');
+
         // Check if the stores head is acting as the originating HOD for a Stores department request
-        $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $req->origin_admin_status === 'pending' && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
-        $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-            || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department') && $req->origin_admin_status === 'pending')
-            || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
+        $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $isOriginPendingOrAutoApproved && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
+        $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $isOriginPendingOrAutoApproved)
+            || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department') && $isOriginPendingOrAutoApproved)
+            || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $isOriginPendingOrAutoApproved)
             || $isFallbackHOD;
 
         if (!$isStoresHead || $isActingAsOriginHOD) {
@@ -2138,7 +2155,7 @@ class StoreRequisitionController extends Controller
             if (!$isActingAsOriginHOD && !$this->departmentsMatch($req->department, auth()->user()->department) && $req->department !== 'Audit Department') {
                 return response()->json(['success' => false, 'message' => 'Unauthorized department access.'], 403);
             }
-            if ($req->status !== 'pending' || $req->origin_admin_status !== 'pending') {
+            if ($req->status !== 'pending' || !$isOriginPendingOrAutoApproved) {
                 return response()->json(['success' => false, 'message' => 'Requisition has already been processed.'], 400);
             }
         } else {
@@ -2160,10 +2177,10 @@ class StoreRequisitionController extends Controller
         }
 
         if ($request->status === 'approved') {
-            $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $req->origin_admin_status === 'pending' && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
-            $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-                || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department') && $req->origin_admin_status === 'pending')
-                || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
+            $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $isOriginPendingOrAutoApproved && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
+            $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $isOriginPendingOrAutoApproved)
+                || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department') && $isOriginPendingOrAutoApproved)
+                || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $isOriginPendingOrAutoApproved)
                 || $isFallbackHOD;
 
             $requiresStoresDeptHeadApproval = false;
@@ -2175,7 +2192,7 @@ class StoreRequisitionController extends Controller
                 // Determine if the approver is a Sub Main Admin acting in a dual HOD+Authorizer capacity
                 $isSubMainAdminActingAsHOD = (auth()->user()->role === 'Sub Main Admin'
                     && $this->departmentsMatch($req->department, auth()->user()->department)
-                    && $req->origin_admin_status === 'pending');
+                    && $isOriginPendingOrAutoApproved);
 
                 $req->origin_admin_status = 'approved';
                 $req->origin_approved_by  = auth()->user()->name;
@@ -2345,6 +2362,7 @@ class StoreRequisitionController extends Controller
             // Requisition Declined
             if (!$isStoresHead || $isActingAsOriginHOD) {
                 $req->origin_admin_status = 'declined';
+                $req->origin_approved_by  = auth()->user()->name;
                 $actionName = 'DEPT_HEAD_DECLINE';
                 $logDesc = "Department Head " . auth()->user()->name . " declined store requisition #{$req->id} from department: {$req->department}.";
                 $notifyTitle = "📋 REQUISITION DECLINED BY DEPARTMENT HEAD";

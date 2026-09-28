@@ -855,7 +855,7 @@ class AdminController extends Controller
 
         $request->validate([
             'key' => 'required|string|in:default_hod_auto_approve_timeout_mins',
-            'value' => 'required|integer|min:1'
+            'value' => 'required|integer|min:0'
         ]);
 
         $setting = \App\Models\Setting::updateOrCreate(

@@ -357,6 +357,11 @@ class StoreRequisition extends Model
                 ? (int)$hod->hod_auto_approve_timeout_mins 
                 : $globalDefault;
 
+            // 0 or negative timeout indicates auto-approval is disabled
+            if ($timeoutMins <= 0) {
+                continue;
+            }
+
             $threshold = now()->subMinutes($timeoutMins);
 
             if ($req->created_at->lte($threshold)) {
