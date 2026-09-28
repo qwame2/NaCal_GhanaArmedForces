@@ -903,4 +903,32 @@ class DGRequisitionTest extends TestCase
         $req2 = StoreRequisition::orderBy('id', 'desc')->first();
         $this->assertFalse((bool)$req2->requires_dg_approval, 'Pencil HB in same category must NOT require DG approval.');
     }
+
+    public function test_dg_dashboard_has_tab_arrows_and_pagination_on_all_tabs(): void
+    {
+        $dg = User::factory()->create([
+            'role' => 'Director General',
+            'department' => 'Executive',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($dg)->get(route('dg.dashboard'));
+        $response->assertStatus(200);
+
+        // Assert tab scroll navigation arrows are present
+        $response->assertSee('id="dgTabScrollLeft"', false);
+        $response->assertSee('id="dgTabScrollRight"', false);
+        $response->assertSee('id="dgTabsContainer"', false);
+        $response->assertSee('window.scrollDGTabs =', false);
+
+        // Assert all 7 tab tables have their pagination container IDs
+        $response->assertSee('id="pager-dg-items"', false);
+        $response->assertSee('id="pager-dg-requisitions"', false);
+        $response->assertSee('id="pager-dg-req-receipts"', false);
+        $response->assertSee('id="pager-dg-sra-receipts"', false);
+        $response->assertSee('id="pager-dg-users"', false);
+        $response->assertSee('id="pager-dg-issued-items"', false);
+        $response->assertSee('id="pager-dg-returned-items"', false);
+    }
 }

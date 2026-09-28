@@ -252,21 +252,68 @@
         transform: scale(1.1) rotate(4deg);
     }
 
-    /* Executive Tabs Navigation */
-    .dg-tabs-container {
+    /* Executive Tabs Navigation Wrapper with Arrows */
+    .dg-tabs-wrapper {
+        position: relative;
         display: flex;
-        background: rgba(0, 0, 0, 0.03);
-        border: 1px solid var(--border-color);
-        padding: 6px;
-        border-radius: 18px;
-        gap: 6px;
+        align-items: center;
+        gap: 8px;
         margin-bottom: 2rem;
-        width: fit-content;
         max-width: 100%;
-        overflow-x: auto;
-        backdrop-filter: blur(8px);
         animation: dgFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
         animation-delay: 0.48s;
+    }
+
+    .dg-tabs-container {
+        display: flex;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-color);
+        padding: 6px 8px;
+        border-radius: 18px;
+        gap: 6px;
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 0;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        backdrop-filter: blur(8px);
+    }
+    .dg-tabs-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .dg-tab-scroll-btn {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 2;
+    }
+    .dg-tab-scroll-btn:hover:not(.disabled) {
+        background: var(--dg-primary);
+        color: #ffffff;
+        border-color: var(--dg-primary);
+        transform: scale(1.06);
+        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25);
+    }
+    .dg-tab-scroll-btn:active:not(.disabled) {
+        transform: scale(0.95);
+    }
+    .dg-tab-scroll-btn.disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
     }
 
     .dg-tab-btn {
@@ -283,6 +330,8 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        overflow: visible;
+        position: relative;
     }
 
     .dg-tab-btn:hover:not(.active) {
@@ -473,6 +522,14 @@
         cursor: not-allowed;
         box-shadow: none;
         opacity: 0.6;
+    }
+
+    .dg-page-btn.active-page,
+    .dg-page-btn.active {
+        background: var(--dg-primary);
+        color: #ffffff !important;
+        border-color: var(--dg-primary);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
     }
 
     .online-indicator {
@@ -889,47 +946,202 @@
         </div>
     </form>
 
-    {{-- Tabs Menu --}}
-    <div class="dg-tabs-container">
-        <button id="tab-btn-stock-oversight" class="dg-tab-btn active" onclick="switchDGTab('dg-stock-oversight-tab', this)">
-            <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
-            Items Received
+    {{-- Tabs Menu with Left & Right Arrow Navigation Buttons --}}
+    <div class="dg-tabs-wrapper">
+        <button type="button" 
+                class="dg-tab-scroll-btn dg-tab-scroll-left" 
+                id="dgTabScrollLeft" 
+                onclick="scrollDGTabs('left')" 
+                title="Scroll to previous tabs" 
+                aria-label="Previous Tabs">
+            <i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i>
         </button>
-        @php
-            $dgPendingCount = \App\Models\StoreRequisition::get()->filter(function($r) {
-                return $r->is_ready_for_dg_approval;
-            })->count();
-        @endphp
-        <button id="tab-btn-staff-reqs" class="dg-tab-btn{{ $dgPendingCount > 0 ? ' alert-blink' : '' }}" onclick="switchDGTab('dg-staff-reqs-tab', this)">
-            <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
-            Staff Requisitions
-            @if($dgPendingCount > 0)
-                <span id="dg-staff-reqs-badge" style="background: #dc2626; color: white; border-radius: 999px; padding: 2px 7px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; line-height: 1; margin-left: 4px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.5); animation: tab-alert-blink 1.4s ease-in-out infinite;">
-                    {{ $dgPendingCount }}
-                </span>
-            @endif
-        </button>
-        <button id="tab-btn-req-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-req-receipts-tab', this)">
-            <i data-lucide="receipt" style="width: 16px; height: 16px;"></i>
-            Requisition Receipts
-        </button>
-        <button id="tab-btn-sra-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-sra-receipts-tab', this)">
-            <i data-lucide="file-check" style="width: 16px; height: 16px;"></i>
-            SRA Receipts
-        </button>
-        <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
-            <i data-lucide="users" style="width: 16px; height: 16px;"></i>
-            Approved Officers Overview
-        </button>
-        <button id="tab-btn-issued-returned" class="dg-tab-btn" onclick="switchDGTab('dg-issued-returned-tab', this)">
-            <i data-lucide="clipboard-list" style="width: 16px; height: 16px;"></i>
-            Issued &amp; Returned Items
-        </button>
-        <button id="tab-btn-workflow-config" class="dg-tab-btn" onclick="switchDGTab('dg-workflow-config-tab', this)">
-            <i data-lucide="user-cog" style="width: 16px; height: 16px;"></i>
-            Approval Workflow Configuration
+
+        <div class="dg-tabs-container" id="dgTabsContainer">
+            <button id="tab-btn-stock-oversight" class="dg-tab-btn active" onclick="switchDGTab('dg-stock-oversight-tab', this)">
+                <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
+                Items Received
+            </button>
+            @php
+                $dgPendingCount = \App\Models\StoreRequisition::get()->filter(function($r) {
+                    return $r->is_ready_for_dg_approval;
+                })->count();
+            @endphp
+            <button id="tab-btn-staff-reqs" class="dg-tab-btn{{ $dgPendingCount > 0 ? ' alert-blink' : '' }}" onclick="switchDGTab('dg-staff-reqs-tab', this)">
+                <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                Staff Requisitions
+                @if($dgPendingCount > 0)
+                    <span id="dg-staff-reqs-badge" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border-radius: 999px; padding: 0 7px; min-width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.76rem; font-weight: 950; line-height: 1; margin-left: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5), 0 0 0 2px var(--bg-card, #ffffff); position: relative; z-index: 100; animation: tab-alert-blink 1.4s ease-in-out infinite;">
+                        {{ $dgPendingCount }}
+                    </span>
+                @endif
+            </button>
+            <button id="tab-btn-req-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-req-receipts-tab', this)">
+                <i data-lucide="receipt" style="width: 16px; height: 16px;"></i>
+                Requisition Receipts
+            </button>
+            <button id="tab-btn-sra-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-sra-receipts-tab', this)">
+                <i data-lucide="file-check" style="width: 16px; height: 16px;"></i>
+                SRA Receipts
+            </button>
+            <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
+                <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                Approved Officers Overview
+            </button>
+            <button id="tab-btn-issued-returned" class="dg-tab-btn" onclick="switchDGTab('dg-issued-returned-tab', this)">
+                <i data-lucide="clipboard-list" style="width: 16px; height: 16px;"></i>
+                Issued &amp; Returned Items
+            </button>
+            <button id="tab-btn-workflow-config" class="dg-tab-btn" onclick="switchDGTab('dg-workflow-config-tab', this)">
+                <i data-lucide="user-cog" style="width: 16px; height: 16px;"></i>
+                Approval Workflow Configuration
+            </button>
+        </div>
+
+        <button type="button" 
+                class="dg-tab-scroll-btn dg-tab-scroll-right" 
+                id="dgTabScrollRight" 
+                onclick="scrollDGTabs('right')" 
+                title="Scroll to next tabs" 
+                aria-label="Next Tabs">
+            <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
         </button>
     </div>
+
+    <script>
+        // Define DG tab scrolling and switching globally and immediately
+        window.scrollDGTabs = function(direction) {
+            const container = document.getElementById('dgTabsContainer');
+            if (!container) return;
+
+            const scrollAmount = 320;
+            const canScroll = container.scrollWidth > container.clientWidth;
+
+            if (canScroll) {
+                container.scrollBy({
+                    left: direction === 'left' ? -scrollAmount : scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+
+            // Also navigate to next/previous tab if at edge or on non-overflowing screen
+            const buttons = Array.from(container.querySelectorAll('.dg-tab-btn'));
+            const activeIndex = buttons.findIndex(b => b.classList.contains('active'));
+            if (activeIndex !== -1) {
+                const atLeftEdge = container.scrollLeft <= 10;
+                const atRightEdge = container.scrollLeft >= (container.scrollWidth - container.clientWidth - 10);
+                if (!canScroll || (direction === 'left' && atLeftEdge) || (direction === 'right' && atRightEdge)) {
+                    let targetIndex = direction === 'left' ? activeIndex - 1 : activeIndex + 1;
+                    if (targetIndex >= 0 && targetIndex < buttons.length) {
+                        buttons[targetIndex].click();
+                        return;
+                    }
+                }
+            }
+
+            setTimeout(window.updateDGTabArrows, 350);
+        };
+
+        window.updateDGTabArrows = function() {
+            const container = document.getElementById('dgTabsContainer');
+            const leftBtn = document.getElementById('dgTabScrollLeft');
+            const rightBtn = document.getElementById('dgTabScrollRight');
+            if (!container || !leftBtn || !rightBtn) return;
+
+            const canScroll = container.scrollWidth > container.clientWidth;
+            if (!canScroll) {
+                const buttons = Array.from(container.querySelectorAll('.dg-tab-btn'));
+                const activeIndex = buttons.findIndex(b => b.classList.contains('active'));
+                leftBtn.classList.toggle('disabled', activeIndex <= 0);
+                rightBtn.classList.toggle('disabled', activeIndex >= buttons.length - 1);
+                return;
+            }
+
+            const atLeft = container.scrollLeft <= 5;
+            const atRight = container.scrollLeft >= (container.scrollWidth - container.clientWidth - 5);
+
+            leftBtn.classList.toggle('disabled', atLeft);
+            rightBtn.classList.toggle('disabled', atRight);
+        };
+
+        window.switchDGTab = function(panelId, btn) {
+            // Toggle Buttons
+            document.querySelectorAll('.dg-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            // Toggle Panels
+            document.querySelectorAll('.dg-tab-panel').forEach(p => p.classList.remove('active'));
+            const targetPanel = document.getElementById(panelId);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+
+            // Scroll active tab button smoothly into view
+            if (btn && btn.scrollIntoView) {
+                btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+            setTimeout(window.updateDGTabArrows, 350);
+
+            // Store active tab in localStorage
+            try {
+                localStorage.setItem('active_dg_tab', panelId);
+            } catch(e) {}
+
+            // Dynamically show/hide Status & SRA Type dropdowns
+            const statusSelect = document.getElementById('dg-req-status');
+            if (statusSelect) {
+                statusSelect.style.display = (panelId === 'dg-staff-reqs-tab') ? 'inline-block' : 'none';
+            }
+
+            const sraTypeSelect = document.getElementById('dg-sra-type');
+            if (sraTypeSelect) {
+                sraTypeSelect.style.display = (panelId === 'dg-sra-receipts-tab') ? 'inline-block' : 'none';
+            }
+
+            const filterForm = document.getElementById('dg-filter-form');
+            if (filterForm) {
+                filterForm.style.display = (panelId === 'dg-workflow-config-tab') ? 'none' : 'block';
+            }
+
+            const printBtn = document.getElementById('btn-print-dg-report');
+            if (printBtn) {
+                printBtn.style.display = (panelId === 'dg-workflow-config-tab') ? 'none' : 'inline-flex';
+            }
+        };
+
+        // Bind events immediately and on DOMContentLoaded
+        (function() {
+            function bindDGTabEvents() {
+                const leftBtn = document.getElementById('dgTabScrollLeft');
+                const rightBtn = document.getElementById('dgTabScrollRight');
+                const container = document.getElementById('dgTabsContainer');
+
+                if (leftBtn) {
+                    leftBtn.onclick = function(e) {
+                        e.preventDefault();
+                        window.scrollDGTabs('left');
+                    };
+                }
+                if (rightBtn) {
+                    rightBtn.onclick = function(e) {
+                        e.preventDefault();
+                        window.scrollDGTabs('right');
+                    };
+                }
+                if (container) {
+                    container.addEventListener('scroll', window.updateDGTabArrows, { passive: true });
+                }
+                window.addEventListener('resize', window.updateDGTabArrows);
+                window.updateDGTabArrows();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindDGTabEvents);
+            } else {
+                bindDGTabEvents();
+            }
+        })();
+    </script>
 
     {{-- Tab Panels --}}
 
@@ -1125,26 +1337,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($inventoryItems->hasPages())
-                <div class="dg-pagination-container">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $inventoryItems->firstItem() ?? 0 }}</span> to <span>{{ $inventoryItems->lastItem() ?? 0 }}</span> of <span>{{ $inventoryItems->total() }}</span> records
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if ($inventoryItems->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $inventoryItems->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($inventoryItems->hasMorePages())
-                            <a href="{{ $inventoryItems->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('dg._tab_pager', ['items' => $inventoryItems, 'param' => 'items_page', 'id' => 'pager-dg-items'])
         </div>
     </div>
 
@@ -1282,26 +1475,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($requisitions->hasPages())
-                <div class="dg-pagination-container">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $requisitions->firstItem() ?? 0 }}</span> to <span>{{ $requisitions->lastItem() ?? 0 }}</span> of <span>{{ $requisitions->total() }}</span> requisitions
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if ($requisitions->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $requisitions->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($requisitions->hasMorePages())
-                            <a href="{{ $requisitions->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('dg._tab_pager', ['items' => $requisitions, 'param' => 'reqs_page', 'id' => 'pager-dg-requisitions'])
         </div>
     </div>
 
@@ -1369,26 +1543,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($reqReceipts->hasPages())
-                <div class="dg-pagination-container" style="padding: 1.25rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $reqReceipts->firstItem() ?? 0 }}</span> to <span>{{ $reqReceipts->lastItem() ?? 0 }}</span> of <span>{{ $reqReceipts->total() }}</span> receipts
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if($reqReceipts->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $reqReceipts->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if($reqReceipts->hasMorePages())
-                            <a href="{{ $reqReceipts->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('dg._tab_pager', ['items' => $reqReceipts, 'param' => 'req_receipts_page', 'id' => 'pager-dg-req-receipts'])
         </div>
     </div>
 
@@ -1467,26 +1622,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($sraReceipts->hasPages())
-                <div class="dg-pagination-container" style="padding: 1.25rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $sraReceipts->firstItem() ?? 0 }}</span> to <span>{{ $sraReceipts->lastItem() ?? 0 }}</span> of <span>{{ $sraReceipts->total() }}</span> SRA receipts
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if($sraReceipts->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $sraReceipts->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if($sraReceipts->hasMorePages())
-                            <a href="{{ $sraReceipts->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('dg._tab_pager', ['items' => $sraReceipts, 'param' => 'sra_receipts_page', 'id' => 'pager-dg-sra-receipts'])
         </div>
     </div>
 
@@ -1552,26 +1688,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($users->hasPages())
-                <div class="dg-pagination-container">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $users->firstItem() ?? 0 }}</span> to <span>{{ $users->lastItem() ?? 0 }}</span> of <span>{{ $users->total() }}</span> accounts
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if ($users->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $users->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($users->hasMorePages())
-                            <a href="{{ $users->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('dg._tab_pager', ['items' => $users, 'param' => 'users_page', 'id' => 'pager-dg-users'])
         </div>
     </div>
 
@@ -1635,26 +1752,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($issuedItems->hasPages())
-                <div class="dg-pagination-container">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $issuedItems->firstItem() ?? 0 }}</span> to <span>{{ $issuedItems->lastItem() ?? 0 }}</span> of <span>{{ $issuedItems->total() }}</span> records
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if ($issuedItems->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $issuedItems->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($issuedItems->hasMorePages())
-                            <a href="{{ $issuedItems->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('dg._tab_pager', ['items' => $issuedItems, 'param' => 'issued_page', 'id' => 'pager-dg-issued-items'])
         </div>
 
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
@@ -1709,26 +1807,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($returnedItems->hasPages())
-                <div class="dg-pagination-container">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $returnedItems->firstItem() ?? 0 }}</span> to <span>{{ $returnedItems->lastItem() ?? 0 }}</span> of <span>{{ $returnedItems->total() }}</span> records
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if ($returnedItems->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $returnedItems->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($returnedItems->hasMorePages())
-                            <a href="{{ $returnedItems->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
+            @include('dg._tab_pager', ['items' => $returnedItems, 'param' => 'returned_page', 'id' => 'pager-dg-returned-items'])
         </div>
     </div>
 
@@ -2255,40 +2334,6 @@
         }
     }
 
-    function switchDGTab(panelId, btn) {
-        // Toggle Buttons
-        document.querySelectorAll('.dg-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Toggle Panels
-        document.querySelectorAll('.dg-tab-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById(panelId).classList.add('active');
-
-        // Store active tab in localStorage
-        localStorage.setItem('active_dg_tab', panelId);
-
-        // Dynamically show/hide Status & SRA Type dropdowns
-        const statusSelect = document.getElementById('dg-req-status');
-        if (statusSelect) {
-            statusSelect.style.display = (panelId === 'dg-staff-reqs-tab') ? 'inline-block' : 'none';
-        }
-
-        const sraTypeSelect = document.getElementById('dg-sra-type');
-        if (sraTypeSelect) {
-            sraTypeSelect.style.display = (panelId === 'dg-sra-receipts-tab') ? 'inline-block' : 'none';
-        }
-
-        const filterForm = document.getElementById('dg-filter-form');
-        if (filterForm) {
-            filterForm.style.display = (panelId === 'dg-workflow-config-tab') ? 'none' : 'block';
-        }
-
-        const printBtn = document.getElementById('btn-print-dg-report');
-        if (printBtn) {
-            printBtn.style.display = (panelId === 'dg-workflow-config-tab') ? 'none' : 'inline-flex';
-        }
-    }
-
     function filterSraCategory(type) {
         const sraTypeSelect = document.getElementById('dg-sra-type');
         if (sraTypeSelect) {
@@ -2453,6 +2498,14 @@
         }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Initialize tab arrow controls
+        const dgContainer = document.getElementById('dgTabsContainer');
+        if (dgContainer && window.updateDGTabArrows) {
+            dgContainer.addEventListener('scroll', window.updateDGTabArrows, { passive: true });
+            window.addEventListener('resize', window.updateDGTabArrows);
+            window.updateDGTabArrows();
+        }
 
         // Dismiss supplier/requisition popups when clicking outside
         document.addEventListener('click', (e) => {
