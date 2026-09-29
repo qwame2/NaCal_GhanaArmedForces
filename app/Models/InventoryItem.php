@@ -24,6 +24,8 @@ class InventoryItem extends Model
         'received_qty'
     ];
 
+    protected $appends = ['original_received_qty'];
+
     /**
      * Get the immutable original received quantity entered at receiving time.
      */
@@ -66,6 +68,9 @@ class InventoryItem extends Model
             if ($item->received_qty === null || $item->received_qty === '') {
                 $raw = $item->qty ?? ($item->stock_balance ?? 0);
                 $item->received_qty = floatval(str_replace(',', '', $raw));
+            }
+            if ($item->qty === null || $item->qty === '') {
+                $item->qty = $item->received_qty;
             }
         });
         static::saved(function () {

@@ -3653,7 +3653,7 @@
             let totalExpected = 0;
 
             const itemsHtml = (batch.items || []).map(i => {
-                const qtyVal = Number(i.qty || 0);
+                const qtyVal = Number(i.original_received_qty !== undefined ? i.original_received_qty : (i.received_qty !== undefined ? i.received_qty : (i.qty || 0)));
                 const stockBal = Number(i.stock_balance || 0);
                 const variance = Number(i.variance || 0);
                 const shortfall = variance < 0 ? Math.abs(variance) : 0;

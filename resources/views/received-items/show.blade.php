@@ -199,7 +199,7 @@
                         <td style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">{{ $item->unit ?? 'Package Types' }}</span>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 700; color: var(--text-main);">{{ number_format($item->qty) }}</td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 700; color: var(--text-main);">{{ number_format($item->original_received_qty ?? ($item->received_qty ?? $item->qty)) }}</td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right; color: var(--text-main); font-weight: 700;">{{ number_format($item->stock_balance) }}</td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right;">
                             <span style="font-weight: 800; color: {{ (float)$item->variance > 0 ? '#059669' : ((float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">

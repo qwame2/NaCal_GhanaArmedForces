@@ -478,8 +478,10 @@
                 @foreach($batch->items as $index => $item)
                 @php
                     $itemStoreLocation = strtoupper(trim($item->store_location ?? 'STORE A'));
+                @php
+                    $itemOriginalReceived = $item->original_received_qty ?? ($item->received_qty ?? $item->qty);
                 @endphp
-                <div class="item-edit-card" data-item-id="{{ $item->id }}">
+                <div class="item-edit-card" data-item-id="{{ $item->id }}" data-original-received="{{ $itemOriginalReceived }}" data-current-stock="{{ $item->stock_balance }}">
                     <div class="item-accent"></div>
                     <input type="hidden" class="item-id-field" value="{{ $item->id }}">
                     <input type="hidden" class="item-stock-balance-field" value="{{ $item->stock_balance }}">
@@ -500,7 +502,7 @@
                         </div>
                         <div>
                             <label class="edit-field-label">Qty Received</label>
-                            <input type="number" class="item-qty-field edit-input" value="{{ $item->qty }}" min="0"
+                            <input type="number" class="item-qty-field edit-input" value="{{ $itemOriginalReceived }}" min="0"
                                    oninput="recalcPageVariance(this)">
                         </div>
                         <div>
@@ -620,14 +622,20 @@ function toggleEditPageSourceFields() {
 function recalcPageVariance(input) {
     var card = input.closest('.item-edit-card');
     var qty = parseFloat(input.value) || 0;
+    var origReceived = parseFloat(card.getAttribute('data-original-received')) || qty;
+    var currentStock = parseFloat(card.getAttribute('data-current-stock')) || 0;
+    var totalIssued = Math.max(0, origReceived - currentStock);
+
     var stockInput = card.querySelector('.item-stock-balance-field');
-    if (stockInput) stockInput.value = qty;
+    if (stockInput) stockInput.value = Math.max(0, qty - totalIssued);
 
     var variance = 0; // qty adjusted is the new baseline
     var varInput = card.querySelector('.item-variance-field');
-    varInput.value = variance;
-    varInput.style.color = '#059669';
-    varInput.style.background = 'rgba(5, 150, 105, 0.06)';
+    if (varInput) {
+        varInput.value = variance;
+        varInput.style.color = '#059669';
+        varInput.style.background = 'rgba(5, 150, 105, 0.06)';
+    }
 }
 
 function buildItemsPayload() {

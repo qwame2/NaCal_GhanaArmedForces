@@ -3764,9 +3764,10 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
                 const stock = parseFloat(item.stock_balance);
                 const threshold = {{ \App\Models\Setting::get('low_stock_threshold', 100) }};
                 const healthColor = stock <= 0 ? '#ef4444' : (stock <= threshold ? '#059669' : '#059669');
+                const origReceived = item.original_received_qty ?? (item.received_qty ?? item.qty);
 
                 const itemHtml = `
-                    <div class="edit-item-card" data-id="${item.id}" style="background: #ffffff; padding: 1.5rem; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s; position: relative;">
+                    <div class="edit-item-card" data-id="${item.id}" data-original-received="${origReceived}" data-current-stock="${item.stock_balance}" style="background: #ffffff; padding: 1.5rem; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s; position: relative;">
                         <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: ${healthColor};"></div>
                         <input type="hidden" class="item-id" value="${item.id}">
                         <input type="hidden" class="item-stock-balance" value="${item.stock_balance}">
@@ -3782,7 +3783,7 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Qty Received</label>
-                                <input type="number" class="item-qty" value="${item.qty}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: #1e293b;">
+                                <input type="number" class="item-qty" value="${origReceived}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: #1e293b;">
                             </div>
 
                         </div>
@@ -3853,28 +3854,19 @@ function toggleEditSourceFields() {
 function recalcEditVariance(input) {
     const row = input.closest('.edit-item-card');
     const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+    const origReceived = parseFloat(row.dataset.originalReceived) || qty;
+    const currentStock = parseFloat(row.dataset.currentStock) || 0;
+    const totalIssued = Math.max(0, origReceived - currentStock);
 
-    // We update both the variance and the hidden stock balance
-    // because usually an edit to an entry is to correct the actual quantity received
     const stockInput = row.querySelector('.item-stock-balance');
     if (stockInput) {
-        stockInput.value = qty;
+        stockInput.value = Math.max(0, qty - totalIssued);
     }
 
-    const stock = parseFloat(stockInput.value) || 0;
-    const variance = stock - qty;
-
+    const variance = 0; // Adjusted received qty is the new baseline
     const varInput = row.querySelector('.item-variance');
-    varInput.value = variance;
-
-    // Visual feedback for variance
-    if (variance > 0) {
-        varInput.style.color = '#059669'; // Green for surplus
-        varInput.style.background = 'rgba(5, 150, 105, 0.1)';
-    } else if (variance < 0) {
-        varInput.style.color = '#ef4444'; // Red for shortage
-        varInput.style.background = 'rgba(239, 68, 68, 0.1)';
-    } else {
+    if (varInput) {
+        varInput.value = variance;
         varInput.style.color = '#059669';
         varInput.style.background = 'rgba(5, 150, 105, 0.05)';
     }

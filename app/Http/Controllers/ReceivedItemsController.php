@@ -923,9 +923,9 @@ class ReceivedItemsController extends Controller
                 'arrival_date' => $validated['arrival_date'],
                 'ledge_category' => $validated['ledge_category'],
                 'acquisition_type' => $validated['acquisition_type'],
-                'supplier_name' => $validated['supplier_name'],
-                'supplier_status' => $validated['supplier_status'],
-                'donor_name' => $validated['donor_name'],
+                'supplier_name' => $validated['supplier_name'] ?? null,
+                'supplier_status' => $validated['supplier_status'] ?? null,
+                'donor_name' => $validated['donor_name'] ?? null,
                 'delivery_person' => $validated['delivery_person'] ?? null,
                 'delivery_phone' => $validated['delivery_phone'] ?? null,
                 'items' => collect($validated['items'])->map(function($i) {
@@ -945,9 +945,9 @@ class ReceivedItemsController extends Controller
  
             $batch->update([
                 'ledge_category' => $validated['ledge_category'],
-                'supplier_name' => $validated['supplier_name'],
-                'supplier_status' => $validated['supplier_status'],
-                'donor_name' => $validated['donor_name'],
+                'supplier_name' => $validated['supplier_name'] ?? null,
+                'supplier_status' => $validated['supplier_status'] ?? null,
+                'donor_name' => $validated['donor_name'] ?? null,
                 'acquisition_type' => $validated['acquisition_type'],
                 'arrival_date' => $validated['arrival_date'],
                 'delivery_person' => $validated['delivery_person'] ?? null,
@@ -982,15 +982,23 @@ class ReceivedItemsController extends Controller
             foreach ($validated['items'] as $itemData) {
                 $item = $batch->items()->findOrFail($itemData['id']);
                 
+                $currentReceived = floatval($item->received_qty ?? ($item->qty ?? 0));
+                $currentStock = floatval($item->stock_balance ?? 0);
+                $totalIssuedFromItem = max(0, $currentReceived - $currentStock);
+                
+                $newReceivedQty = floatval(str_replace(',', '', $itemData['qty'] ?? ($itemData['received_qty'] ?? $currentReceived)));
+                $newStockBalance = max(0, $newReceivedQty - $totalIssuedFromItem);
+
                 $old = $originalItems[$item->id] ?? [];
                 $new = [
-                    'description' => $itemData['description'],
-                    'serial_number' => $itemData['serial_number'] ?? null,
-                    'unit' => $itemData['unit'],
-                    'qty' => $itemData['qty'],
-                    'stock_balance' => $itemData['stock_balance'],
-                    'variance' => $itemData['variance'],
-                    'remarks' => $itemData['remarks'],
+                    'description'    => $itemData['description'],
+                    'serial_number'  => $itemData['serial_number'] ?? null,
+                    'unit'           => $itemData['unit'],
+                    'received_qty'   => $newReceivedQty,
+                    'qty'            => $newReceivedQty,
+                    'stock_balance'  => $newStockBalance,
+                    'variance'       => $itemData['variance'],
+                    'remarks'        => $itemData['remarks'] ?? null,
                     'store_location' => $itemData['store_location'] ?? ($item->store_location ?? 'Store A'),
                 ];
 

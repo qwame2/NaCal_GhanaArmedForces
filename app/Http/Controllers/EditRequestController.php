@@ -926,8 +926,7 @@ class EditRequestController extends Controller
                               ->where('ledge_category', $cartItem['category']);
                         })
                         ->where(function($query) {
-                            $query->where('qty', '>', 0)
-                                  ->orWhere('stock_balance', '>', 0)
+                            $query->where('stock_balance', '>', 0)
                                   ->orWhere('book_qty', '>', 0);
                         })
                         ->orderBy('created_at', 'asc')
@@ -937,10 +936,7 @@ class EditRequestController extends Controller
                     foreach ($stockItems as $inventoryItem) {
                         if ($qtyToIssue <= 0) break;
 
-                        $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
                         $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
-                        
-                        $takeQty = min($availableQty, $qtyToIssue);
                         $takeStock = min($availableStock, $qtyToIssue);
 
                         if (!is_null($inventoryItem->book_qty)) {
@@ -955,11 +951,16 @@ class EditRequestController extends Controller
                             $inventoryItem->received_qty = $inventoryItem->original_received_qty;
                         }
 
-                        $inventoryItem->qty = max(0, $availableQty - $takeQty);
+                        // Ensure qty preserves original received quantity
+                        if (empty($inventoryItem->qty) || floatval($inventoryItem->qty) < floatval($inventoryItem->received_qty)) {
+                            $inventoryItem->qty = $inventoryItem->received_qty;
+                        }
+
+                        // Deduct ONLY from stock_balance. received_qty and qty remain unchanged.
                         $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
                         $inventoryItem->save();
 
-                        $qtyToIssue -= max($takeQty, $takeStock, $takeBook);
+                        $qtyToIssue -= max($takeStock, $takeBook);
                     }
 
                     if ($qtyToIssue > 0) {
@@ -1004,13 +1005,21 @@ class EditRequestController extends Controller
                     foreach ($payload['items'] as $itemData) {
                         $item = \App\Models\InventoryItem::find($itemData['id']);
                         if ($item && $item->batch_id == $batch->id) {
+                            $currentReceived = floatval($item->received_qty ?? ($item->qty ?? 0));
+                            $currentStock = floatval($item->stock_balance ?? 0);
+                            $totalIssuedFromItem = max(0, $currentReceived - $currentStock);
+                            
+                            $newReceivedQty = floatval(str_replace(',', '', $itemData['qty'] ?? ($itemData['received_qty'] ?? $currentReceived)));
+                            $newStockBalance = max(0, $newReceivedQty - $totalIssuedFromItem);
+
                             $item->update([
-                                'description' => $itemData['description'],
-                                'unit' => $itemData['unit'],
-                                'qty' => $itemData['qty'],
-                                'stock_balance' => $itemData['stock_balance'],
-                                'variance' => $itemData['variance'],
-                                'remarks' => $itemData['remarks'] ?? null,
+                                'description'    => $itemData['description'],
+                                'unit'           => $itemData['unit'],
+                                'received_qty'   => $newReceivedQty,
+                                'qty'            => $newReceivedQty,
+                                'stock_balance'  => $newStockBalance,
+                                'variance'       => $itemData['variance'],
+                                'remarks'        => $itemData['remarks'] ?? null,
                                 'store_location' => $itemData['store_location'] ?? 'Store A',
                             ]);
                         }
@@ -1065,12 +1074,12 @@ class EditRequestController extends Controller
                 // Phase 1: Refill depleted batches
                 foreach ($inventoryItems as $invItem) {
                     if ($remainingToRefill <= 0) break;
-                    $stockLimit = floatval($invItem->stock_balance);
-                    $currentQty = floatval($invItem->qty);
-                    $room = $stockLimit - $currentQty;
+                    $origRec = floatval($invItem->received_qty ?? ($invItem->qty ?? 0));
+                    $currentStock = floatval($invItem->stock_balance);
+                    $room = max(0, $origRec - $currentStock);
                     if ($room > 0) {
                         $refill = min($room, $remainingToRefill);
-                        $invItem->qty = $currentQty + $refill;
+                        $invItem->stock_balance = $currentStock + $refill;
                         if (!is_null($invItem->book_qty)) {
                             $invItem->book_qty = floatval($invItem->book_qty) + $refill;
                         }
@@ -1082,7 +1091,6 @@ class EditRequestController extends Controller
                 // Phase 2: Overflow to latest batch
                 if ($remainingToRefill > 0) {
                     $latestItem = $inventoryItems->last();
-                    $latestItem->qty = floatval($latestItem->qty) + $remainingToRefill;
                     $latestItem->stock_balance = floatval($latestItem->stock_balance) + $remainingToRefill;
                     if (!is_null($latestItem->book_qty)) {
                         $latestItem->book_qty = floatval($latestItem->book_qty) + $remainingToRefill;

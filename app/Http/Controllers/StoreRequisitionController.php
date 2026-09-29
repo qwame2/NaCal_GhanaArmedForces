@@ -1438,8 +1438,7 @@ class StoreRequisitionController extends Controller
                                             }
                                         })
                                         ->where(function($query) {
-                                            $query->where('qty', '>', 0)
-                                                ->orWhere('stock_balance', '>', 0)
+                                            $query->where('stock_balance', '>', 0)
                                                 ->orWhere('book_qty', '>', 0);
                                         })
                                         ->orderBy('created_at', 'asc')
@@ -1453,10 +1452,12 @@ class StoreRequisitionController extends Controller
                                             $inventoryItem->received_qty = $inventoryItem->original_received_qty;
                                         }
 
-                                        $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
+                                        // Ensure qty preserves original received quantity
+                                        if (empty($inventoryItem->qty) || floatval($inventoryItem->qty) < floatval($inventoryItem->received_qty)) {
+                                            $inventoryItem->qty = $inventoryItem->received_qty;
+                                        }
+
                                         $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
-                                        
-                                        $takeQty = min($availableQty, $qtyToDeduct);
                                         $takeStock = min($availableStock, $qtyToDeduct);
 
                                         if (!is_null($inventoryItem->book_qty)) {
@@ -1467,11 +1468,11 @@ class StoreRequisitionController extends Controller
                                             $takeBook = 0;
                                         }
 
-                                        $inventoryItem->qty = max(0, $availableQty - $takeQty);
+                                        // Deduct ONLY from stock_balance. received_qty and qty remain unchanged.
                                         $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
                                         $inventoryItem->save();
 
-                                        $qtyToDeduct -= max($takeQty, $takeStock, $takeBook);
+                                        $qtyToDeduct -= max($takeStock, $takeBook);
                                     }
                                 }
 
@@ -1499,8 +1500,7 @@ class StoreRequisitionController extends Controller
                                             }
                                         })
                                         ->where(function($query) {
-                                            $query->where('qty', '>', 0)
-                                                ->orWhere('stock_balance', '>', 0)
+                                            $query->where('stock_balance', '>', 0)
                                                 ->orWhere('book_qty', '>', 0);
                                         })
                                         ->orderBy('created_at', 'asc')
@@ -1514,10 +1514,12 @@ class StoreRequisitionController extends Controller
                                             $inventoryItem->received_qty = $inventoryItem->original_received_qty;
                                         }
 
-                                        $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
+                                        // Ensure qty preserves original received quantity
+                                        if (empty($inventoryItem->qty) || floatval($inventoryItem->qty) < floatval($inventoryItem->received_qty)) {
+                                            $inventoryItem->qty = $inventoryItem->received_qty;
+                                        }
+
                                         $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
-                                        
-                                        $takeQty = min($availableQty, $qtyToDeduct);
                                         $takeStock = min($availableStock, $qtyToDeduct);
 
                                         if (!is_null($inventoryItem->book_qty)) {
@@ -1528,11 +1530,11 @@ class StoreRequisitionController extends Controller
                                             $takeBook = 0;
                                         }
 
-                                        $inventoryItem->qty = max(0, $availableQty - $takeQty);
+                                        // Deduct ONLY from stock_balance. received_qty and qty remain unchanged.
                                         $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
                                         $inventoryItem->save();
 
-                                        $qtyToDeduct -= max($takeQty, $takeStock, $takeBook);
+                                        $qtyToDeduct -= max($takeStock, $takeBook);
                                     }
                                 }
                             }

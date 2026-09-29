@@ -680,8 +680,8 @@ class ApiTest extends TestCase
         // Clean settings
         \App\Models\Setting::set('disabled_requisition_departments', [], 'json');
 
-        // A. Verify Main Admin (or non-Head of Stores) cannot toggle department status (returns 403)
-        $responseToggleAdmin = $this->actingAs($mainAdmin)->postJson(route('admin.permissions.toggle_department'), [
+        // A. Verify Requisitioner cannot toggle department status (returns 403)
+        $responseToggleAdmin = $this->actingAs($requisitioner)->postJson(route('admin.permissions.toggle_department'), [
             'department' => 'Welfare Department',
             'value' => false, // false means block it
         ]);
@@ -1862,9 +1862,11 @@ class ApiTest extends TestCase
         $response->assertJsonPath('success', true);
 
         // Verify inventory item has stock subtracted by 2 (300 - 2 = 298), not 10!
+        // received_qty and qty should remain unchanged at 300!
         $inventoryItem->refresh();
         $this->assertEquals(298, (float)$inventoryItem->stock_balance);
-        $this->assertEquals(298, (float)$inventoryItem->qty);
+        $this->assertEquals(300, (float)$inventoryItem->qty);
+        $this->assertEquals(300, (float)$inventoryItem->received_qty);
     }
 
     public function test_stores_head_admin_proposes_quantity_hod_agrees_and_final_collection_subtracts_agreed_quantity()
@@ -1973,9 +1975,11 @@ class ApiTest extends TestCase
         $response->assertStatus(200);
 
         // Verify inventory item has stock subtracted by 2 (300 - 2 = 298), not 10!
+        // received_qty and qty should remain unchanged at 300!
         $inventoryItem->refresh();
         $this->assertEquals(298, (float)$inventoryItem->stock_balance);
-        $this->assertEquals(298, (float)$inventoryItem->qty);
+        $this->assertEquals(300, (float)$inventoryItem->qty);
+        $this->assertEquals(300, (float)$inventoryItem->received_qty);
     }
 
     public function test_it_admin_can_manage_head_of_stores_password_reset_otps(): void
@@ -2118,9 +2122,10 @@ class ApiTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Verify stock has been reduced
+        // Verify stock has been reduced from 50 to 40, while received_qty and qty remain 50
         $this->assertEquals(40, (float)$inventoryItem->fresh()->stock_balance);
-        $this->assertEquals(40, (float)$inventoryItem->fresh()->qty);
+        $this->assertEquals(50, (float)$inventoryItem->fresh()->qty);
+        $this->assertEquals(50, (float)$inventoryItem->fresh()->received_qty);
     }
 
     public function test_issuance_decrements_book_qty(): void
@@ -2174,10 +2179,12 @@ class ApiTest extends TestCase
         $response->assertStatus(200);
 
         // Verify book_qty decreased by 10 (90 -> 80), and stock_balance decreased by 10 (20 -> 10)
+        // received_qty and qty remain unchanged at 20
         $inventoryItem->refresh();
         $this->assertEquals(80, (float)$inventoryItem->book_qty);
         $this->assertEquals(10, (float)$inventoryItem->stock_balance);
-        $this->assertEquals(10, (float)$inventoryItem->qty);
+        $this->assertEquals(20, (float)$inventoryItem->qty);
+        $this->assertEquals(20, (float)$inventoryItem->received_qty);
     }
 
     public function test_admin_can_update_user_role_via_ajax()

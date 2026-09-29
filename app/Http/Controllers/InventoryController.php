@@ -98,7 +98,7 @@ class InventoryController extends Controller
                 return (float) str_replace(',', '', $item->variance);
             });
 
-            $qty = $lastItem ? (float) str_replace(',', '', $lastItem->qty) : 0;
+            $qty = $lastItem ? (float) str_replace(',', '', $lastItem->received_qty ?? ($lastItem->original_received_qty ?? ($lastItem->qty ?? 0))) : 0;
 
             return (object) [
                 'description'    => $lastItem->description,
@@ -207,7 +207,7 @@ class InventoryController extends Controller
                 return (float) str_replace(',', '', $item->variance);
             });
 
-            $qty = $lastItem ? (float) str_replace(',', '', $lastItem->qty) : 0;
+            $qty = $lastItem ? (float) str_replace(',', '', $lastItem->received_qty ?? ($lastItem->original_received_qty ?? ($lastItem->qty ?? 0))) : 0;
 
             return (object) [
                 'description'    => $lastItem->description,
