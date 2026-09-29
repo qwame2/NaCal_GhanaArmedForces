@@ -1437,10 +1437,9 @@ jQuery(document).ready(function($) {
                 if (selectedDesc) {
                     const status = $('#supplierStatusSelect').val();
                     if (status !== 'Partial Delivery') {
-                        const currentQty = qtyInput.val() || stockInput.val();
-                        if (currentQty && currentQty !== '0') {
+                        const currentQty = qtyInput.val();
+                        if (currentQty !== '') {
                             stockInput.val(currentQty);
-                            qtyInput.val(currentQty);
                         }
                     }
                     qtyInput.removeAttr('placeholder');
@@ -1460,19 +1459,21 @@ jQuery(document).ready(function($) {
             // Auto-Calculation Logic
             $row.on('input', '.row-qty, .row-stock-balance', function() {
                 const status = $('#supplierStatusSelect').val();
-                const qtyVal = parseFloat(qtyInput.val());
-                const rawStockVal = parseFloat(stockInput.val());
+                const isQtyInput = $(this).hasClass('row-qty');
 
                 if (status !== 'Partial Delivery') {
-                    const activeVal = (!isNaN(qtyVal) && qtyVal > 0) ? qtyInput.val() : ((!isNaN(rawStockVal) && rawStockVal > 0) ? stockInput.val() : (qtyInput.val() || stockInput.val() || '0'));
-                    stockInput.val(activeVal);
-                    qtyInput.val(activeVal);
+                    if (isQtyInput) {
+                        stockInput.val(qtyInput.val());
+                    } else {
+                        qtyInput.val(stockInput.val());
+                    }
                 }
 
                 updateSerialInputs($row);
 
                 const finalStockVal = parseFloat(stockInput.val()) || 0;
-                const result = finalStockVal - (qtyVal || 0);
+                const finalQtyVal = parseFloat(qtyInput.val()) || 0;
+                const result = finalStockVal - finalQtyVal;
                 varianceInput.val(result);
 
                 if (result > 0) {
@@ -1616,8 +1617,8 @@ jQuery(document).ready(function($) {
                 $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', false);
                 $(this).find('.actual-qty-group').slideUp(300);
 
-                const qtyVal = parseFloat($(this).find('.row-qty').val()) || 0;
-                $(this).find('.row-stock-balance').val(qtyVal);
+                const rawQty = $(this).find('.row-qty').val();
+                $(this).find('.row-stock-balance').val(rawQty);
                 $(this).find('.row-variance').val(0);
                 updateSerialInputs($(this));
             });
