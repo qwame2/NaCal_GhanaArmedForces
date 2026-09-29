@@ -153,19 +153,17 @@ class InventoryItem extends Model
      */
     public function getUnitAttribute($value)
     {
-        // Try to get a matching unit from the rules
+        if (!empty($value)) {
+            return $value;
+        }
+
+        // Try to get a matching unit from the rules if not set
         $dynamicUnit = Setting::getItemUnit($this->description);
-        
-        // If it returns 'units' (the default) but we have a stored value, use the stored value
-        // unless the user explicitly wants to force 'units'.
-        // Actually, if a rule matches, Setting::getItemUnit returns the rule's unit.
-        // If no rule matches, it returns 'units'.
-        
         if ($dynamicUnit !== 'units') {
             return $dynamicUnit;
         }
 
-        return $value ?: 'units';
+        return 'units';
     }
 
     /**

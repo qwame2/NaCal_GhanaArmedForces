@@ -743,7 +743,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::get('/received-items/{id}/edit', [ReceivedItemsController::class, 'edit'])->name('receiveditems.edit');
-    Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
+    Route::match(['put', 'post'], '/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
+    Route::match(['put', 'post'], '/inventory/items/{id}', [InventoryController::class, 'updateItem'])->name('inventory.items.update');
     Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
     Route::get('/api/global-search', [InventoryController::class, 'globalSearch'])->name('api.search');
     Route::delete('/received-items/{id}', [ReceivedItemsController::class, 'destroy'])->name('receiveditems.destroy');

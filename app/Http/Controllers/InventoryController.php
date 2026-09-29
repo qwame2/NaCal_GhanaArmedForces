@@ -958,4 +958,81 @@ class InventoryController extends Controller
 
         return null;
     }
+
+    /**
+     * Direct update for a single inventory item.
+     */
+    public function updateItem(Request $request, $id)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+        }
+
+        $isAuthorized = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || $user->can_add_inventory
+            || $user->isDelegatedApprover()
+            || in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Store Officer', 'Officer'])
+            || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE']);
+
+        if (!$isAuthorized) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Permission required to modify inventory entries.'], 403);
+        }
+
+        $validated = $request->validate([
+            'description'    => 'required|string',
+            'unit'           => 'nullable|string',
+            'qty'            => 'nullable',
+            'stock_balance'  => 'nullable',
+            'variance'       => 'nullable',
+            'remarks'        => 'nullable|string',
+            'store_location' => 'nullable|string',
+            'serial_number'  => 'nullable|string',
+        ]);
+
+        $item = \App\Models\InventoryItem::findOrFail($id);
+
+        $currentReceived = floatval($item->received_qty ?? ($item->qty ?? 0));
+        $currentStock = floatval($item->stock_balance ?? 0);
+        $totalIssuedFromItem = max(0, $currentReceived - $currentStock);
+
+        $rawQty = $request->input('qty') ?? ($request->input('received_qty') ?? null);
+        $newReceivedQty = (!is_null($rawQty) && $rawQty !== '') 
+            ? floatval(str_replace(',', '', $rawQty)) 
+            : $currentReceived;
+
+        $rawStock = $request->input('stock_balance');
+        if (!is_null($rawStock) && $rawStock !== '') {
+            $newStockBalance = floatval(str_replace(',', '', $rawStock));
+        } else {
+            $newStockBalance = max(0, $newReceivedQty - $totalIssuedFromItem);
+        }
+
+        $rawVariance = $request->input('variance');
+        $newVariance = (!is_null($rawVariance) && $rawVariance !== '')
+            ? floatval(str_replace(',', '', $rawVariance))
+            : floatval($item->variance ?? 0);
+
+        $item->update([
+            'description'    => trim($validated['description']),
+            'serial_number'  => $validated['serial_number'] ?? $item->serial_number,
+            'unit'           => !empty($validated['unit']) ? trim($validated['unit']) : ($item->unit ?? 'units'),
+            'received_qty'   => $newReceivedQty,
+            'qty'            => $newReceivedQty,
+            'stock_balance'  => $newStockBalance,
+            'variance'       => $newVariance,
+            'remarks'        => $validated['remarks'] ?? null,
+            'store_location' => $validated['store_location'] ?? ($item->store_location ?? 'STORE A'),
+        ]);
+
+        $item->refresh();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Inventory item updated successfully.',
+            'item'    => $item
+        ]);
+    }
 }
+

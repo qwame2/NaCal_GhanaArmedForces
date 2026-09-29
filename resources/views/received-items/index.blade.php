@@ -638,7 +638,15 @@
                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                              </div>
                                          @else
-                                             <button @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']) || (!auth()->user()->is_admin && !auth()->user()->can_add_inventory)) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1);" @else onclick="window.location.href='{{ url('/received-items') }}/{{ $item->batch_id }}/edit?item_id={{ $item->id }}'" class="action-icon-btn" title="Edit Entry" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1);" @endif>
+                                             @php
+                                                  $u = auth()->user();
+                                                  $canEdit = $u->is_admin
+                                                      || $u->isMainAdminOrSub()
+                                                      || $u->can_add_inventory
+                                                      || in_array($u->role, ['Head of Stores', 'Store Officer', 'Officer', 'Dept. Head (Stores)'])
+                                                      || in_array(strtoupper($u->department ?? ''), ['STORES', 'STORE']);
+                                              @endphp
+                                              <button @if(!$canEdit) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1);" @else onclick="window.location.href='{{ url('/received-items') }}/{{ $item->batch_id }}/edit?item_id={{ $item->id }}'" class="action-icon-btn" title="Edit Entry" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1); cursor: pointer;" @endif>
                                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                              </button>
                                          @endif
@@ -3237,7 +3245,8 @@
 
         const submitBtn = document.querySelector('#stockCheckForm button[type="submit"]');
         const originalHtml = submitBtn.innerHTML;
-        const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+        const canDirectEdit = {{ (auth()->user()->is_admin || auth()->user()->isMainAdminOrSub() || auth()->user()->can_add_inventory || in_array(auth()->user()->role, ['Head of Stores', 'Store Officer', 'Officer', 'Dept. Head (Stores)']) || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])) ? 'true' : 'false' }};
+    const isAdmin = canDirectEdit;
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<div class="loader" style="width: 14px; height: 14px; border-width: 2px; border-color: white;"></div> ${isAdmin ? 'Sealing Record...' : 'Submitting Request...'}`;
 
@@ -3711,7 +3720,8 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
     const saveBtn = document.getElementById('saveEditBtn');
     saveBtn.disabled = false;
     saveBtn.style.background = 'var(--primary)';
-    const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+    const canDirectEdit = {{ (auth()->user()->is_admin || auth()->user()->isMainAdminOrSub() || auth()->user()->can_add_inventory || in_array(auth()->user()->role, ['Head of Stores', 'Store Officer', 'Officer', 'Dept. Head (Stores)']) || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])) ? 'true' : 'false' }};
+    const isAdmin = canDirectEdit;
     saveBtn.innerHTML = isAdmin ? '<i data-lucide="save" style="width: 18px;"></i> Save Changes' : '<i data-lucide="send" style="width: 18px;"></i> Submit for Approval';
 
     const modal = document.getElementById('editBatchModal');
@@ -3779,13 +3789,16 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Package Type</label>
-                                <input type="text" class="item-unit" value="${item.unit}" disabled style="width: 100%; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #94a3b8; background: #f8fafc; cursor: not-allowed;">
+                                <input type="text" class="item-unit" value="${item.unit}" style="width: 100%; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; background: #ffffff;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Qty Received</label>
                                 <input type="number" class="item-qty" value="${origReceived}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: #1e293b;">
                             </div>
-
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Stock Balance</label>
+                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" style="width: 100%; padding: 0.85rem; border: 1.5px solid #059669; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: #059669; background: #ecfdf5;">
+                            </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; align-items: flex-end;">
@@ -4122,12 +4135,12 @@ async function submitEditBatch() {
 
             Swal.fire({
                 title: 'Live Update Success',
-                text: 'The record has been updated and reflected in real-time.',
+                text: 'The record has been updated in the database.',
                 icon: 'success',
-                timer: 2000,
-                showConfirmButton: false,
-                toast: true,
-                position: 'top-end'
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
             });
             closeEditBatchModal();
         } else {

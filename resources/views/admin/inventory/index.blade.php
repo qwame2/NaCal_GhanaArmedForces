@@ -691,6 +691,7 @@
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Bal.</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Level</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -855,10 +856,17 @@
                                     </div>
                                 </div>
                             </td>
+                            <td data-label="Actions" style="padding: 1.25rem 1.5rem; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <button onclick="window.location.href='{{ url('/received-items') }}/{{ $item->batch_id }}/edit?item_id={{ $item->id }}&return_to={{ urlencode(request()->fullUrl()) }}'" class="action-icon-btn" title="Edit Item" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="12" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+                            <td colspan="13" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
                                     <div style="background: #ecfdf5; width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: #059669; border: 2px dashed rgba(5, 150, 105, 0.2); animation: pulse 2s infinite;">
                                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
@@ -986,6 +994,13 @@
                             <td style="max-width: 300px;">
                                 <div style="background: #f8fafc; padding: 10px; border-radius: 10px; border-left: 3px solid #e2e8f0;">
                                     <div style="font-size: 0.8rem; color: #64748b; font-style: italic; line-height: 1.4;">"{{ $return->remarks ?: 'No remarks recorded' }}"</div>
+                                </div>
+                            </td>
+                            <td data-label="Actions" style="padding: 1.25rem 1.5rem; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <button onclick="window.location.href='{{ url('/received-items') }}/{{ $item->batch_id }}/edit?item_id={{ $item->id }}&return_to={{ urlencode(request()->fullUrl()) }}'" class="action-icon-btn" title="Edit Item" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -1574,7 +1589,7 @@ function openEditBatchModal(batchId) {
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Package Type</label>
-                                <input type="text" class="item-unit" value="${item.unit}" disabled style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #94a3b8; background: #f8fafc; cursor: not-allowed;">
+                                <input type="text" class="item-unit" value="${item.unit}" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #1e293b; background: #ffffff;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Qty Received</label>
@@ -1656,7 +1671,7 @@ function submitEditBatch() {
 
     fetch(`{{ url('/received-items') }}/${currentEditBatchId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify(payload)
     })
     .then(res => res.json())

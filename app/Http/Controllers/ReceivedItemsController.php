@@ -832,39 +832,39 @@ class ReceivedItemsController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.'], 403);
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
         }
 
-        if (!auth()->user()->is_admin) {
-            $editReq = \App\Models\EditRequest::where('user_id', auth()->id())
+        $isStoresAuthorized = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || $user->can_add_inventory
+            || $user->isDelegatedApprover()
+            || in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Store Officer', 'Officer'])
+            || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE']);
+
+        if (!$isStoresAuthorized) {
+            $editReq = \App\Models\EditRequest::where('user_id', $user->id)
                 ->where('item_id', $id)
                 ->where('item_type', 'batch')
-                ->where('request_type', 'edit')
+                ->whereIn('request_type', ['edit', 'edit_submission'])
                 ->where('status', 'approved')
                 ->latest()
                 ->first();
 
             if (!$editReq) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized: No approved edit request found.'], 403);
-            }
-
-            $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
-            $timeoutMinutes = 60; // Standard security window
-            $timeoutSeconds = $timeoutMinutes * 60;
-
-            if (now()->diffInSeconds($approvedAt) > $timeoutSeconds) {
-                return response()->json(['success' => false, 'message' => "Security clearance expired ({$timeoutMinutes}-minute limit exceeded)."], 403);
+                return response()->json(['success' => false, 'message' => 'Unauthorized: Permission required to modify inventory entries.'], 403);
             }
         }
 
         $validated = $request->validate([
-            'ledge_category' => 'required|string',
+            'ledge_category' => 'nullable|string',
             'supplier_name' => 'nullable|string',
             'supplier_status' => 'nullable|string',
             'donor_name' => 'nullable|string',
-            'acquisition_type' => 'required|string',
-            'arrival_date' => 'required|date',
+            'acquisition_type' => 'nullable|string',
+            'arrival_date' => 'nullable|date',
             'delivery_person' => 'nullable|string',
             'delivery_phone' => 'nullable|string',
             'contact_person' => 'nullable|string',
@@ -876,10 +876,10 @@ class ReceivedItemsController extends Controller
             'items.*.id' => 'required|exists:inventory_items,id',
             'items.*.description' => 'required|string',
             'items.*.serial_number' => 'nullable|string',
-            'items.*.unit' => 'required|string',
-            'items.*.qty' => 'required|numeric',
-            'items.*.stock_balance' => 'required|numeric',
-            'items.*.variance' => 'required|numeric',
+            'items.*.unit' => 'nullable|string',
+            'items.*.qty' => 'nullable',
+            'items.*.stock_balance' => 'nullable',
+            'items.*.variance' => 'nullable',
             'items.*.remarks' => 'nullable|string',
             'items.*.store_location' => 'nullable|string',
         ]);
@@ -894,7 +894,7 @@ class ReceivedItemsController extends Controller
             $originalItems = $batch->items->mapWithKeys(function($item) {
                 return [$item->id => $item->only(['description', 'serial_number', 'unit', 'qty', 'stock_balance', 'variance', 'remarks', 'store_location'])];
             });
- 
+
             $origPayloadArray = [
                 'arrival_date' => $batch->arrival_date ? explode(' ', $batch->arrival_date)[0] : '',
                 'ledge_category' => $batch->ledge_category,
@@ -918,47 +918,51 @@ class ReceivedItemsController extends Controller
                     ];
                 })->toArray()
             ];
- 
+
+            $batchUpdate = array_filter([
+                'ledge_category'   => $validated['ledge_category'] ?? $batch->ledge_category,
+                'supplier_name'    => $validated['supplier_name'] ?? $batch->supplier_name,
+                'supplier_status'  => $validated['supplier_status'] ?? $batch->supplier_status,
+                'donor_name'       => $validated['donor_name'] ?? $batch->donor_name,
+                'acquisition_type' => $validated['acquisition_type'] ?? $batch->acquisition_type,
+                'arrival_date'     => $validated['arrival_date'] ?? $batch->arrival_date,
+                'delivery_person'  => $validated['delivery_person'] ?? $batch->delivery_person,
+                'delivery_phone'   => $validated['delivery_phone'] ?? $batch->delivery_phone,
+            ], fn($v) => !is_null($v));
+
+            if (!empty($batchUpdate)) {
+                $batch->update($batchUpdate);
+            }
+
             $newPayloadArray = [
-                'arrival_date' => $validated['arrival_date'],
-                'ledge_category' => $validated['ledge_category'],
-                'acquisition_type' => $validated['acquisition_type'],
-                'supplier_name' => $validated['supplier_name'] ?? null,
-                'supplier_status' => $validated['supplier_status'] ?? null,
-                'donor_name' => $validated['donor_name'] ?? null,
-                'delivery_person' => $validated['delivery_person'] ?? null,
-                'delivery_phone' => $validated['delivery_phone'] ?? null,
+                'arrival_date' => $batch->arrival_date ? explode(' ', $batch->arrival_date)[0] : '',
+                'ledge_category' => $batch->ledge_category,
+                'acquisition_type' => $batch->acquisition_type,
+                'supplier_name' => $batch->supplier_name,
+                'supplier_status' => $batch->supplier_status,
+                'donor_name' => $batch->donor_name,
+                'delivery_person' => $batch->delivery_person,
+                'delivery_phone' => $batch->delivery_phone,
                 'items' => collect($validated['items'])->map(function($i) {
                     return [
                         'id' => $i['id'],
                         'description' => $i['description'],
                         'serial_number' => $i['serial_number'] ?? null,
-                        'unit' => $i['unit'],
-                        'qty' => $i['qty'],
-                        'stock_balance' => $i['stock_balance'],
-                        'variance' => $i['variance'],
+                        'unit' => $i['unit'] ?? 'units',
+                        'qty' => $i['qty'] ?? 0,
+                        'stock_balance' => $i['stock_balance'] ?? 0,
+                        'variance' => $i['variance'] ?? 0,
                         'remarks' => $i['remarks'] ?? null,
                         'store_location' => $i['store_location'] ?? 'Store A'
                     ];
                 })->toArray()
             ];
- 
-            $batch->update([
-                'ledge_category' => $validated['ledge_category'],
-                'supplier_name' => $validated['supplier_name'] ?? null,
-                'supplier_status' => $validated['supplier_status'] ?? null,
-                'donor_name' => $validated['donor_name'] ?? null,
-                'acquisition_type' => $validated['acquisition_type'],
-                'arrival_date' => $validated['arrival_date'],
-                'delivery_person' => $validated['delivery_person'] ?? null,
-                'delivery_phone' => $validated['delivery_phone'] ?? null,
-            ]);
 
             // Also update the Supplier record if one exists
-            $cleanSupplierName = trim(preg_replace('/\[.*?\]/', '', $validated['supplier_name'] ?? $validated['donor_name'] ?? ''));
+            $cleanSupplierName = trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? $batch->donor_name ?? ''));
             if ($cleanSupplierName) {
                 $supplierRecord = \App\Models\Supplier::where('name', $cleanSupplierName)
-                    ->orWhere('name', $validated['supplier_name'])
+                    ->orWhere('name', $batch->supplier_name)
                     ->first();
 
                 $supplierFields = array_filter([
@@ -986,20 +990,34 @@ class ReceivedItemsController extends Controller
                 $currentStock = floatval($item->stock_balance ?? 0);
                 $totalIssuedFromItem = max(0, $currentReceived - $currentStock);
                 
-                $newReceivedQty = floatval(str_replace(',', '', $itemData['qty'] ?? ($itemData['received_qty'] ?? $currentReceived)));
-                $newStockBalance = max(0, $newReceivedQty - $totalIssuedFromItem);
+                $rawQty = $itemData['qty'] ?? ($itemData['received_qty'] ?? null);
+                $newReceivedQty = (!is_null($rawQty) && $rawQty !== '') 
+                    ? floatval(str_replace(',', '', $rawQty)) 
+                    : $currentReceived;
+
+                $rawStock = $itemData['stock_balance'] ?? null;
+                if (!is_null($rawStock) && $rawStock !== '') {
+                    $newStockBalance = floatval(str_replace(',', '', $rawStock));
+                } else {
+                    $newStockBalance = max(0, $newReceivedQty - $totalIssuedFromItem);
+                }
+
+                $rawVariance = $itemData['variance'] ?? null;
+                $newVariance = (!is_null($rawVariance) && $rawVariance !== '')
+                    ? floatval(str_replace(',', '', $rawVariance))
+                    : floatval($item->variance ?? 0);
 
                 $old = $originalItems[$item->id] ?? [];
                 $new = [
-                    'description'    => $itemData['description'],
+                    'description'    => trim($itemData['description']),
                     'serial_number'  => $itemData['serial_number'] ?? null,
-                    'unit'           => $itemData['unit'],
+                    'unit'           => !empty($itemData['unit']) ? trim($itemData['unit']) : ($item->unit ?? 'units'),
                     'received_qty'   => $newReceivedQty,
                     'qty'            => $newReceivedQty,
                     'stock_balance'  => $newStockBalance,
-                    'variance'       => $itemData['variance'],
+                    'variance'       => $newVariance,
                     'remarks'        => $itemData['remarks'] ?? null,
-                    'store_location' => $itemData['store_location'] ?? ($item->store_location ?? 'Store A'),
+                    'store_location' => $itemData['store_location'] ?? ($item->store_location ?? 'STORE A'),
                 ];
 
                 // Detect changes
@@ -1017,12 +1035,12 @@ class ReceivedItemsController extends Controller
                 $item->update($new);
             }
 
-            if (!auth()->user()->is_admin) {
-                // For personnel, find the approved request and update it
-                $editReq = \App\Models\EditRequest::where('user_id', auth()->id())
+            if (!$user->is_admin) {
+                // For personnel, find any approved or pending request and complete it
+                $editReq = \App\Models\EditRequest::where('user_id', $user->id)
                     ->where('item_id', $id)
                     ->where('item_type', 'batch')
-                    ->where('status', 'approved')
+                    ->whereIn('status', ['approved', 'pending'])
                     ->latest()
                     ->first();
                 if ($editReq) {
@@ -1034,9 +1052,9 @@ class ReceivedItemsController extends Controller
                     ]);
                 }
             } else {
-                // For admin, create a completed EditRequest
+                // For admin, create a completed EditRequest for audit trail
                 \App\Models\EditRequest::create([
-                    'user_id' => auth()->id(),
+                    'user_id' => $user->id,
                     'item_type' => 'batch',
                     'item_id' => $id,
                     'request_type' => 'edit_submission',
@@ -1068,9 +1086,13 @@ class ReceivedItemsController extends Controller
                 ]);
             }
 
+            $batch->load(['items', 'recorder']);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Batch updated successfully.'
+                'message' => 'Batch and inventory items updated successfully.',
+                'batch'   => $batch,
+                'items'   => $batch->items
             ]);
 
         } catch (\Exception $e) {

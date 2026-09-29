@@ -1009,18 +1009,32 @@ class EditRequestController extends Controller
                             $currentStock = floatval($item->stock_balance ?? 0);
                             $totalIssuedFromItem = max(0, $currentReceived - $currentStock);
                             
-                            $newReceivedQty = floatval(str_replace(',', '', $itemData['qty'] ?? ($itemData['received_qty'] ?? $currentReceived)));
-                            $newStockBalance = max(0, $newReceivedQty - $totalIssuedFromItem);
+                            $rawQty = $itemData['qty'] ?? ($itemData['received_qty'] ?? null);
+                            $newReceivedQty = (!is_null($rawQty) && $rawQty !== '') 
+                                ? floatval(str_replace(',', '', $rawQty)) 
+                                : $currentReceived;
+
+                            $rawStock = $itemData['stock_balance'] ?? null;
+                            if (!is_null($rawStock) && $rawStock !== '') {
+                                $newStockBalance = floatval(str_replace(',', '', $rawStock));
+                            } else {
+                                $newStockBalance = max(0, $newReceivedQty - $totalIssuedFromItem);
+                            }
+
+                            $rawVariance = $itemData['variance'] ?? null;
+                            $newVariance = (!is_null($rawVariance) && $rawVariance !== '')
+                                ? floatval(str_replace(',', '', $rawVariance))
+                                : floatval($item->variance ?? 0);
 
                             $item->update([
-                                'description'    => $itemData['description'],
-                                'unit'           => $itemData['unit'],
+                                'description'    => trim($itemData['description']),
+                                'unit'           => !empty($itemData['unit']) ? trim($itemData['unit']) : ($item->unit ?? 'units'),
                                 'received_qty'   => $newReceivedQty,
                                 'qty'            => $newReceivedQty,
                                 'stock_balance'  => $newStockBalance,
-                                'variance'       => $itemData['variance'],
+                                'variance'       => $newVariance,
                                 'remarks'        => $itemData['remarks'] ?? null,
-                                'store_location' => $itemData['store_location'] ?? 'Store A',
+                                'store_location' => $itemData['store_location'] ?? ($item->store_location ?? 'STORE A'),
                             ]);
                         }
                     }

@@ -1,7 +1,13 @@
 @extends('layouts.dashboard')
 
 @php
-    $isAdmin = auth()->user()->is_admin;
+    $user = auth()->user();
+    $canDirectEdit = $user->is_admin
+        || $user->isMainAdminOrSub()
+        || $user->can_add_inventory
+        || in_array($user->role, ['Head of Stores', 'Store Officer', 'Officer', 'Dept. Head (Stores)'])
+        || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE']);
+    $isAdmin = $canDirectEdit;
     $batchId = $batch->id;
     $batchIdPadded = str_pad($batchId, 4, '0', STR_PAD_LEFT);
     $supplierStatus = $batch->supplier_status ?? 'Full Delivery';
@@ -478,13 +484,11 @@
                 @foreach($batch->items as $index => $item)
                 @php
                     $itemStoreLocation = strtoupper(trim($item->store_location ?? 'STORE A'));
-                @php
                     $itemOriginalReceived = $item->original_received_qty ?? ($item->received_qty ?? $item->qty);
                 @endphp
                 <div class="item-edit-card" data-item-id="{{ $item->id }}" data-original-received="{{ $itemOriginalReceived }}" data-current-stock="{{ $item->stock_balance }}">
                     <div class="item-accent"></div>
                     <input type="hidden" class="item-id-field" value="{{ $item->id }}">
-                    <input type="hidden" class="item-stock-balance-field" value="{{ $item->stock_balance }}">
 
                     {{-- Item header --}}
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; padding-left: 8px;">
@@ -495,15 +499,19 @@
                     </div>
 
                     {{-- Fields Grid Row 1 --}}
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem; padding-left: 8px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem; padding-left: 8px;">
                         <div>
-                            <label class="edit-field-label">Package Type</label>
+                            <label class="edit-field-label">Package Type / Unit</label>
                             <input type="text" class="item-unit-field edit-input" value="{{ $item->unit }}">
                         </div>
                         <div>
                             <label class="edit-field-label">Qty Received</label>
                             <input type="number" class="item-qty-field edit-input" value="{{ $itemOriginalReceived }}" min="0"
                                    oninput="recalcPageVariance(this)">
+                        </div>
+                        <div>
+                            <label class="edit-field-label">Stock Balance</label>
+                            <input type="number" class="item-stock-balance-field edit-input" value="{{ $item->stock_balance }}" min="0">
                         </div>
                         <div>
                             <label class="edit-field-label">Variance</label>
@@ -808,7 +816,14 @@ async function submitEditPage() {
                 icon: 'success',
                 confirmButtonColor: '#059669'
             }).then(function() {
-                window.location.href = '{{ route("receiveditems") }}';
+                var returnUrl = new URLSearchParams(window.location.search).get('return_to');
+                if (returnUrl) {
+                    window.location.href = returnUrl;
+                } else if ('{{ auth()->user()->role }}' === 'Head of Stores') {
+                    window.location.href = '{{ route("admin.inventory") }}';
+                } else {
+                    window.location.href = '{{ route("receiveditems") }}';
+                }
             });
         } else {
             Swal.fire('Error', data.message || 'An unexpected error occurred.', 'error');
