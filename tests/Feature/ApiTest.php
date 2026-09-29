@@ -1169,7 +1169,7 @@ class ApiTest extends TestCase
         // Submit self registration request
         $response = $this->post(route('self-register'), [
             'name' => 'New Requisitioner',
-            'username' => 'new_req_username',
+            'username' => 'newrequser123',
             'phone' => '+233240000000',
             'service_number' => 'JD-1234',
             'department' => 'Audit Department',
@@ -1180,17 +1180,17 @@ class ApiTest extends TestCase
 
         $response->assertRedirect(route('login'));
         $this->assertDatabaseHas('users', [
-            'username' => 'new_req_username',
+            'username' => 'newrequser123',
             'sponsored_by' => $auditor->id,
             'registration_status' => 'pending',
         ]);
 
-        $newUser = User::where('username', 'new_req_username')->first();
+        $newUser = User::where('username', 'newrequser123')->first();
 
         // Fetch active temp-requisitioners list as the auditor before approval - should not contain the user
         $response = $this->actingAs($auditor)->get(route('dept-head.temp-requisitioners.index'));
         $response->assertStatus(200);
-        $this->assertFalse(collect($response->json('accounts'))->contains('username', 'new_req_username'));
+        $this->assertFalse(collect($response->json('accounts'))->contains('username', 'newrequser123'));
 
         // Clean up or complete the registration flow as Admin to ensure approve works
         $admin = User::where('is_admin', true)->first() ?? User::factory()->create(['is_admin' => true, 'registration_status' => 'approved', 'is_active' => true]);
@@ -1204,7 +1204,7 @@ class ApiTest extends TestCase
         // Fetch active temp-requisitioners list as the auditor after approval - should contain the user
         $response = $this->actingAs($auditor)->get(route('dept-head.temp-requisitioners.index'));
         $response->assertStatus(200);
-        $this->assertTrue(collect($response->json('accounts'))->contains('username', 'new_req_username'));
+        $this->assertTrue(collect($response->json('accounts'))->contains('username', 'newrequser123'));
 
         // Create a requisition requested by the new requisitioner
         $requisition = \App\Models\StoreRequisition::create([

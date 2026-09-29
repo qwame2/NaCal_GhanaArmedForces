@@ -548,8 +548,18 @@
                                     <label>Username <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="at-sign"></i></div>
-                                        <input type="text" name="username" placeholder="e.g. jmensah" required>
+                                        <input type="text" name="username" placeholder="e.g. jmensah" required autocomplete="username">
                                     </div>
+                                    <div class="username-error-msg" style="display: none; color: #ef4444; font-size: 0.78rem; font-weight: 700; margin-top: 6px; padding-left: 4px; align-items: center; gap: 4px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <span>Username must not contain special characters (e.g. @, ., -, _).</span>
+                                    </div>
+                                    @error('username')
+                                        <div class="username-server-error" style="color: #ef4444; font-size: 0.78rem; font-weight: 700; margin-top: 6px; padding-left: 4px; display: flex; align-items: center; gap: 4px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                            <span>{{ $message }}</span>
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -663,8 +673,18 @@
                                     <label>Username <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="at-sign"></i></div>
-                                        <input type="text" name="username" placeholder="e.g. jmensah" required>
+                                        <input type="text" name="username" placeholder="e.g. jmensah" required autocomplete="username">
                                     </div>
+                                    <div class="username-error-msg" style="display: none; color: #ef4444; font-size: 0.78rem; font-weight: 700; margin-top: 6px; padding-left: 4px; align-items: center; gap: 4px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <span>Username must not contain special characters (e.g. @, ., -, _).</span>
+                                    </div>
+                                    @error('username')
+                                        <div class="username-server-error" style="color: #ef4444; font-size: 0.78rem; font-weight: 700; margin-top: 6px; padding-left: 4px; display: flex; align-items: center; gap: 4px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                            <span>{{ $message }}</span>
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -977,9 +997,29 @@
         transform: translateY(-2px);
     }
 
-    .input-wrapper.error {
+    .input-wrapper.error,
+    .input-wrapper.username-has-error {
+        border: 1.5px solid #ef4444 !important;
+        background: rgba(239, 68, 68, 0.02) !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important;
+    }
+
+    .input-wrapper.username-has-error:focus-within {
         border-color: #ef4444 !important;
-        background: rgba(239, 68, 68, 0.02);
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    .input-wrapper.username-has-error .icon-box i,
+    .input-wrapper.username-has-error .icon-box svg {
+        color: #ef4444 !important;
+    }
+
+    .input-wrapper.username-has-error .icon-box::after {
+        background: #ef4444 !important;
+    }
+
+    .input-wrapper.username-has-error input {
+        color: #ef4444 !important;
     }
 
     .icon-box {
@@ -1335,6 +1375,72 @@
         syncStaffId('admin');
         syncStaffId('user');
 
+        // Username alphanumeric validation (no special characters allowed)
+        function initUsernameValidation() {
+            const specialCharRegex = /[^a-zA-Z0-9]/;
+            const regForms = ['adminRegisterForm', 'userSelfRegisterForm'];
+
+            regForms.forEach(formId => {
+                const form = document.getElementById(formId);
+                if (!form) return;
+
+                const input = form.querySelector('input[name="username"]');
+                if (!input) return;
+
+                const wrapper = input.closest('.input-wrapper');
+                const group = input.closest('.input-modern-group');
+                const errorMsg = group ? group.querySelector('.username-error-msg') : null;
+                const serverError = group ? group.querySelector('.username-server-error') : null;
+
+                function validate() {
+                    const rawVal = input.value;
+                    const hasSpecialChars = specialCharRegex.test(rawVal);
+
+                    if (hasSpecialChars) {
+                        if (wrapper) wrapper.classList.add('username-has-error');
+                        input.style.borderColor = '#ef4444';
+                        if (errorMsg) errorMsg.style.display = 'flex';
+                        if (serverError) serverError.style.display = 'none';
+                        if (typeof updateViewportHeight === 'function') updateViewportHeight();
+                        return false;
+                    } else {
+                        if (wrapper) wrapper.classList.remove('username-has-error');
+                        input.style.borderColor = '';
+                        if (errorMsg) errorMsg.style.display = 'none';
+                        if (typeof updateViewportHeight === 'function') updateViewportHeight();
+                        return true;
+                    }
+                }
+
+                // Immediate validation while typing or pasting
+                input.addEventListener('input', validate);
+                input.addEventListener('keyup', validate);
+                // Validation when losing focus
+                input.addEventListener('blur', validate);
+                input.addEventListener('change', validate);
+
+                if (input.value) {
+                    validate();
+                }
+
+                // Prevent form submission if username contains special characters
+                form.addEventListener('submit', function (e) {
+                    if (!validate()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (wrapper) wrapper.classList.add('username-has-error');
+                        input.focus();
+                        if (typeof showToast === 'function') {
+                            showToast('Username must not contain special characters.', 'error');
+                        }
+                        return false;
+                    }
+                }, true);
+            });
+        }
+
+        initUsernameValidation();
+
         const adminForm = document.getElementById('adminRegisterForm');
         if (adminForm) {
             adminForm.addEventListener('submit', function (e) {
@@ -1680,6 +1786,9 @@
             @foreach($errors->all() as $error)
                 showToast("{{ $error }}", 'error');
             @endforeach
+            @if($errors->has('username') || $errors->has('name') || $errors->has('phone') || $errors->has('service_number') || $errors->has('department'))
+                toggleAuth('register');
+            @endif
         @endif
     });
 </script>

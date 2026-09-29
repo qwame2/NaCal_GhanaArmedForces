@@ -92,7 +92,13 @@ class AuthController extends Controller
         $request->validate([
             'role' => 'required|string',
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username',
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z0-9]+$/',
+                'unique:users,username',
+            ],
             'rank' => 'required|string|max:255',
             'service_number' => 'required|string|max:255',
             'password' => [
@@ -114,6 +120,11 @@ class AuthController extends Controller
                     }
                 },
             ],
+        ], [
+            'username.regex' => 'Username must not contain special characters.',
+            'username.unique' => 'This username has already been registered.',
+            'password.min' => 'Passwords must be at least 8 characters long.',
+            'password.regex' => 'Passwords must contain at least one number.',
         ]);
 
         if ($request->role !== 'Head of Stores') {
@@ -618,7 +629,13 @@ class AuthController extends Controller
                     }
                 },
             ],
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z0-9]+$/',
+                'unique:users,username,' . $user->id,
+            ],
             'phone' => 'nullable|string|max:255',
             'service_number' => 'nullable|string|max:255',
             'rank' => 'nullable|string|max:255',
@@ -631,7 +648,10 @@ class AuthController extends Controller
             $rules['department'] = 'nullable|string|max:255';
         }
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'username.regex' => 'Username must not contain special characters.',
+            'username.unique' => 'This username has already been registered.',
+        ]);
 
         // Active Directory Password Writeback
         if ($user->guid) {
@@ -940,7 +960,13 @@ class AuthController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username',
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z0-9]+$/',
+                'unique:users,username',
+            ],
             'phone' => 'required|string|max:20',
             'service_number' => 'required|string|max:100',
             'department' => 'required|string|max:255',
@@ -964,6 +990,7 @@ class AuthController extends Controller
                 },
             ],
         ], [
+            'username.regex' => 'Username must not contain special characters.',
             'username.unique' => 'This username has already been registered.',
             'password.min' => 'Passwords must be at least 8 characters long.',
             'password.regex' => 'Passwords must contain at least one number.',
