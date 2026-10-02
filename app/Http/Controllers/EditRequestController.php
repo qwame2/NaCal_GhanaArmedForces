@@ -1815,4 +1815,41 @@ class EditRequestController extends Controller
 
         return view('edit-requests.rollback_requests', compact('rollbacks'));
     }
+
+    public function destroy(Request $request, $id)
+    {
+        $editReq = EditRequest::findOrFail($id);
+
+        $isAuthorized = auth()->user()->is_admin 
+            || auth()->user()->isDelegatedApprover() 
+            || auth()->user()->isStoresHeadUser() 
+            || auth()->user()->role === 'Head of Stores' 
+            || auth()->user()->role === 'Dept. Head (Stores)'
+            || auth()->user()->can_add_inventory
+            || $editReq->user_id === auth()->id();
+
+        if (!$isAuthorized) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: You do not have permission to delete this drafted entry.'], 403);
+        }
+
+        // Delete related automated messages referencing this edit request
+        Message::where('edit_request_id', $editReq->id)->delete();
+
+        // System Log entry
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'DELETE_DRAFT_ENTRY',
+            'description' => "User " . auth()->user()->name . " permanently deleted drafted stock entry REQ-" . str_pad($editReq->id, 5, '0', STR_PAD_LEFT) . ".",
+            'severity' => 'warning',
+            'ip_address' => request()->ip()
+        ]);
+
+        $editReq->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Drafted stock entry deleted successfully.'
+        ]);
+    }
 }

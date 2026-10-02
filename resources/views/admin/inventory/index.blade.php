@@ -829,7 +829,7 @@
                                 {{ number_format($receivedQtyDisplay, 0) }}
                             </td>
                             <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">
-                                {{ number_format((float)str_replace(',', '', $item->stock_balance ?? 0), 0) }}
+                                {!! \App\Models\Setting::formatStockBalanceWithConversion($item->stock_balance, $item->description, $item->batch->ledge_category ?? null, $item->unit ?? 'units') !!}
                             </td>
                             <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
                                 @php

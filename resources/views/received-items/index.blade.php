@@ -568,9 +568,24 @@
                         </td>
                         @php
                             $receivedQtyDisplay = (float)$item->original_received_qty;
+                            $itemCategory = $item->batch->ledge_category ?? null;
+                            $convRule = \App\Models\Setting::getUnitConversionRule($item->description, $itemCategory);
+                            $pkgUnit = $item->unit ?? 'units';
+                            $formattedReceivedUnit = \App\Models\Setting::formatUnitLabel($pkgUnit, $receivedQtyDisplay);
                         @endphp
-                        <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($receivedQtyDisplay) }}</td>
-                        <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ number_format((float)($item->stock_balance ?? 0)) }}</td>
+                        <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
+                            {{ number_format($receivedQtyDisplay) }} {{ $formattedReceivedUnit }}
+                            @if($convRule && !empty($convRule['conversion_factor']) && $convRule['conversion_factor'] > 1)
+                                @php
+                                    $eqReqTotal = $receivedQtyDisplay * (float)$convRule['conversion_factor'];
+                                    $eqReqLabel = \App\Models\Setting::formatUnitLabel($convRule['requisition_unit'], $eqReqTotal);
+                                @endphp
+                                <div style="font-size: 0.75rem; font-weight: 700; color: #0284c7; margin-top: 2px;">
+                                    ({{ floor($eqReqTotal) == $eqReqTotal ? number_format($eqReqTotal, 0) : number_format($eqReqTotal, 2) }} {{ $eqReqLabel }})
+                                </div>
+                            @endif
+                        </td>
+                        <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{!! \App\Models\Setting::formatStockBalanceWithConversion($item->stock_balance, $item->description, $itemCategory, $pkgUnit) !!}</td>
                         <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
                             <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#059669' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
                                 {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ is_numeric($item->variance) ? number_format((float)$item->variance) : $item->variance }}
@@ -581,7 +596,7 @@
                         @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']))
                             <td data-label="Stock Level" style="padding: 1.25rem 1.5rem;">
                                 @php
-                                    $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                                    $threshold = \App\Models\Setting::getItemThreshold($item->description, $itemCategory);
                                     $isItemLow = $totalStock <= $threshold;
                                     $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
                                     $itemHealthColor = $isItemLow ? '#ef4444' : '#059669';
@@ -591,7 +606,10 @@
                                         <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $itemHealthStatus }}</span>
                                         <i data-lucide="{{ $isItemLow ? 'alert-circle' : 'check-circle' }}" style="width: 14px; color: {{ $itemHealthColor }};"></i>
                                     </div>
-                                    <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">{{ number_format($totalStock) }} <span style="font-size: 0.65rem; color: var(--text-muted);">Available</span></div>
+                                    <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">
+                                        {{ \App\Models\Setting::formatStockBalanceWithConversion($totalStock, $item->description, $itemCategory, $pkgUnit, false) }}
+                                        <span style="font-size: 0.65rem; color: var(--text-muted); display: block;">Available Total</span>
+                                    </div>
                                 </div>
                             </td>
                         @endif

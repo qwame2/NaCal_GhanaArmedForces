@@ -1449,6 +1449,16 @@ class AdminController extends Controller
                 return [strtolower(trim($item->description)) => (float) $item->total_stock];
             });
 
+        // Build a map of item description → package unit inherited from item entry
+        $unitsByKeyword = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [strtolower(trim($item->description)) => $item->unit];
+            });
+
         $storeOfficers = \App\Models\User::where('role', 'Officer')
             ->where('is_active', true)
             ->where('registration_status', 'approved')
@@ -1465,7 +1475,7 @@ class AdminController extends Controller
             ->sort(SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
 
-        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory', 'stockByKeyword', 'storeOfficers', 'allItems'));
+        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory', 'stockByKeyword', 'unitsByKeyword', 'storeOfficers', 'allItems'));
     }
 
     public function updateSettings(\Illuminate\Http\Request $request)

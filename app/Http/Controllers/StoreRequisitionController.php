@@ -22,19 +22,64 @@ class StoreRequisitionController extends Controller
         self::checkOverdueTemporaryItems();
         $ledgeMap = Setting::getCategories();
 
-        // Fetch all available inventory items (grouped by description)
-        $availableItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+        // Fetch all available inventory items (consolidated by description into single items)
+        $rawItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
-            ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+            ->selectRaw('TRIM(inventory_items.description) as original_description, MAX(inventory_items.unit) as unit, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
             ->orderByRaw('TRIM(inventory_items.description)')
-            ->get()
-            ->map(function ($item) {
-                $physicalStock = (float) $item->total_stock;
-                $item->total_stock = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category);
-                return $item;
-            });
+            ->get();
+
+        $consolidatedList = [];
+        foreach ($rawItems as $item) {
+            $desc = trim($item->original_description);
+            $stock = (float)$item->total_stock;
+            $unit = $item->unit;
+            $cat = $item->ledge_category;
+
+            $matchedIndex = null;
+            foreach ($consolidatedList as $idx => $existing) {
+                if (Setting::isItemKeywordMatch($existing['description'], $desc)) {
+                    $matchedIndex = $idx;
+                    break;
+                }
+            }
+
+            if ($matchedIndex !== null) {
+                $consolidatedList[$matchedIndex]['total_stock'] += $stock;
+                if (empty($consolidatedList[$matchedIndex]['unit']) && !empty($unit)) {
+                    $consolidatedList[$matchedIndex]['unit'] = $unit;
+                }
+                if (empty($consolidatedList[$matchedIndex]['ledge_category']) && !empty($cat)) {
+                    $consolidatedList[$matchedIndex]['ledge_category'] = $cat;
+                }
+            } else {
+                $consolidatedList[] = [
+                    'description' => $desc,
+                    'unit' => $unit,
+                    'ledge_category' => $cat,
+                    'total_stock' => $stock,
+                ];
+            }
+        }
+
+        $availableItems = collect($consolidatedList)->map(function ($data) {
+            $item = (object)$data;
+            $physicalStock = (float) $item->total_stock;
+            $availablePhysical = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category);
+
+            $conversionRule = \App\Models\Setting::getUnitConversionRule($item->description, $item->ledge_category);
+            if ($conversionRule && !empty($conversionRule['conversion_factor']) && $conversionRule['conversion_factor'] > 0) {
+                $factor = (float)$conversionRule['conversion_factor'];
+                $item->total_stock = $availablePhysical * $factor;
+                $item->unit = $conversionRule['requisition_unit'];
+                $item->conversion_rule = $conversionRule;
+            } else {
+                $item->total_stock = $availablePhysical;
+            }
+            return $item;
+        })->values();
 
         // My submitted requisitions (for current user)
         $myRequisitions = StoreRequisition::with('items')
@@ -164,13 +209,27 @@ class StoreRequisitionController extends Controller
             $physicalStock = (float) $stockQuery->sum(\DB::raw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))'));
 
             // Calculate available stock applying the limit
-            $availableStock = Setting::getAvailableStock($description, $physicalStock, $category);
+            $availablePhysicalStock = Setting::getAvailableStock($description, $physicalStock, $category);
 
-            if ($requestedQty > $availableStock) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Available stock for this item is restricted to {$availableStock}."
-                ], 422);
+            $conversionRule = Setting::getUnitConversionRule($description, $category);
+            if ($conversionRule && !empty($conversionRule['conversion_factor']) && $conversionRule['conversion_factor'] > 0) {
+                $factor = (float)$conversionRule['conversion_factor'];
+                $availableStockInReqUnits = $availablePhysicalStock * $factor;
+                $unitLabel = $conversionRule['requisition_unit'];
+
+                if ($requestedQty > $availableStockInReqUnits) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Available stock for this item is restricted to {$availableStockInReqUnits} {$unitLabel}."
+                    ], 422);
+                }
+            } else {
+                if ($requestedQty > $availablePhysicalStock) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Available stock for this item is restricted to {$availablePhysicalStock}."
+                    ], 422);
+                }
             }
         }
 
@@ -680,24 +739,32 @@ class StoreRequisitionController extends Controller
         $items = $requisition->items->map(function ($item) {
             $physicalStock = (float) InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->where('inventory_batches.approval_status', 'approved')
+                ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                 ->whereRaw('TRIM(inventory_items.description) = ?', [trim($item->description)])
                 ->sum(DB::raw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))'));
 
             $availableStock = Setting::getAvailableStock($item->description, $physicalStock, $item->category);
-            $stockSufficient = ($availableStock >= (float)$item->quantity_requested);
+
+            $conversionRule = Setting::getUnitConversionRule($item->description, $item->category);
+            $factor = ($conversionRule && !empty($conversionRule['conversion_factor']) && (float)$conversionRule['conversion_factor'] > 0)
+                ? (float)$conversionRule['conversion_factor'] : 1.0;
+            $unitLabel = ($conversionRule && !empty($conversionRule['requisition_unit']))
+                ? $conversionRule['requisition_unit'] : ($item->unit ?? 'units');
+
+            $finalStock = $availableStock * $factor;
+            $stockSufficient = ($finalStock >= (float)$item->quantity_requested);
 
             return [
                 'id' => $item->id,
                 'description' => $item->description,
                 'category' => $item->category,
-                'unit' => $item->unit ?? 'units',
+                'unit' => $unitLabel,
                 'quantity_requested' => (float)$item->quantity_requested,
                 'quantity_approved' => $item->quantity_approved !== null ? (float)$item->quantity_approved : null,
                 'alternative_description' => $item->alternative_description,
                 'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
                 'remarks' => $item->remarks,
-                'current_stock' => $availableStock,
+                'current_stock' => $finalStock,
                 'stock_sufficient' => $stockSufficient,
             ];
         });
@@ -1193,9 +1260,29 @@ class StoreRequisitionController extends Controller
             }
         }
 
-        // Enrich items using the pre-fetched stock map
+        // Enrich items using the pre-fetched stock map with unit conversion and stock limits
         $items = $req->items->map(function ($item) use ($stockMap) {
-            $stock = $stockMap[trim($item->description)] ?? 0;
+            $descTrim = trim($item->description);
+            $physicalStock = $stockMap[$descTrim] ?? 0;
+
+            if ($physicalStock <= 0) {
+                foreach ($stockMap as $mapDesc => $mapStock) {
+                    if (Setting::isItemKeywordMatch($mapDesc, $descTrim)) {
+                        $physicalStock += $mapStock;
+                    }
+                }
+            }
+
+            $availableStock = Setting::getAvailableStock($item->description, $physicalStock, $item->category);
+
+            $conversionRule = Setting::getUnitConversionRule($item->description, $item->category);
+            $factor = ($conversionRule && !empty($conversionRule['conversion_factor']) && (float)$conversionRule['conversion_factor'] > 0)
+                ? (float)$conversionRule['conversion_factor'] : 1.0;
+            $unitLabel = ($conversionRule && !empty($conversionRule['requisition_unit']))
+                ? $conversionRule['requisition_unit'] : ($item->unit ?? 'units');
+
+            $finalStock = $availableStock * $factor;
+            $stockSufficient = ($finalStock >= (float)$item->quantity_requested);
 
             return [
                 'id'                            => $item->id,
@@ -1203,12 +1290,12 @@ class StoreRequisitionController extends Controller
                 'alternative_description'       => $item->alternative_description,
                 'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
                 'category'                      => $item->category,
-                'unit'                          => $item->unit ?? 'units',
+                'unit'                          => $unitLabel,
                 'quantity_requested'            => (float)$item->quantity_requested,
                 'quantity_approved'             => $item->quantity_approved !== null ? (float)$item->quantity_approved : null,
                 'remarks'                       => $item->remarks,
-                'current_stock'                 => (float) $stock,
-                'stock_sufficient'              => (float) $stock >= (float) $item->quantity_requested,
+                'current_stock'                 => (float) $finalStock,
+                'stock_sufficient'              => $stockSufficient,
             ];
         });
 
@@ -1417,18 +1504,25 @@ class StoreRequisitionController extends Controller
                                 // 1. Original Item FIFO Deduction
                                 if ($approvedQty > 0) {
                                     $origItemName = $reqItem->description;
-                                    $totalStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                                    $origConversionRule = Setting::getUnitConversionRule($origItemName, $reqItem->category);
+                                    $origFactor = ($origConversionRule && !empty($origConversionRule['conversion_factor']) && $origConversionRule['conversion_factor'] > 0)
+                                        ? (float)$origConversionRule['conversion_factor'] : 1.0;
+
+                                    $totalStockInStorage = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                                         ->where('inventory_batches.supplier_status', '!=', 'System Draft')
                                         ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($origItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
 
-                                    if ($approvedQty > $totalStock) {
-                                        throw new \Exception("Cannot approve {$approvedQty} for '{$origItemName}'. Only {$totalStock} is available in stock.");
+                                    $totalStockInReqUnits = $totalStockInStorage * $origFactor;
+
+                                    if ($approvedQty > $totalStockInReqUnits) {
+                                        $unitLabel = $origConversionRule['requisition_unit'] ?? 'units';
+                                        throw new \Exception("Cannot approve {$approvedQty} {$unitLabel} for '{$origItemName}'. Only {$totalStockInReqUnits} {$unitLabel} is available in stock.");
                                     }
 
-                                    $qtyToDeduct = $approvedQty;
+                                    $qtyToDeduct = $approvedQty / $origFactor;
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($origItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
                                             $q->where('supplier_status', '!=', 'System Draft')
@@ -1479,18 +1573,25 @@ class StoreRequisitionController extends Controller
                                 // 2. Alternative Item FIFO Deduction
                                 if ($altApprovedQty > 0 && !empty($reqItem->alternative_description)) {
                                     $altItemName = $reqItem->alternative_description;
-                                    $totalAltStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                                    $altConversionRule = Setting::getUnitConversionRule($altItemName, $reqItem->category);
+                                    $altFactor = ($altConversionRule && !empty($altConversionRule['conversion_factor']) && $altConversionRule['conversion_factor'] > 0)
+                                        ? (float)$altConversionRule['conversion_factor'] : 1.0;
+
+                                    $totalAltStockInStorage = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                                         ->where('inventory_batches.supplier_status', '!=', 'System Draft')
                                         ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($altItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
 
-                                    if ($altApprovedQty > $totalAltStock) {
-                                        throw new \Exception("Cannot approve alternative {$altApprovedQty} for '{$altItemName}'. Only {$totalAltStock} is available in stock.");
+                                    $totalAltStockInReqUnits = $totalAltStockInStorage * $altFactor;
+
+                                    if ($altApprovedQty > $totalAltStockInReqUnits) {
+                                        $altUnitLabel = $altConversionRule['requisition_unit'] ?? 'units';
+                                        throw new \Exception("Cannot approve alternative {$altApprovedQty} {$altUnitLabel} for '{$altItemName}'. Only {$totalAltStockInReqUnits} {$altUnitLabel} is available in stock.");
                                     }
 
-                                    $qtyToDeduct = $altApprovedQty;
+                                    $qtyToDeduct = $altApprovedQty / $altFactor;
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($altItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
                                             $q->where('supplier_status', '!=', 'System Draft')

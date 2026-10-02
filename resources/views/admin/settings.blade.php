@@ -1828,6 +1828,154 @@
         </div>
     </div>
 
+    {{-- Unit Conversion & Requisition Packaging Rules --}}
+    <div class="cfg-card" id="unit-conversion-rules" style="margin-top: 2rem;">
+        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="cfg-icon-box" style="background: #0284c7;">
+                    <i data-lucide="repeat"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0 0 0.25rem 0;">Unit Conversion & Requisition Packaging Rules</h3>
+                    <p style="margin: 0;">Specify how items are received/stored (e.g. Boxes) versus how requisitioners can request them (e.g. Reams), including conversion factors.</p>
+                </div>
+            </div>
+
+            <div class="cfg-search-wrap" style="margin: 0 3.5rem 0 0; width: 260px; position: relative;">
+                <i data-lucide="search" style="width: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                <input type="text" id="conversionSearch" placeholder="Search conversion rules..." oninput="filterConversionRules()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; font-size: 0.8rem; height: 38px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.2s; background: white;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#edf2f7'">
+            </div>
+        </div>
+        <div class="cfg-card-body">
+            <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start;">
+
+                {{-- Existing Conversion Rules --}}
+                <div>
+                    <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="list" style="width: 14px;"></i> Active Conversion Rules
+                    </p>
+                    @php
+                    $conversionRules = json_decode(\App\Models\Setting::where('key','unit_conversion_rules')->value('value') ?? '{}', true) ?? [];
+                    $groupedConversions = [];
+                    foreach ($conversionRules as $keyword => $data) {
+                        $cat = is_array($data) ? ($data['category'] ?? 'Uncategorized') : 'Uncategorized';
+                        $groupedConversions[$cat][$keyword] = $data;
+                    }
+                    @endphp
+                    @if(empty($groupedConversions))
+                    <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                        <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No unit conversion rules defined yet. Add rules on the right.</p>
+                    </div>
+                    @else
+                    <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 420px; overflow-y: auto; padding-right: 0.5rem;" id="conversionsContainer">
+                        @foreach($groupedConversions as $catCode => $conversionsGroup)
+                        <div class="conversion-rule-group">
+                            <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
+                                <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
+                                {{ $categories[$catCode] ?? 'Uncategorized' }}
+                            </h6>
+                            <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; max-height: 300px; overflow-y: auto; padding-right: 0.25rem;">
+                                @foreach($conversionsGroup as $keyword => $ruleData)
+                                @php
+                                    $recUnit = is_array($ruleData) ? ($ruleData['received_unit'] ?? 'Boxes') : 'Boxes';
+                                    $reqUnit = is_array($ruleData) ? ($ruleData['requisition_unit'] ?? 'Reams') : 'Reams';
+                                    $factor = is_array($ruleData) ? ($ruleData['conversion_factor'] ?? 1) : 1;
+                                @endphp
+                                <div class="conversion-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.85rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: #0284c7; color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
+                                        <i data-lucide="repeat" style="width: 16px;"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 800; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
+                                        <div style="font-size: 0.72rem; font-weight: 700; color: #0284c7; margin-top: 2px;">
+                                            1 {{ $recUnit }} = {{ $factor }} {{ $reqUnit }}
+                                        </div>
+                                        <div style="font-size: 0.65rem; font-weight: 600; color: #64748b; margin-top: 2px;">
+                                            Req. Unit: <strong style="color: #059669;">{{ $reqUnit }}</strong>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                        <button type="button" onclick="populateConversionForm('{{ addslashes($keyword) }}', '{{ addslashes($recUnit) }}', '{{ addslashes($reqUnit) }}', {{ $factor }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                            <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                                        </button>
+                                        <form action="{{ route('admin.settings.unit-conversion-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove unit conversion rule for \'{{ addslashes($keyword) }}\'?');" style="margin: 0;">
+                                            @csrf @method('DELETE')
+                                            <input type="hidden" name="keyword" value="{{ $keyword }}">
+                                            <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
+                                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                {{-- Add New Unit Conversion Rule --}}
+                <div class="cat-form-card">
+                    <h5 id="conversionFormTitle">Add Unit Conversion Rule</h5>
+                    <p id="conversionFormSub">Define packaging & requisition units. (e.g. Received in Boxes, requested only in Reams).</p>
+                    <form action="{{ route('admin.settings.unit-conversion-rule.store') }}" method="POST" id="conversionForm">
+                        @csrf
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Target Category</label>
+                                <select name="category" id="conversionCategory" class="cfg-text-input" required style="cursor: pointer;">
+                                    <option value="">Select Category...</option>
+                                    @foreach($categories ?? [] as $code => $name)
+                                    <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword(s) / Description</label>
+                                <select name="keywords[]" id="conversionKeyword" class="cfg-text-input select2-conversion" required multiple="multiple">
+                                    <option value="">Select Category First...</option>
+                                </select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                <div>
+                                    <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Storage Unit</label>
+                                    <input type="text" name="received_unit" id="conversionReceivedUnit" class="cfg-text-input" placeholder="Package type..." readonly style="background: #f8fafc; cursor: not-allowed;" oninput="updateConversionPreview()">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Requisition Unit</label>
+                                    <input type="text" name="requisition_unit" id="conversionRequisitionUnit" class="cfg-text-input" placeholder="Requisition type..." required oninput="updateConversionPreview()">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Conversion Factor (Req. Units per Storage Unit)</label>
+                                <input type="number" step="0.01" min="0.01" name="conversion_factor" id="conversionFactorVal" class="cfg-text-input" placeholder="e.g. 5" required oninput="updateConversionPreview()">
+                            </div>
+
+                            {{-- Live preview hint box --}}
+                            <div id="conversionPreviewBox" style="border-radius: 14px; padding: 0.85rem 1.1rem; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; font-size: 0.78rem; font-weight: 600; line-height: 1.45;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-weight: 800; color: #0284c7;">
+                                    <i data-lucide="info" style="width: 15px; height: 15px;"></i> Conversion Preview
+                                </div>
+                                <span id="conversionPreviewText">1 Box = 5 Reams. Total available stock will be computed in Reams for requisitions, while inventory receipts remain in Boxes.</span>
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" id="conversionSubmitBtn" class="btn-cfg-add" style="flex: 1; background: #0284c7; box-shadow: 0 6px 16px rgba(2,132,199,0.25);">
+                                    <i data-lucide="plus-circle" id="conversionSubmitIcon"></i> <span id="conversionSubmitText">Add Conversion Rule</span>
+                                </button>
+                                <button type="button" id="conversionResetBtn" onclick="resetConversionForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 1rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
 </div>
 
@@ -1835,6 +1983,7 @@
     const isHeadOfStores = {{ (auth()->user()->isStoresHeadUser() || in_array(auth()->user()->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) ? 'true' : 'false' }};
     const itemsByCategory = @json($itemsByCategory ?? []);
     const stockByKeyword = @json($stockByKeyword ?? []);
+    const unitsByKeyword = @json($unitsByKeyword ?? []);
 
 
 
@@ -2003,8 +2152,166 @@
         });
     }
 
+    function populateConversionForm(keyword, receivedUnit, requisitionUnit, conversionFactor, category) {
+        document.getElementById('conversionFormTitle').innerText = 'Update Unit Conversion Rule';
+        document.getElementById('conversionFormSub').innerText = 'Modify packaging & requisition units and conversion ratio.';
+
+        $('#conversionCategory').val(category).trigger('change');
+        
+        setTimeout(() => {
+            const select = $('#conversionKeyword');
+            if (!select.find(`option[value="${keyword}"]`).length) {
+                select.append(new Option(keyword, keyword, true, true));
+            }
+            select.val([keyword]).trigger('change.select2');
+        }, 100);
+
+        document.getElementById('conversionReceivedUnit').value = receivedUnit;
+        document.getElementById('conversionRequisitionUnit').value = requisitionUnit;
+        document.getElementById('conversionFactorVal').value = conversionFactor;
+
+        document.getElementById('conversionSubmitText').innerText = 'Update Rule';
+        document.getElementById('conversionSubmitBtn').style.background = '#0284c7';
+        document.getElementById('conversionSubmitBtn').style.boxShadow = '0 6px 16px rgba(2, 132, 199, 0.25)';
+        document.getElementById('conversionResetBtn').style.display = 'block';
+
+        const icon = document.getElementById('conversionSubmitIcon');
+        if (icon) icon.setAttribute('data-lucide', 'refresh-cw');
+        if (window.lucide) lucide.createIcons();
+
+        updateConversionPreview();
+
+        document.getElementById('unit-conversion-rules').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function resetConversionForm() {
+        document.getElementById('conversionFormTitle').innerText = 'Add Unit Conversion Rule';
+        document.getElementById('conversionFormSub').innerText = 'Define packaging & requisition units. (e.g. Received in Boxes, requested only in Reams).';
+        document.getElementById('conversionForm').reset();
+        $('#conversionKeyword').val(null).trigger('change.select2');
+        $('#conversionCategory').val('').trigger('change');
+
+        document.getElementById('conversionSubmitText').innerText = 'Add Conversion Rule';
+        document.getElementById('conversionSubmitBtn').style.background = '#0284c7';
+        document.getElementById('conversionResetBtn').style.display = 'none';
+
+        const icon = document.getElementById('conversionSubmitIcon');
+        if (icon) icon.setAttribute('data-lucide', 'plus-circle');
+        if (window.lucide) lucide.createIcons();
+
+        updateConversionPreview();
+    }
+
+    function formatUnitLabel(unit, qty) {
+        unit = (unit || '').trim();
+        if (!unit) return '';
+        qty = parseFloat(qty);
+        if (isNaN(qty) || qty === 1) {
+            return unit;
+        }
+        if (/\(s\)$/i.test(unit) || /\(es\)$/i.test(unit) || /s$/i.test(unit) || /^[A-Z]{2,4}$/.test(unit)) {
+            return unit;
+        }
+        if (/ch$|sh$|x$|z$|s$/i.test(unit)) {
+            return unit + 'es';
+        }
+        if (/y$/i.test(unit) && !/[aeiou]y$/i.test(unit)) {
+            return unit.slice(0, -1) + 'ies';
+        }
+        return unit + 's';
+    }
+
+    function getSelectedStockQty() {
+        const selected = $('#conversionKeyword').val();
+        if (!selected || (Array.isArray(selected) && selected.length === 0)) {
+            return 10;
+        }
+        const kw = (Array.isArray(selected) ? selected[0] : selected).toLowerCase().trim();
+        if (stockByKeyword[kw] !== undefined) {
+            return parseFloat(stockByKeyword[kw]) || 0;
+        }
+        for (const [k, v] of Object.entries(stockByKeyword)) {
+            if (k.includes(kw) || kw.includes(k)) {
+                return parseFloat(v) || 0;
+            }
+        }
+        return 10;
+    }
+
+    function updateConversionPreview() {
+        const recInput = (document.getElementById('conversionReceivedUnit').value || 'Box').trim();
+        const reqInput = (document.getElementById('conversionRequisitionUnit').value || 'Ream').trim();
+        const factor = parseFloat(document.getElementById('conversionFactorVal').value) || 1;
+
+        const sampleQty = getSelectedStockQty();
+        const recSingle = formatUnitLabel(recInput, 1);
+        const recPlural = formatUnitLabel(recInput, sampleQty);
+        const reqPlural = formatUnitLabel(reqInput, factor);
+
+        const totalQtyVal = sampleQty * factor;
+        const totalQty = (totalQtyVal % 1 === 0) ? totalQtyVal : totalQtyVal.toFixed(2);
+        const totalReqPlural = formatUnitLabel(reqInput, totalQtyVal);
+
+        const previewText = `1 ${recSingle} = ${factor} ${reqPlural}. Requisitioners can ONLY request in ${reqInput}. A receipt of ${sampleQty} ${recPlural} equals ${totalQty} ${totalReqPlural} total available stock.`;
+        document.getElementById('conversionPreviewText').innerText = previewText;
+    }
+
+    function filterConversionRules() {
+        const query = (document.getElementById('conversionSearch').value || '').toLowerCase().trim();
+        document.querySelectorAll('#conversionsContainer .conversion-rule-group').forEach(group => {
+            let visibleInGroup = 0;
+            group.querySelectorAll('.conversion-rule-card').forEach(card => {
+                const keyword = card.getAttribute('data-keyword') || '';
+                if (!query || keyword.includes(query)) {
+                    card.style.display = 'flex';
+                    visibleInGroup++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            group.style.display = visibleInGroup > 0 ? 'block' : 'none';
+        });
+    }
+
     $(document).ready(function() {
         if (window.lucide) lucide.createIcons();
+
+        // Initialize Select2 for conversion rules
+        $('.select2-conversion').select2({
+            tags: true,
+            placeholder: 'Select or type item keyword(s)...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#unit-conversion-rules')
+        });
+
+        $('#conversionCategory').on('change', function() {
+            const cat = $(this).val();
+            const keywordSelect = $('#conversionKeyword');
+            keywordSelect.empty().append('<option value="">Select Item...</option>');
+
+            if (cat && itemsByCategory[cat]) {
+                itemsByCategory[cat].forEach(item => {
+                    keywordSelect.append(new Option(item, item));
+                });
+            } else if (!cat) {
+                keywordSelect.append('<option value="">Select Category First...</option>');
+            }
+            keywordSelect.trigger('change.select2');
+        });
+
+        $('#conversionKeyword').on('change', function() {
+            const selected = $(this).val();
+            if (selected && selected.length > 0) {
+                const firstKw = (Array.isArray(selected) ? selected[0] : selected).toLowerCase().trim();
+                if (unitsByKeyword[firstKw]) {
+                    $('#conversionReceivedUnit').val(unitsByKeyword[firstKw]);
+                    updateConversionPreview();
+                }
+            }
+        });
 
         // Initialize interactive category cards and flowchart state
         if (typeof updateWorkflowFlowchart === 'function') {

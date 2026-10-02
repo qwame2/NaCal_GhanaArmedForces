@@ -12,12 +12,14 @@ class Setting extends Model
     protected static $itemThresholdCache = [];
     protected static $itemUnitCache = [];
     protected static $itemRequestLimitCache = [];
+    protected static $unitConversionCache = [];
 
     public static function clearInventoryCache()
     {
         self::$itemThresholdCache = [];
         self::$itemUnitCache = [];
         self::$itemRequestLimitCache = [];
+        self::$unitConversionCache = [];
         \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
         \Illuminate\Support\Facades\Cache::forget('low_stock_items_list');
         \Illuminate\Support\Facades\Cache::forget('item_aggregates_list');
@@ -35,6 +37,7 @@ class Setting extends Model
             self::$itemThresholdCache = [];
             self::$itemUnitCache = [];
             self::$itemRequestLimitCache = [];
+            self::$unitConversionCache = [];
             \Illuminate\Support\Facades\Cache::forget('setting_' . $setting->key);
             if ($setting->key === 'suppliers_registry') {
                 \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
@@ -46,6 +49,7 @@ class Setting extends Model
             self::$itemThresholdCache = [];
             self::$itemUnitCache = [];
             self::$itemRequestLimitCache = [];
+            self::$unitConversionCache = [];
             \Illuminate\Support\Facades\Cache::forget('setting_' . $setting->key);
             if ($setting->key === 'suppliers_registry') {
                 \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
@@ -234,9 +238,7 @@ class Setting extends Model
 
         $threshold = null;
         foreach ($rules as $keyword => $rule) {
-            $keywordLower = strtolower(trim($keyword));
-            $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
-            if (preg_match($pattern, $descLower)) {
+            if (self::isItemKeywordMatch($keyword, $descClean)) {
                 $ruleCat = $rule['category'] ?? null;
                 // Match category if specified
                 if ($ruleCat && $category && strcasecmp(trim($ruleCat), trim($category)) !== 0) {
@@ -273,13 +275,10 @@ class Setting extends Model
         if (!is_array($rules)) {
             $rules = [];
         }
-        $descLower = strtolower($descClean);
 
         $unit = 'units';
         foreach ($rules as $keyword => $rule) {
-            $keywordLower = strtolower(trim($keyword));
-            $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
-            if (preg_match($pattern, $descLower)) {
+            if (self::isItemKeywordMatch($keyword, $descClean)) {
                 $unit = is_array($rule) ? ($rule['unit'] ?? 'units') : $rule;
                 break;
             }
@@ -287,6 +286,163 @@ class Setting extends Model
 
         self::$itemUnitCache[$descClean] = $unit;
         return $unit;
+    }
+
+    public static function normalizeItemKey($str)
+    {
+        return strtolower(preg_replace('/[^a-z0-9]/i', '', $str ?? ''));
+    }
+
+    public static function isItemKeywordMatch($keyword, $description)
+    {
+        $kwClean = strtolower(trim((string)$keyword));
+        $descClean = strtolower(trim((string)$description));
+        if ($kwClean === '' || $descClean === '') return false;
+
+        // 1. Exact or word boundary match
+        $pattern = '/\b' . preg_quote($kwClean, '/') . '\b/i';
+        if (preg_match($pattern, $descClean)) return true;
+
+        // 2. Substring match
+        if (str_contains($descClean, $kwClean) || str_contains($kwClean, $descClean)) return true;
+
+        // 3. Normalized alphanumeric match (ignores spaces, hyphens, punctuation)
+        $normKw = self::normalizeItemKey($kwClean);
+        $normDesc = self::normalizeItemKey($descClean);
+        if ($normKw !== '' && $normDesc !== '') {
+            if ($normKw === $normDesc || str_contains($normDesc, $normKw) || str_contains($normKw, $normDesc)) {
+                return true;
+            }
+            // 4. Fuzzy distance match for typos (e.g. A4 SHHET vs A4 SHEET)
+            if (strlen($normKw) >= 4 && strlen($normDesc) >= 4) {
+                $lev = levenshtein($normKw, $normDesc);
+                if ($lev <= 2) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get unit conversion rule for a specific item.
+     */
+    public static function getUnitConversionRule($description, $category = null)
+    {
+        if (empty($description)) {
+            return null;
+        }
+        $descClean = trim($description);
+        $cacheKey = strtolower($descClean) . '_' . ($category ?? '');
+        if (array_key_exists($cacheKey, self::$unitConversionCache)) {
+            return self::$unitConversionCache[$cacheKey];
+        }
+
+        $rules = self::get('unit_conversion_rules', []);
+        if (is_string($rules)) {
+            $rules = json_decode($rules, true);
+        }
+        if (!is_array($rules)) {
+            $rules = [];
+        }
+
+        $matchedRule = null;
+        foreach ($rules as $keyword => $rule) {
+            if (self::isItemKeywordMatch($keyword, $descClean)) {
+                $ruleCat = is_array($rule) ? ($rule['category'] ?? null) : null;
+                if ($ruleCat && $category && strcasecmp(trim($ruleCat), trim($category)) !== 0) {
+                    continue;
+                }
+                $recUnit = is_array($rule) ? ($rule['received_unit'] ?? null) : null;
+                if (empty($recUnit)) {
+                    $recUnit = \App\Models\InventoryItem::whereRaw('TRIM(description) = ?', [$descClean])->value('unit') ?: 'Boxes';
+                }
+
+                $matchedRule = [
+                    'keyword' => $keyword,
+                    'category' => is_array($rule) ? ($rule['category'] ?? null) : null,
+                    'received_unit' => $recUnit,
+                    'requisition_unit' => is_array($rule) ? ($rule['requisition_unit'] ?? 'Reams') : 'Reams',
+                    'conversion_factor' => (float)(is_array($rule) ? ($rule['conversion_factor'] ?? 1) : 1),
+                ];
+                break;
+            }
+        }
+
+        self::$unitConversionCache[$cacheKey] = $matchedRule;
+        return $matchedRule;
+    }
+
+    public static function formatUnitLabel($unit, $qty)
+    {
+        $unit = trim((string)$unit);
+        if ($unit === '') {
+            return '';
+        }
+        $qty = (float)$qty;
+        if ($qty == 1) {
+            return $unit;
+        }
+        if (preg_match('/\(s\)$/i', $unit) || preg_match('/\(es\)$/i', $unit) || preg_match('/s$/i', $unit) || preg_match('/^[A-Z]{2,4}$/', $unit)) {
+            return $unit;
+        }
+        if (preg_match('/(ch|sh|x|z|s)$/i', $unit)) {
+            return $unit . 'es';
+        }
+        if (preg_match('/y$/i', $unit) && !preg_match('/[aeiou]y$/i', $unit)) {
+            return substr($unit, 0, -1) . 'ies';
+        }
+        return $unit . 's';
+    }
+
+    /**
+     * Format stock balance with unit conversion rule breakdown if applicable.
+     * Example: 9.4 Boxes with conversion factor 5 (Reams/Box) -> "9 Boxes and 2 Reams remaining (equivalent to 47 Reams)"
+     */
+    public static function formatStockBalanceWithConversion($stockBalance, $description, $category = null, $defaultStorageUnit = 'units', $showEquivalent = true)
+    {
+        $balanceNum = floatval(str_replace(',', '', $stockBalance ?? 0));
+        $rule = self::getUnitConversionRule($description, $category);
+
+        if (!$rule || empty($rule['conversion_factor']) || $rule['conversion_factor'] <= 1) {
+            $unitStr = self::formatUnitLabel($defaultStorageUnit ?? 'units', $balanceNum);
+            $formattedNum = (floor($balanceNum) == $balanceNum) ? number_format($balanceNum, 0) : number_format($balanceNum, 2);
+            return "{$formattedNum} {$unitStr}";
+        }
+
+        $storageUnit = !empty($rule['received_unit']) ? $rule['received_unit'] : ($defaultStorageUnit ?? 'Boxes');
+        $reqUnit = !empty($rule['requisition_unit']) ? $rule['requisition_unit'] : 'Reams';
+        $factor = (float)$rule['conversion_factor'];
+
+        // Total available in requisition units (e.g. 9.4 Boxes * 5 = 47 Reams)
+        $totalReqUnits = round($balanceNum * $factor, 4);
+
+        if ($totalReqUnits <= 0) {
+            $zeroUnit = self::formatUnitLabel($storageUnit, 0);
+            return "0 {$zeroUnit}";
+        }
+
+        $fullStorageUnits = (int) floor($totalReqUnits / $factor);
+        $leftoverReqUnits = round(fmod($totalReqUnits, $factor), 2);
+        if (floor($leftoverReqUnits) == $leftoverReqUnits) {
+            $leftoverReqUnits = (int)$leftoverReqUnits;
+        }
+
+        $storageLabel = self::formatUnitLabel($storageUnit, $fullStorageUnits);
+        $reqLabelTotal = self::formatUnitLabel($reqUnit, $totalReqUnits);
+        $reqLabelLeftover = self::formatUnitLabel($reqUnit, $leftoverReqUnits);
+
+        $formattedReqVal = (floor($totalReqUnits) == $totalReqUnits ? number_format($totalReqUnits, 0) : number_format($totalReqUnits, 2));
+        $equivalentText = $showEquivalent ? "<br><span style=\"font-size: 0.78rem; font-weight: 700; color: #0284c7;\">({$formattedReqVal} {$reqLabelTotal})</span>" : "";
+
+        if ($leftoverReqUnits > 0) {
+            if ($fullStorageUnits > 0) {
+                return "{$fullStorageUnits} {$storageLabel} and {$leftoverReqUnits} {$reqLabelLeftover}{$equivalentText}";
+            } else {
+                return "{$leftoverReqUnits} {$reqLabelLeftover}{$equivalentText}";
+            }
+        } else {
+            $fullNum = number_format($fullStorageUnits, 0);
+            return "{$fullNum} {$storageLabel}{$equivalentText}";
+        }
     }
 
     /**

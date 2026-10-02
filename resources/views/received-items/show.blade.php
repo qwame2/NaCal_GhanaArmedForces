@@ -196,11 +196,34 @@
                                 @endif
                             @endif
                         </td>
+                        @php
+                            $showRecQty = (float)($item->original_received_qty ?? ($item->received_qty ?? $item->qty));
+                            $showItemCat = $item->batch->ledge_category ?? null;
+                            $showConvRule = \App\Models\Setting::getUnitConversionRule($item->description, $showItemCat);
+                            $showPkgUnit = $item->unit ?? 'Package Types';
+                            $showUnitLabel = \App\Models\Setting::formatUnitLabel($showPkgUnit, $showRecQty);
+                        @endphp
                         <td style="padding: 1.25rem 1.5rem;">
-                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">{{ $item->unit ?? 'Package Types' }}</span>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">{{ $showUnitLabel }}</span>
+                            @if($showConvRule && !empty($showConvRule['conversion_factor']) && $showConvRule['conversion_factor'] > 1)
+                                <div style="font-size: 0.68rem; font-weight: 700; color: #0284c7; margin-top: 2px;">
+                                    1 {{ $showConvRule['received_unit'] }} = {{ $showConvRule['conversion_factor'] }} {{ $showConvRule['requisition_unit'] }}
+                                </div>
+                            @endif
                         </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 700; color: var(--text-main);">{{ number_format($item->original_received_qty ?? ($item->received_qty ?? $item->qty)) }}</td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right; color: var(--text-main); font-weight: 700;">{{ number_format($item->stock_balance) }}</td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 700; color: var(--text-main);">
+                            {{ number_format($showRecQty) }}
+                            @if($showConvRule && !empty($showConvRule['conversion_factor']) && $showConvRule['conversion_factor'] > 1)
+                                @php
+                                    $eqShowTotal = $showRecQty * (float)$showConvRule['conversion_factor'];
+                                    $eqShowLabel = \App\Models\Setting::formatUnitLabel($showConvRule['requisition_unit'], $eqShowTotal);
+                                @endphp
+                                <div style="font-size: 0.75rem; font-weight: 700; color: #0284c7; margin-top: 2px;">
+                                    ({{ floor($eqShowTotal) == $eqShowTotal ? number_format($eqShowTotal, 0) : number_format($eqShowTotal, 2) }} {{ $eqShowLabel }})
+                                </div>
+                            @endif
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right; color: var(--text-main); font-weight: 700;">{!! \App\Models\Setting::formatStockBalanceWithConversion($item->stock_balance, $item->description, $item->batch->ledge_category ?? null, $item->unit ?? 'units') !!}</td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right;">
                             <span style="font-weight: 800; color: {{ (float)$item->variance > 0 ? '#059669' : ((float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
                                 {{ (float)$item->variance > 0 ? '+' : '' }}{{ number_format($item->variance) }}

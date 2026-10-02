@@ -515,6 +515,55 @@ window.cancelRollback = function(reqId, userName) {
     });
 };
 
+window.deleteDraftEntry = function(reqId, reqLabel) {
+    const titleText = reqLabel ? `Delete Draft Entry ${reqLabel}?` : 'Delete Drafted Entry?';
+    Swal.fire({
+        title: titleText,
+        text: 'Are you sure you want to completely delete this drafted entry? All items in this draft submission will be permanently removed.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, Delete Completely'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Deleting Draft Entry...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch(`/api/edit-requests/${reqId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Draft Entry Deleted',
+                    text: data.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire('Delete Failed', data.message || 'Could not delete entry.', 'error');
+            }
+        })
+        .catch(() => {
+            Swal.fire('Error', 'A server connection error occurred.', 'error');
+        });
+    });
+};
+
 let lastPendingHtml = null;
 let lastEditsHtml = null;
 let lastRollbacksHtml = null;

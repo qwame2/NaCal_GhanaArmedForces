@@ -115,11 +115,16 @@
     @else
         <!-- ==================== STOCK ENTRY DETAILS ==================== -->
         <div class="preview-header" style="background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-luxe); margin-bottom: 2rem; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: 0; right: 0; padding: 1.5rem;">
-                <div style="background: #fef2f2; color: #ef4444; padding: 6px 16px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; border: 1px solid #fee2e2; letter-spacing: 0.05em;">
-                    DRAFT PREVIEW
-                </div>
+        <div style="position: absolute; top: 0; right: 0; padding: 1.5rem; display: flex; align-items: center; gap: 10px;">
+            @if($status === 'pending' || $status === 'resubmitted')
+                <button type="button" onclick="window.deleteDraftEntry({{ $reqId }})" style="background: #fef2f2; color: #ef4444; padding: 6px 16px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid #fca5a5; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#ffffff';" onmouseout="this.style.background='#fef2f2'; this.style.color='#ef4444';" title="Completely delete this drafted entry">
+                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete Draft Entry
+                </button>
+            @endif
+            <div style="background: #fef2f2; color: #ef4444; padding: 6px 16px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; border: 1px solid #fee2e2; letter-spacing: 0.05em;">
+                DRAFT PREVIEW
             </div>
+        </div>
 
             <div style="display: flex; align-items: flex-start; gap: 2rem;">
                 <div style="width: 80px; height: 80px; background: var(--primary-glow); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -178,6 +183,11 @@
             <div style="padding: 1.5rem 2rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin: 0; font-size: 1.1rem; font-weight: 900; color: #0f172a;">Items in This Entry ({{ count($items) }})</h3>
                 <div style="display: flex; align-items: center; gap: 12px;">
+                    @if($status === 'pending' || $status === 'resubmitted')
+                        <button type="button" onclick="window.deleteDraftEntry({{ $reqId }})" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(239,68,68, 0.25);" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'" title="Completely delete this drafted entry">
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete Draft Entry
+                        </button>
+                    @endif
                     <button class="sra-rollback-btn-right" onclick="window.rollbackEntry({{ $reqId }})" style="background: #059669; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(5,150,105, 0.25);">
                         <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group
                     </button>
@@ -287,7 +297,7 @@
                                 </td>
                             @else
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isStockChanged ? '#2563eb' : '#0f172a' }}; {!! $isStockChanged ? 'background: rgba(59, 130, 246, 0.08); border-left: 2px solid #2563eb;' : '' !!}">
-                                    {{ number_format($item['stock_balance'] ?? 0) }}
+                                    {!! \App\Models\Setting::formatStockBalanceWithConversion($item['stock_balance'] ?? 0, $item['description'] ?? '', $batch->ledge_category ?? null, $item['unit'] ?? 'units') !!}
                                 </td>
                             @endif
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0284c7; text-align: right;">
@@ -467,7 +477,10 @@
         <!-- Administrative Review Actions Panel -->
         @if($status === 'pending' || $status === 'resubmitted')
         <div class="actions-panel" style="background: white; border: 1px solid var(--border-color); padding: 1.75rem 2.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 24px; box-shadow: var(--shadow-luxe); margin-top: 2rem;">
-            <button onclick="window.rollbackEntry({{ $reqId }})" style="margin-right: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+            <button type="button" onclick="window.deleteDraftEntry({{ $reqId }})" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#ef4444';" title="Completely delete this drafted entry">
+                <i data-lucide="trash-2" style="width: 18px;"></i> Delete Draft
+            </button>
+            <button type="button" onclick="window.rollbackEntry({{ $reqId }})" style="margin-left: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
                 <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
             </button>
             
@@ -950,6 +963,58 @@
                     });
                 } else {
                     Swal.fire('Removal Failed', data.message || 'Could not remove item.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'A server connection error occurred.', 'error');
+            });
+        });
+    };
+
+    window.deleteDraftEntry = function(reqId) {
+        Swal.fire({
+            title: 'Delete Drafted Stock Entry?',
+            text: 'Are you sure you want to completely delete this drafted entry? All items in this draft submission will be permanently removed.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Delete Completely'
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Deleting Draft Entry...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch(`/api/edit-requests/${reqId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Draft Entry Deleted',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        let targetUrl = '{{ route("stores.item-entry-approval") }}';
+                        if (document.referrer && document.referrer.includes('item-entry-approval')) {
+                            targetUrl = document.referrer;
+                        }
+                        window.location.href = targetUrl;
+                    });
+                } else {
+                    Swal.fire('Delete Failed', data.message || 'Could not delete entry.', 'error');
                 }
             })
             .catch(() => {

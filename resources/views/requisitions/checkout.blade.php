@@ -796,10 +796,28 @@
 
             mainLayout.style.display = 'grid';
             emptyState.style.display = 'none';
-            
+
+            // Sync unit conversion rules with cart items
+            const conversionRules = @json(\App\Models\Setting::get('unit_conversion_rules', []));
+            if (conversionRules && typeof conversionRules === 'object') {
+                cart.forEach(item => {
+                    const descClean = (item.description || '').toLowerCase().trim();
+                    for (const [keyword, rule] of Object.entries(conversionRules)) {
+                        const kwClean = (keyword || '').toLowerCase().trim();
+                        if (descClean === kwClean || descClean.includes(kwClean) || kwClean.includes(descClean)) {
+                            if (rule && rule.requisition_unit) {
+                                item.unit = rule.requisition_unit;
+                                item.conversion_hint = `(1 ${rule.received_unit || 'Box'} = ${rule.conversion_factor || 1} ${rule.requisition_unit})`;
+                            }
+                            break;
+                        }
+                    }
+                });
+            }
+
             // Calculate total quantity of items in checkout list
             const totalQty = cart.reduce((sum, item) => sum + (parseFloat(item.quantity_requested) || 0), 0);
-            
+
             // Display unique items count in the header to match the visible sections
             countLabel.textContent = cart.length;
 
@@ -815,7 +833,7 @@
                         <span class="cart-item-tag">${ledgeMap[item.category] || 'Other'}</span>
                         <div class="cart-item-title">${item.description}</div>
                         <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom: 0.75rem;">
-                            Unit of Issue: <b>${item.unit}</b>
+                            Unit of Issue: <b style="color: #059669;">${item.unit}</b>
                         </div>
 
                         <div style="display:flex; align-items:center; gap: 8px;">

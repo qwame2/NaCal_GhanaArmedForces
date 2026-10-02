@@ -1671,6 +1671,76 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         return back()->with('success', "Request limit rule for \"{$keyword}\" removed.");
     })->name('admin.settings.request-limit.destroy');
 
+    // Unit Conversion & Requisition Packaging Rules
+    Route::post('/admin/settings/unit-conversion-rule', function(\Illuminate\Http\Request $request) {
+        $user = auth()->user();
+        if (!$user->is_admin && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
+            abort(403);
+        }
+        $category = trim($request->input('category'));
+        $receivedUnitInput = trim($request->input('received_unit', ''));
+        $requisitionUnit = trim($request->input('requisition_unit', 'Reams'));
+        $conversionFactor = floatval($request->input('conversion_factor'));
+
+        $keywords = $request->input('keywords');
+        if (!$keywords) {
+            $singleKeyword = $request->input('keyword');
+            $keywords = $singleKeyword ? [$singleKeyword] : [];
+        }
+
+        if (empty($keywords) || !$category || !$requisitionUnit || $conversionFactor <= 0) {
+            return back()->with('error', 'Category, keywords, requisition unit, and a positive conversion factor are required.');
+        }
+
+        $setting = \App\Models\Setting::firstOrCreate(
+            ['key' => 'unit_conversion_rules'],
+            ['value' => '{}', 'type' => 'json', 'group' => 'inventory', 'description' => 'Packaging unit conversion rules for items.']
+        );
+        $rules = json_decode($setting->value ?? '{}', true) ?? [];
+
+        $addedCount = 0;
+        foreach ($keywords as $kw) {
+            $kwClean = trim($kw);
+            $kwLower = strtolower($kwClean);
+            if (empty($kwLower)) continue;
+
+            $receivedUnit = $receivedUnitInput;
+            if (empty($receivedUnit)) {
+                $receivedUnit = \App\Models\InventoryItem::whereRaw('TRIM(description) = ?', [$kwClean])->value('unit') ?: 'Boxes';
+            }
+
+            $rules[$kwLower] = [
+                'category' => $category,
+                'received_unit' => $receivedUnit,
+                'requisition_unit' => $requisitionUnit,
+                'conversion_factor' => $conversionFactor,
+                'description' => $kwClean
+            ];
+            $addedCount++;
+        }
+        $setting->value = json_encode($rules);
+        $setting->save();
+        \App\Models\Setting::clearInventoryCache();
+        return back()->with('success', "Added {$addedCount} unit conversion rule(s) successfully.");
+    })->name('admin.settings.unit-conversion-rule.store');
+
+    Route::delete('/admin/settings/unit-conversion-rule', function(\Illuminate\Http\Request $request) {
+        $user = auth()->user();
+        if (!$user->is_admin && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
+            abort(403);
+        }
+        $keyword = strtolower(trim($request->input('keyword')));
+        $setting = \App\Models\Setting::where('key', 'unit_conversion_rules')->first();
+        if ($setting) {
+            $rules = json_decode($setting->value ?? '{}', true) ?? [];
+            unset($rules[$keyword]);
+            $setting->value = json_encode($rules);
+            $setting->save();
+            \App\Models\Setting::clearInventoryCache();
+        }
+        return back()->with('success', "Unit conversion rule for \"{$keyword}\" removed.");
+    })->name('admin.settings.unit-conversion-rule.destroy');
+
     // Supplier Registry
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
@@ -1801,6 +1871,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/edit-requests/complete/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'complete'])->name('edit-requests.complete');
     Route::post('/api/edit-requests/{id}/remove-item', [\App\Http\Controllers\EditRequestController::class, 'removeItemFromPayload'])->name('api.edit-requests.remove-item');
     Route::post('/api/edit-requests/{id}/cancel-rollback', [\App\Http\Controllers\EditRequestController::class, 'cancelRollback'])->name('api.edit-requests.cancel-rollback');
+    Route::post('/api/edit-requests/{id}/delete', [\App\Http\Controllers\EditRequestController::class, 'destroy'])->name('api.edit-requests.delete');
+    Route::delete('/api/edit-requests/{id}', [\App\Http\Controllers\EditRequestController::class, 'destroy'])->name('api.edit-requests.destroy');
 
     // Remainder Preview API â€” returns preview data for an edit request
     Route::get('/api/edit-requests/{id}/remainder-preview', function ($id) {
