@@ -23,9 +23,15 @@ class StoreRequisitionController extends Controller
         $ledgeMap = Setting::getCategories();
 
         // Fetch all available inventory items (consolidated by description into single items)
-        $rawItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
+        $rawItems = InventoryItem::leftJoin('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where(function($q) {
+                $q->whereNull('inventory_batches.supplier_status')
+                  ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
+            })
+            ->where(function($q) {
+                $q->whereNull('inventory_batches.approval_status')
+                  ->orWhereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin']);
+            })
             ->selectRaw('TRIM(inventory_items.description) as original_description, MAX(inventory_items.unit) as unit, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
             ->orderByRaw('TRIM(inventory_items.description)')
@@ -40,7 +46,7 @@ class StoreRequisitionController extends Controller
 
             $matchedIndex = null;
             foreach ($consolidatedList as $idx => $existing) {
-                if (Setting::isItemKeywordMatch($existing['description'], $desc)) {
+                if (Setting::isExactOrTypoMatch($existing['description'], $desc)) {
                     $matchedIndex = $idx;
                     break;
                 }
@@ -66,8 +72,8 @@ class StoreRequisitionController extends Controller
 
         $availableItems = collect($consolidatedList)->map(function ($data) {
             $item = (object)$data;
-            $physicalStock = (float) $item->total_stock;
-            $availablePhysical = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category);
+            $physicalStock = max(0, (float) $item->total_stock);
+            $availablePhysical = max(0, \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category));
 
             $conversionRule = \App\Models\Setting::getUnitConversionRule($item->description, $item->ledge_category);
             if ($conversionRule && !empty($conversionRule['conversion_factor']) && $conversionRule['conversion_factor'] > 0) {

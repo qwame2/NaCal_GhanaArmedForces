@@ -322,6 +322,27 @@ class Setting extends Model
         return false;
     }
 
+    public static function isExactOrTypoMatch($desc1, $desc2)
+    {
+        $clean1 = strtolower(trim((string)$desc1));
+        $clean2 = strtolower(trim((string)$desc2));
+        if ($clean1 === '' || $clean2 === '') return false;
+        if ($clean1 === $clean2) return true;
+
+        $norm1 = self::normalizeItemKey($desc1);
+        $norm2 = self::normalizeItemKey($desc2);
+        if ($norm1 === '' || $norm2 === '') return false;
+        if ($norm1 === $norm2) return true;
+
+        // Only merge if string lengths are nearly identical (<=2 char diff) and Levenshtein <= 2 (typos like A4 SHEET vs A4 SHHET)
+        if (abs(strlen($norm1) - strlen($norm2)) <= 2 && strlen($norm1) >= 4 && strlen($norm2) >= 4) {
+            if (levenshtein($norm1, $norm2) <= 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Get unit conversion rule for a specific item.
      */

@@ -830,15 +830,17 @@
             container.innerHTML = cart.map((item, idx) => `
                 <div class="cart-item-card">
                     <div class="cart-item-info">
-                        <span class="cart-item-tag">${ledgeMap[item.category] || 'Other'}</span>
-                        <div class="cart-item-title">${item.description}</div>
-                        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom: 0.75rem;">
-                            Unit of Issue: <b style="color: #059669;">${item.unit}</b>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span class="cart-item-tag" style="margin-bottom: 0;">${ledgeMap[item.category] || 'Other'}</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
+                                Unit of Issue: <b style="color: #059669;">${item.unit}</b>
+                            </span>
                         </div>
+                        <div class="cart-item-title">${item.description}</div>
 
-                        <div style="display:flex; align-items:center; gap: 8px;">
+                        <div style="display:flex; align-items:center; gap: 8px; margin-top: 0.5rem; margin-bottom: 0.75rem;">
                             <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Quantity:</span>
-                            <div class="qty-controls">
+                            <div class="qty-controls" style="margin-bottom: 0;">
                                 <button class="qty-btn" type="button" onclick="adjustQty(${idx}, -1)">
                                     <i data-lucide="minus" style="width: 12px;"></i>
                                 </button>
@@ -853,16 +855,24 @@
                                     <i data-lucide="plus" style="width: 12px;"></i>
                                 </button>
                             </div>
-
                         </div>
 
-                        <textarea class="cart-item-remarks"
-                                  placeholder="Specify remarks, dimensions, color preferences..."
-                                  rows="2"
-                                  onchange="updateRemarks(${idx}, this.value)">${item.remarks || ''}</textarea>
+                        <!-- Dedicated Specify Remarks Column Block -->
+                        <div style="margin-top: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;">
+                                <i data-lucide="message-square-plus" style="width: 13px; height: 13px;"></i>
+                                Specify Item Remarks / Specifications
+                                <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: none; margin-left: auto;">(Attached to Justification)</span>
+                            </label>
+                            <textarea class="cart-item-remarks"
+                                      placeholder="Specify item remarks, dimensions, color preferences, model # (moves with justification)..."
+                                      rows="2"
+                                      style="margin: 0; background: var(--bg-main);"
+                                      onchange="updateRemarks(${idx}, this.value)">${item.remarks || ''}</textarea>
+                        </div>
                     </div>
 
-                    <button class="delete-item-btn" type="button" onclick="removeItem(${idx})" title="Remove item from bag">
+                    <button class="delete-item-btn" type="button" onclick="removeItem(${idx})" title="Remove item from list">
                         <i data-lucide="trash-2" style="width: 18px;"></i>
                     </button>
                 </div>

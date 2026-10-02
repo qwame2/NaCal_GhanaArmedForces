@@ -671,6 +671,7 @@
                             </div>
                             <div>
                                 <div style="font-size:.95rem;font-weight:800;color:var(--text-main);" id="item-desc-text-${i}">${descTextHtml}</div>
+                                ${item.remarks ? `<div style="font-size:0.75rem; color:#059669; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:4px;"><i data-lucide="message-square-plus" style="width:12px; height:12px;"></i> Specified Remark: ${item.remarks}</div>` : ''}
                                 <div style="margin-top:4px;">${stockInfo}</div>
                             </div>
                         </div>
