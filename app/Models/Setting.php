@@ -217,6 +217,33 @@ class Setting extends Model
     }
 
     /**
+     * Resolve a category code from category name/code, with intelligent keyword fallback by item description.
+     */
+    public static function resolveCategoryCode($category, $description = null)
+    {
+        $code = self::getCategoryCode($category);
+        if (!empty($code)) {
+            return $code;
+        }
+        if (!empty($category) && is_string($category) && strlen(trim($category)) === 1) {
+            return strtoupper(trim($category));
+        }
+        if (!empty($description)) {
+            $descLower = strtolower(trim($description));
+            if (str_contains($descLower, 'envelope') || str_contains($descLower, 'paper') || str_contains($descLower, 'sheet') || str_contains($descLower, 'pen') || str_contains($descLower, 'marker') || str_contains($descLower, 'pad') || str_contains($descLower, 'book') || str_contains($descLower, 'file') || str_contains($descLower, 'folder') || str_contains($descLower, 'binder') || str_contains($descLower, 'stapler') || str_contains($descLower, 'clip') || str_contains($descLower, 'ruler') || str_contains($descLower, 'eraser') || str_contains($descLower, 'pencil') || str_contains($descLower, 'ink')) {
+                return 'A'; // Stationary
+            }
+            if (str_contains($descLower, 'broom') || str_contains($descLower, 'soap') || str_contains($descLower, 'tissue') || str_contains($descLower, 'clean') || str_contains($descLower, 'duster') || str_contains($descLower, 'mop') || str_contains($descLower, 'towel') || str_contains($descLower, 'detergent') || str_contains($descLower, 'sanitizer') || str_contains($descLower, 'bleach') || str_contains($descLower, 'disinfectant') || str_contains($descLower, 'trash') || str_contains($descLower, 'bin')) {
+                return 'B'; // Cleaning
+            }
+            if (str_contains($descLower, 'toner') || str_contains($descLower, 'cartridge') || str_contains($descLower, 'mouse') || str_contains($descLower, 'keyboard') || str_contains($descLower, 'cable') || str_contains($descLower, 'monitor') || str_contains($descLower, 'laptop') || str_contains($descLower, 'computer') || str_contains($descLower, 'ups') || str_contains($descLower, 'hp') || str_contains($descLower, 'dell') || str_contains($descLower, 'drive') || str_contains($descLower, 'usb') || str_contains($descLower, 'laserjet') || str_contains($descLower, 'printer')) {
+                return 'C'; // IT & Acc.
+            }
+        }
+        return 'A'; // Default fallback category code
+    }
+
+    /**
      * Get the threshold for a specific item, falling back to global setting.
      */
     public static function getItemThreshold($description, $category = null)

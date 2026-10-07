@@ -173,4 +173,53 @@ class RequisitionItemsVisibilityTest extends TestCase
         $this->assertNotNull($envelopeItem);
         $this->assertEquals(50, $envelopeItem->total_stock);
     }
+
+    public function test_blue_pens_and_bluepens_spacing_consolidation()
+    {
+        $user = User::factory()->create([
+            'role' => 'Requisitioner',
+            'registration_status' => 'approved',
+            'can_make_requisition' => true,
+        ]);
+
+        $batch1 = InventoryBatch::create([
+            'sra_number' => 'SRA-PEN-001',
+            'entry_date' => now()->toDateString(),
+            'ledge_category' => 'A',
+            'approval_status' => 'approved',
+            'supplier_status' => 'Full Delivery',
+        ]);
+
+        $batch2 = InventoryBatch::create([
+            'sra_number' => 'SRA-PEN-002',
+            'entry_date' => now()->toDateString(),
+            'ledge_category' => 'Stationary', // Category name 'Stationary' resolves to 'A'
+            'approval_status' => 'approved',
+            'supplier_status' => 'Full Delivery',
+        ]);
+
+        InventoryItem::create([
+            'batch_id' => $batch1->id,
+            'description' => 'BLUE PENS',
+            'unit' => 'PACK',
+            'stock_balance' => '40',
+        ]);
+
+        InventoryItem::create([
+            'batch_id' => $batch2->id,
+            'description' => 'BLUEPENS',
+            'unit' => 'PACK',
+            'stock_balance' => '60',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('requisitions.index'));
+        $response->assertStatus(200);
+
+        $availableItems = $response->viewData('availableItems');
+        
+        // They should be consolidated into one item with combined stock of 100
+        $penItem = $availableItems->first(fn($i) => Setting::isExactOrTypoMatch($i->description, 'BLUE PENS'));
+        $this->assertNotNull($penItem, 'BLUE PENS or BLUEPENS should exist in available items');
+        $this->assertEquals(100, $penItem->total_stock, 'Stock of BLUE PENS and BLUEPENS should be combined to 100');
+    }
 }

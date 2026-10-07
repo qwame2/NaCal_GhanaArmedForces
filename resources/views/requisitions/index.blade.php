@@ -1765,7 +1765,7 @@
                 // Count items per category locally in PHP to present accurate stats
                 $categoryCounts = ['all' => count($availableItems)];
                 foreach($availableItems as $item) {
-                    $normCat = \App\Models\Setting::getCategoryCode($item->ledge_category) ?? ($item->ledge_category ?: 'other');
+                    $normCat = \App\Models\Setting::resolveCategoryCode($item->ledge_category, $item->description);
                     $categoryCounts[$normCat] = ($categoryCounts[$normCat] ?? 0) + 1;
                 }
             @endphp
@@ -1813,7 +1813,7 @@
                 @forelse($availableItems as $idx => $item)
                     @php
                         $rawCatCode = $item->ledge_category ?: 'other';
-                        $catCode = \App\Models\Setting::getCategoryCode($item->ledge_category) ?? $rawCatCode;
+                        $catCode = \App\Models\Setting::resolveCategoryCode($item->ledge_category, $item->description);
                         $catName = $ledgeMap[$catCode] ?? ($ledgeMap[$rawCatCode] ?? 'Other');
                         $stockVal = (float) $item->total_stock;
                         $stockStatus = 'stock-in';

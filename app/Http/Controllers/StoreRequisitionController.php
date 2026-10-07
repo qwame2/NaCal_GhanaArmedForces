@@ -22,16 +22,8 @@ class StoreRequisitionController extends Controller
         self::checkOverdueTemporaryItems();
         $ledgeMap = Setting::getCategories();
 
-        // Fetch all available inventory items (consolidated by description and category into single items)
+        // Fetch all inventory items (consolidated by description and category into single items)
         $rawItems = InventoryItem::leftJoin('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where(function($q) {
-                $q->whereNull('inventory_batches.supplier_status')
-                  ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
-            })
-            ->where(function($q) {
-                $q->whereNull('inventory_batches.approval_status')
-                  ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
-            })
             ->selectRaw('TRIM(inventory_items.description) as original_description, MAX(inventory_items.unit) as unit, COALESCE(inventory_batches.ledge_category, "") as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), \DB::raw('COALESCE(inventory_batches.ledge_category, "")'))
             ->orderByRaw('TRIM(inventory_items.description)')
@@ -43,11 +35,11 @@ class StoreRequisitionController extends Controller
             $stock = (float)$item->total_stock;
             $unit = $item->unit;
             $rawCat = $item->ledge_category;
-            $catCode = Setting::getCategoryCode($rawCat) ?? $rawCat;
+            $catCode = Setting::resolveCategoryCode($rawCat, $desc);
 
             $matchedIndex = null;
             foreach ($consolidatedList as $idx => $existing) {
-                $existingCatCode = Setting::getCategoryCode($existing['ledge_category']) ?? $existing['ledge_category'];
+                $existingCatCode = Setting::resolveCategoryCode($existing['ledge_category'], $existing['description']);
                 if ($existingCatCode === $catCode && Setting::isExactOrTypoMatch($existing['description'], $desc)) {
                     $matchedIndex = $idx;
                     break;
@@ -1849,42 +1841,63 @@ class StoreRequisitionController extends Controller
         ];
 
         // Available inventory items for placing new requisitions from this page
-        $availableItems = InventoryItem::leftJoin('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where(function($q) {
-                $q->whereNull('inventory_batches.id')
-                  ->orWhere(function($sub) {
-                      $sub->where(function($s) {
-                          $s->whereNull('inventory_batches.supplier_status')
-                            ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
-                      })->where(function($s) {
-                          $s->whereNull('inventory_batches.approval_status')
-                            ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
-                      });
-                  });
-            })
-            ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, COALESCE(inventory_batches.ledge_category, "") as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+        $rawPersonnelItems = InventoryItem::leftJoin('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->selectRaw('TRIM(inventory_items.description) as original_description, MAX(inventory_items.unit) as unit, COALESCE(inventory_batches.ledge_category, "") as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), \DB::raw('COALESCE(inventory_batches.ledge_category, "")'))
             ->orderByRaw('TRIM(inventory_items.description)')
-            ->get()
-            ->map(function ($item) {
-                $item->ledge_category = Setting::getCategoryCode($item->ledge_category) ?? $item->ledge_category;
-                $physicalStock = (float) $item->total_stock;
-                $item->total_stock = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category);
-                return $item;
-            })
-            ->values();
+            ->get();
 
-        if ($availableItems->isEmpty()) {
-            $availableItems = InventoryItem::selectRaw('TRIM(description) as description, MAX(unit) as unit, "" as ledge_category, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-                ->groupBy(\DB::raw('TRIM(description)'))
-                ->orderByRaw('TRIM(description)')
-                ->get()
-                ->map(function ($item) {
-                    $item->total_stock = (float) $item->total_stock;
-                    return $item;
-                })
-                ->values();
+        $consolidatedPersonnelList = [];
+        foreach ($rawPersonnelItems as $item) {
+            $desc = trim($item->original_description);
+            $stock = (float)$item->total_stock;
+            $unit = $item->unit;
+            $rawCat = $item->ledge_category;
+            $catCode = Setting::resolveCategoryCode($rawCat, $desc);
+
+            $matchedIndex = null;
+            foreach ($consolidatedPersonnelList as $idx => $existing) {
+                $existingCatCode = Setting::resolveCategoryCode($existing['ledge_category'], $existing['description']);
+                if ($existingCatCode === $catCode && Setting::isExactOrTypoMatch($existing['description'], $desc)) {
+                    $matchedIndex = $idx;
+                    break;
+                }
+            }
+
+            if ($matchedIndex !== null) {
+                $consolidatedPersonnelList[$matchedIndex]['total_stock'] += $stock;
+                if (empty($consolidatedPersonnelList[$matchedIndex]['unit']) && !empty($unit)) {
+                    $consolidatedPersonnelList[$matchedIndex]['unit'] = $unit;
+                }
+                if (empty($consolidatedPersonnelList[$matchedIndex]['ledge_category']) && !empty($catCode)) {
+                    $consolidatedPersonnelList[$matchedIndex]['ledge_category'] = $catCode;
+                }
+            } else {
+                $consolidatedPersonnelList[] = [
+                    'description' => $desc,
+                    'unit' => $unit,
+                    'ledge_category' => $catCode,
+                    'total_stock' => $stock,
+                ];
+            }
         }
+
+        $availableItems = collect($consolidatedPersonnelList)->map(function ($data) {
+            $item = (object)$data;
+            $physicalStock = max(0, (float) $item->total_stock);
+            $availablePhysical = max(0, Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category));
+
+            $conversionRule = Setting::getUnitConversionRule($item->description, $item->ledge_category);
+            if ($conversionRule && !empty($conversionRule['conversion_factor']) && $conversionRule['conversion_factor'] > 0) {
+                $factor = (float)$conversionRule['conversion_factor'];
+                $item->total_stock = $availablePhysical * $factor;
+                $item->unit = $conversionRule['requisition_unit'];
+                $item->conversion_rule = $conversionRule;
+            } else {
+                $item->total_stock = $availablePhysical;
+            }
+            return $item;
+        })->values();
 
         return view('requisitions.personnel', compact('requisitions', 'ledgeMap', 'stats', 'availableItems'));
     }
