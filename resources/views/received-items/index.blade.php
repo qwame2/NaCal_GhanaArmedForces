@@ -3939,7 +3939,7 @@ function hasModifiedAnything(currentPayload, original) {
 
 async function submitEditBatch() {
     const saveBtn = document.getElementById('saveEditBtn');
-    const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+    const isAdmin = {{ (auth()->user()->is_admin || auth()->user()->isMainAdminOrSub() || auth()->user()->can_add_inventory || in_array(auth()->user()->role, ['Head of Stores', 'Store Officer', 'Officer', 'Dept. Head (Stores)']) || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])) ? 'true' : 'false' }};
 
     const items = [];
     const itemsContainer = document.getElementById('editItemsList');
@@ -3955,7 +3955,8 @@ async function submitEditBatch() {
             qty: itemQty,
             stock_balance: itemStock,
             variance: row.querySelector('.item-variance').value,
-            remarks: row.querySelector('.item-remarks').value
+            remarks: row.querySelector('.item-remarks').value,
+            store_location: row.querySelector('.item-store-location')?.value || 'STORE A'
         });
     });
 

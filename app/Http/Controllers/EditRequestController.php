@@ -162,8 +162,8 @@ class EditRequestController extends Controller
         if ($request->status === 'approved') {
             $editReq->approved_at = now();
             
-            // IF this was an 'edit_submission' or 'issue_submission', apply it to the DB now!
-            if (in_array($editReq->request_type, ['edit_submission', 'issue_submission']) && $editReq->payload) {
+            // IF this was an 'edit', 'edit_submission' or 'issue_submission', apply it to the DB now!
+            if (in_array($editReq->request_type, ['edit', 'edit_submission', 'issue_submission']) && $editReq->payload) {
                 $this->applyPayload($editReq);
             }
         }
@@ -895,8 +895,16 @@ class EditRequestController extends Controller
      */
     private function applyPayload(EditRequest $editReq)
     {
-        $payload = json_decode($editReq->payload, true);
-        if (!$payload) return;
+        $payload = $editReq->payload;
+        while (is_string($payload)) {
+            $decoded = json_decode($payload, true);
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_string($decoded))) {
+                $payload = $decoded;
+            } else {
+                break;
+            }
+        }
+        if (!is_array($payload)) return;
 
         \DB::transaction(function() use ($editReq, $payload) {
             if ($editReq->request_type === 'issue_submission') {

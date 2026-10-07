@@ -3149,7 +3149,7 @@ class StoreRequisitionController extends Controller
         return view('requisitions.track', compact('requisitions', 'ledgeMap', 'stats', 'isStoresHead'));
     }
 
-    private function departmentsMatch($dept1, $dept2)
+    public static function departmentsMatch($dept1, $dept2)
     {
         if (empty($dept1) || empty($dept2)) return false;
         $d1 = strtolower(trim($dept1));

@@ -123,6 +123,57 @@ class InventoryItem extends Model
                 // Prevent failures
             }
         });
+        static::updated(function ($item) {
+            if (static::$isSyncingSharedAttributes) {
+                return;
+            }
+
+            $monitored = ['description', 'unit', 'store_location'];
+            $changed = false;
+            foreach ($monitored as $field) {
+                if ($item->wasChanged($field)) {
+                    $changed = true;
+                    break;
+                }
+            }
+
+            if ($changed) {
+                static::$isSyncingSharedAttributes = true;
+                try {
+                    $oldDescription = $item->getOriginal('description') ?? $item->description;
+                    $newDescription = $item->description;
+                    $newUnit = $item->unit;
+                    $newStoreLocation = $item->store_location;
+
+                    $oldClean = trim(strtoupper($oldDescription));
+                    $newClean = trim(strtoupper($newDescription));
+
+                    $query = static::where('id', '!=', $item->id)
+                        ->where(function($q) use ($oldClean, $newClean) {
+                            if ($oldClean !== '') {
+                                $q->whereRaw('TRIM(UPPER(description)) = ?', [$oldClean]);
+                            }
+                            if ($newClean !== '') {
+                                $q->orWhereRaw('TRIM(UPPER(description)) = ?', [$newClean]);
+                            }
+                        });
+
+                    $updates = [];
+                    if (!empty($newDescription)) $updates['description'] = trim($newDescription);
+                    if (!empty($newUnit)) $updates['unit'] = trim($newUnit);
+                    if (!empty($newStoreLocation)) $updates['store_location'] = trim($newStoreLocation);
+
+                    if (!empty($updates)) {
+                        $query->update($updates);
+                        Setting::clearInventoryCache();
+                    }
+                } catch (\Exception $e) {
+                    // Prevent failures
+                } finally {
+                    static::$isSyncingSharedAttributes = false;
+                }
+            }
+        });
         static::deleted(function ($item) {
             Setting::clearInventoryCache();
             try {
@@ -141,6 +192,8 @@ class InventoryItem extends Model
             }
         });
     }
+
+    public static bool $isSyncingSharedAttributes = false;
 
 
     public function batch()

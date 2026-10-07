@@ -277,4 +277,86 @@ class InventoryEditPersistenceTest extends TestCase
         $this->assertEquals('STORE B', $fresh->store_location);
         $this->assertEquals('Updated via direct item API', $fresh->remarks);
     }
+
+    public function test_editing_item_in_one_batch_propagates_shared_attributes_to_all_batches_containing_same_item(): void
+    {
+        // Create Batch #90
+        $batch90 = InventoryBatch::create([
+            'entry_date' => now(),
+            'arrival_date' => now()->toDateString(),
+            'supplier_name' => 'Supplier A',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'ledge_category' => 'C',
+            'recorded_by' => $this->headOfStores->id,
+            'approval_status' => 'approved',
+        ]);
+
+        $itemBatch90 = InventoryItem::create([
+            'batch_id' => $batch90->id,
+            'description' => 'Toner 59A',
+            'qty' => 10,
+            'received_qty' => 10,
+            'stock_balance' => 10,
+            'unit' => 'BOXES',
+            'store_location' => 'STORE A',
+        ]);
+
+        // Create Batch #12
+        $batch12 = InventoryBatch::create([
+            'entry_date' => now(),
+            'arrival_date' => now()->toDateString(),
+            'supplier_name' => 'Supplier B',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Supplier',
+            'ledge_category' => 'C',
+            'recorded_by' => $this->headOfStores->id,
+            'approval_status' => 'approved',
+        ]);
+
+        $itemBatch12 = InventoryItem::create([
+            'batch_id' => $batch12->id,
+            'description' => 'Toner 59A',
+            'qty' => 50,
+            'received_qty' => 50,
+            'stock_balance' => 50,
+            'unit' => 'BOXES',
+            'store_location' => 'STORE A',
+        ]);
+
+        // Head of Stores edits item in Batch #90: package type/unit changed to PACKS, location to STORE B
+        $response = $this->actingAs($this->headOfStores)->putJson("/received-items/{$batch90->id}", [
+            'arrival_date' => now()->toDateString(),
+            'ledge_category' => 'C',
+            'acquisition_type' => 'Supplier',
+            'supplier_name' => 'Supplier A',
+            'supplier_status' => 'Full Delivery',
+            'items' => [
+                [
+                    'id' => $itemBatch90->id,
+                    'description' => 'Toner 59A',
+                    'qty' => 10,
+                    'unit' => 'PACKS',
+                    'stock_balance' => 10,
+                    'variance' => 0,
+                    'store_location' => 'STORE B',
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        // Batch #90 item updated
+        $fresh90 = $itemBatch90->fresh();
+        $this->assertEquals('PACKS', $fresh90->unit);
+        $this->assertEquals('STORE B', $fresh90->store_location);
+        $this->assertEquals(10, (float)$fresh90->qty);
+
+        // Batch #12 item automatically propagated unit and location, but kept its batch-specific quantity (50)
+        $fresh12 = $itemBatch12->fresh();
+        $this->assertEquals('PACKS', $fresh12->unit);
+        $this->assertEquals('STORE B', $fresh12->store_location);
+        $this->assertEquals(50, (float)$fresh12->qty);
+    }
 }
