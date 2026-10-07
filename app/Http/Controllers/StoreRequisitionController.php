@@ -40,7 +40,7 @@ class StoreRequisitionController extends Controller
             $matchedIndex = null;
             foreach ($consolidatedList as $idx => $existing) {
                 $existingCatCode = Setting::resolveCategoryCode($existing['ledge_category'], $existing['description']);
-                if ($existingCatCode === $catCode && Setting::isExactOrTypoMatch($existing['description'], $desc)) {
+                if ($existingCatCode === $catCode && strcasecmp(trim($existing['description']), $desc) === 0) {
                     $matchedIndex = $idx;
                     break;
                 }
@@ -1858,7 +1858,7 @@ class StoreRequisitionController extends Controller
             $matchedIndex = null;
             foreach ($consolidatedPersonnelList as $idx => $existing) {
                 $existingCatCode = Setting::resolveCategoryCode($existing['ledge_category'], $existing['description']);
-                if ($existingCatCode === $catCode && Setting::isExactOrTypoMatch($existing['description'], $desc)) {
+                if ($existingCatCode === $catCode && strcasecmp(trim($existing['description']), $desc) === 0) {
                     $matchedIndex = $idx;
                     break;
                 }

@@ -174,7 +174,7 @@ class RequisitionItemsVisibilityTest extends TestCase
         $this->assertEquals(50, $envelopeItem->total_stock);
     }
 
-    public function test_blue_pens_and_bluepens_spacing_consolidation()
+    public function test_blue_pens_and_bluepens_are_kept_as_distinct_items()
     {
         $user = User::factory()->create([
             'role' => 'Requisitioner',
@@ -193,7 +193,7 @@ class RequisitionItemsVisibilityTest extends TestCase
         $batch2 = InventoryBatch::create([
             'sra_number' => 'SRA-PEN-002',
             'entry_date' => now()->toDateString(),
-            'ledge_category' => 'Stationary', // Category name 'Stationary' resolves to 'A'
+            'ledge_category' => 'Stationary',
             'approval_status' => 'approved',
             'supplier_status' => 'Full Delivery',
         ]);
@@ -217,9 +217,13 @@ class RequisitionItemsVisibilityTest extends TestCase
 
         $availableItems = $response->viewData('availableItems');
         
-        // They should be consolidated into one item with combined stock of 100
-        $penItem = $availableItems->first(fn($i) => Setting::isExactOrTypoMatch($i->description, 'BLUE PENS'));
-        $this->assertNotNull($penItem, 'BLUE PENS or BLUEPENS should exist in available items');
-        $this->assertEquals(100, $penItem->total_stock, 'Stock of BLUE PENS and BLUEPENS should be combined to 100');
+        $bluePens = $availableItems->firstWhere('description', 'BLUE PENS');
+        $bluepensNoSpace = $availableItems->firstWhere('description', 'BLUEPENS');
+
+        $this->assertNotNull($bluePens, 'BLUE PENS with space must exist');
+        $this->assertNotNull($bluepensNoSpace, 'BLUEPENS without space must exist as a separate distinct item');
+
+        $this->assertEquals(40, $bluePens->total_stock);
+        $this->assertEquals(60, $bluepensNoSpace->total_stock);
     }
 }

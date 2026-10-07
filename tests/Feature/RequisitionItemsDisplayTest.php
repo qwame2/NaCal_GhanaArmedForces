@@ -70,9 +70,13 @@ class RequisitionItemsDisplayTest extends TestCase
         $this->assertContains('HP', $descriptions);
         $this->assertContains('HP LAPEE', $descriptions);
 
-        // A4 SHEET and typo A4 SHHET should consolidate into A4 SHEET with stock 60
+        // Distinct items A4 SHEET and A4 SHHET exist separately with their own stocks
         $a4Item = $availableItems->firstWhere('description', 'A4 SHEET');
+        $a4ShhetItem = $availableItems->firstWhere('description', 'A4 SHHET');
+
         $this->assertNotNull($a4Item);
-        $this->assertEquals(60, $a4Item->total_stock);
+        $this->assertNotNull($a4ShhetItem);
+        $this->assertEquals(50, $a4Item->total_stock);
+        $this->assertEquals(10, $a4ShhetItem->total_stock);
     }
 }
