@@ -1765,8 +1765,8 @@
                 // Count items per category locally in PHP to present accurate stats
                 $categoryCounts = ['all' => count($availableItems)];
                 foreach($availableItems as $item) {
-                    $cat = $item->ledge_category ?: 'other';
-                    $categoryCounts[$cat] = ($categoryCounts[$cat] ?? 0) + 1;
+                    $normCat = \App\Models\Setting::getCategoryCode($item->ledge_category) ?? ($item->ledge_category ?: 'other');
+                    $categoryCounts[$normCat] = ($categoryCounts[$normCat] ?? 0) + 1;
                 }
             @endphp
 
@@ -1812,8 +1812,9 @@
             <div class="products-grid">
                 @forelse($availableItems as $idx => $item)
                     @php
-                        $catCode = $item->ledge_category ?: 'other';
-                        $catName = $ledgeMap[$item->ledge_category] ?? 'Other';
+                        $rawCatCode = $item->ledge_category ?: 'other';
+                        $catCode = \App\Models\Setting::getCategoryCode($item->ledge_category) ?? $rawCatCode;
+                        $catName = $ledgeMap[$catCode] ?? ($ledgeMap[$rawCatCode] ?? 'Other');
                         $stockVal = (float) $item->total_stock;
                         $stockStatus = 'stock-in';
                         $stockLabel = 'In Stock';
@@ -1960,6 +1961,53 @@
         let searchQuery = '';
         let isCartBarMinimized = false;
 
+        function levenshteinDistance(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function isFuzzyOrTokenMatch(title, query) {
+            if (!query) return true;
+            if (title.includes(query)) return true;
+
+            const cleanTitle = title.replace(/[^a-z0-9\s]/g, '').trim();
+            const cleanQuery = query.replace(/[^a-z0-9\s]/g, '').trim();
+            if (!cleanQuery) return true;
+            if (cleanTitle.includes(cleanQuery)) return true;
+
+            const queryTokens = cleanQuery.split(/\s+/).filter(t => t.length > 0);
+            const titleTokens = cleanTitle.split(/\s+/).filter(t => t.length > 0);
+
+            if (queryTokens.length === 0) return true;
+
+            return queryTokens.every(qToken => {
+                return titleTokens.some(tToken => {
+                    if (tToken.includes(qToken) || qToken.includes(tToken)) return true;
+                    if (qToken.length >= 4 && tToken.length >= 4) {
+                        return levenshteinDistance(qToken, tToken) <= 2;
+                    }
+                    return false;
+                });
+            });
+        }
+
         function filterCatalog() {
             const query = searchQuery.toLowerCase().trim();
             const cards = document.querySelectorAll('.product-card-wrapper');
@@ -1970,7 +2018,7 @@
                 const cardTitle = card.getAttribute('data-title') || '';
 
                 const matchesCategory = (currentCategoryId === 'all') || (cardCategory === currentCategoryId);
-                const matchesSearch = !query || cardTitle.includes(query);
+                const matchesSearch = isFuzzyOrTokenMatch(cardTitle, query);
 
                 if (matchesCategory && matchesSearch) {
                     card.style.display = 'block';

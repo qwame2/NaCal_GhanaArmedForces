@@ -22,7 +22,7 @@ class StoreRequisitionController extends Controller
         self::checkOverdueTemporaryItems();
         $ledgeMap = Setting::getCategories();
 
-        // Fetch all available inventory items (consolidated by description into single items)
+        // Fetch all available inventory items (consolidated by description and category into single items)
         $rawItems = InventoryItem::leftJoin('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where(function($q) {
                 $q->whereNull('inventory_batches.supplier_status')
@@ -30,10 +30,10 @@ class StoreRequisitionController extends Controller
             })
             ->where(function($q) {
                 $q->whereNull('inventory_batches.approval_status')
-                  ->orWhereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin']);
+                  ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
             })
-            ->selectRaw('TRIM(inventory_items.description) as original_description, MAX(inventory_items.unit) as unit, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-            ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+            ->selectRaw('TRIM(inventory_items.description) as original_description, MAX(inventory_items.unit) as unit, COALESCE(inventory_batches.ledge_category, "") as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), \DB::raw('COALESCE(inventory_batches.ledge_category, "")'))
             ->orderByRaw('TRIM(inventory_items.description)')
             ->get();
 
@@ -42,11 +42,13 @@ class StoreRequisitionController extends Controller
             $desc = trim($item->original_description);
             $stock = (float)$item->total_stock;
             $unit = $item->unit;
-            $cat = $item->ledge_category;
+            $rawCat = $item->ledge_category;
+            $catCode = Setting::getCategoryCode($rawCat) ?? $rawCat;
 
             $matchedIndex = null;
             foreach ($consolidatedList as $idx => $existing) {
-                if (Setting::isExactOrTypoMatch($existing['description'], $desc)) {
+                $existingCatCode = Setting::getCategoryCode($existing['ledge_category']) ?? $existing['ledge_category'];
+                if ($existingCatCode === $catCode && Setting::isExactOrTypoMatch($existing['description'], $desc)) {
                     $matchedIndex = $idx;
                     break;
                 }
@@ -57,14 +59,14 @@ class StoreRequisitionController extends Controller
                 if (empty($consolidatedList[$matchedIndex]['unit']) && !empty($unit)) {
                     $consolidatedList[$matchedIndex]['unit'] = $unit;
                 }
-                if (empty($consolidatedList[$matchedIndex]['ledge_category']) && !empty($cat)) {
-                    $consolidatedList[$matchedIndex]['ledge_category'] = $cat;
+                if (empty($consolidatedList[$matchedIndex]['ledge_category']) && !empty($catCode)) {
+                    $consolidatedList[$matchedIndex]['ledge_category'] = $catCode;
                 }
             } else {
                 $consolidatedList[] = [
                     'description' => $desc,
                     'unit' => $unit,
-                    'ledge_category' => $cat,
+                    'ledge_category' => $catCode,
                     'total_stock' => $stock,
                 ];
             }
@@ -202,14 +204,24 @@ class StoreRequisitionController extends Controller
 
             // Calculate physical stock
             $stockQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
+                ->where(function($q) {
+                    $q->whereNull('inventory_batches.supplier_status')
+                      ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
+                })
+                ->where(function($q) {
+                    $q->whereNull('inventory_batches.approval_status')
+                      ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                })
                 ->whereRaw('TRIM(inventory_items.description) = ?', [$description]);
             
-            if (is_null($category)) {
-                $stockQuery->whereNull('inventory_batches.ledge_category');
-            } else {
-                $stockQuery->where('inventory_batches.ledge_category', $category);
+            if (!empty($category)) {
+                $stockQuery->where(function($q) use ($category) {
+                    $q->where('inventory_batches.ledge_category', $category);
+                    $code = Setting::getCategoryCode($category);
+                    if ($code) {
+                        $q->orWhere('inventory_batches.ledge_category', $code);
+                    }
+                });
             }
 
             $physicalStock = (float) $stockQuery->sum(\DB::raw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))'));
@@ -744,8 +756,14 @@ class StoreRequisitionController extends Controller
 
         $items = $requisition->items->map(function ($item) {
             $physicalStock = (float) InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
+                ->where(function($q) {
+                    $q->whereNull('inventory_batches.supplier_status')
+                      ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
+                })
+                ->where(function($q) {
+                    $q->whereNull('inventory_batches.approval_status')
+                      ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                })
                 ->whereRaw('TRIM(inventory_items.description) = ?', [trim($item->description)])
                 ->sum(DB::raw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))'));
 
@@ -1254,8 +1272,14 @@ class StoreRequisitionController extends Controller
         $stockMap = [];
         if (!empty($descriptions)) {
             $rows = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
+                ->where(function($q) {
+                    $q->whereNull('inventory_batches.supplier_status')
+                      ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
+                })
+                ->where(function($q) {
+                    $q->whereNull('inventory_batches.approval_status')
+                      ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                })
                 ->whereIn(\DB::raw('TRIM(inventory_items.description)'), $descriptions)
                 ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
@@ -1515,8 +1539,14 @@ class StoreRequisitionController extends Controller
                                         ? (float)$origConversionRule['conversion_factor'] : 1.0;
 
                                     $totalStockInStorage = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                                        ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                                        ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
+                                        ->where(function($q) {
+                                            $q->whereNull('inventory_batches.supplier_status')
+                                              ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
+                                        })
+                                        ->where(function($q) {
+                                            $q->whereNull('inventory_batches.approval_status')
+                                              ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                                        })
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($origItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
@@ -1531,10 +1561,21 @@ class StoreRequisitionController extends Controller
                                     $qtyToDeduct = $approvedQty / $origFactor;
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($origItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
-                                            $q->where('supplier_status', '!=', 'System Draft')
-                                                ->whereIn('approval_status', ['approved', 'pending_auditor_admin']);
+                                            $q->where(function($sub) {
+                                                $sub->whereNull('supplier_status')
+                                                    ->orWhere('supplier_status', '!=', 'System Draft');
+                                            })->where(function($sub) {
+                                                $sub->whereNull('approval_status')
+                                                    ->orWhereNotIn('approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                                            });
                                             if ($reqItem->category) {
-                                                $q->where('ledge_category', $reqItem->category);
+                                                $q->where(function($catSub) use ($reqItem) {
+                                                    $catSub->where('ledge_category', $reqItem->category);
+                                                    $code = Setting::getCategoryCode($reqItem->category);
+                                                    if ($code) {
+                                                        $catSub->orWhere('ledge_category', $code);
+                                                    }
+                                                });
                                             }
                                         })
                                         ->where(function($query) {
@@ -1584,8 +1625,14 @@ class StoreRequisitionController extends Controller
                                         ? (float)$altConversionRule['conversion_factor'] : 1.0;
 
                                     $totalAltStockInStorage = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                                        ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                                        ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin'])
+                                        ->where(function($q) {
+                                            $q->whereNull('inventory_batches.supplier_status')
+                                              ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
+                                        })
+                                        ->where(function($q) {
+                                            $q->whereNull('inventory_batches.approval_status')
+                                              ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                                        })
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($altItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
@@ -1600,10 +1647,21 @@ class StoreRequisitionController extends Controller
                                     $qtyToDeduct = $altApprovedQty / $altFactor;
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($altItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
-                                            $q->where('supplier_status', '!=', 'System Draft')
-                                                ->whereIn('approval_status', ['approved', 'pending_auditor_admin']);
+                                            $q->where(function($sub) {
+                                                $sub->whereNull('supplier_status')
+                                                    ->orWhere('supplier_status', '!=', 'System Draft');
+                                            })->where(function($sub) {
+                                                $sub->whereNull('approval_status')
+                                                    ->orWhereNotIn('approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                                            });
                                             if ($reqItem->category) {
-                                                $q->where('ledge_category', $reqItem->category);
+                                                $q->where(function($catSub) use ($reqItem) {
+                                                    $catSub->where('ledge_category', $reqItem->category);
+                                                    $code = Setting::getCategoryCode($reqItem->category);
+                                                    if ($code) {
+                                                        $catSub->orWhere('ledge_category', $code);
+                                                    }
+                                                });
                                             }
                                         })
                                         ->where(function($query) {
@@ -1795,8 +1853,13 @@ class StoreRequisitionController extends Controller
             ->where(function($q) {
                 $q->whereNull('inventory_batches.id')
                   ->orWhere(function($sub) {
-                      $sub->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                          ->whereIn('inventory_batches.approval_status', ['approved', 'pending_auditor_admin']);
+                      $sub->where(function($s) {
+                          $s->whereNull('inventory_batches.supplier_status')
+                            ->orWhere('inventory_batches.supplier_status', '!=', 'System Draft');
+                      })->where(function($s) {
+                          $s->whereNull('inventory_batches.approval_status')
+                            ->orWhereNotIn('inventory_batches.approval_status', ['rejected', 'canceled', 'draft', 'rejected_by_auditor', 'rejected_by_admin']);
+                      });
                   });
             })
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, COALESCE(inventory_batches.ledge_category, "") as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
@@ -1804,6 +1867,7 @@ class StoreRequisitionController extends Controller
             ->orderByRaw('TRIM(inventory_items.description)')
             ->get()
             ->map(function ($item) {
+                $item->ledge_category = Setting::getCategoryCode($item->ledge_category) ?? $item->ledge_category;
                 $physicalStock = (float) $item->total_stock;
                 $item->total_stock = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category);
                 return $item;
