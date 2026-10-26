@@ -201,7 +201,7 @@ class User extends Authenticatable implements LdapAuthenticatable
 
     public function isDelegatedApprover()
     {
-        if ($this->role !== 'Officer') {
+        if (!in_array($this->role, ['Officer', 'Store Officer'])) {
             return false;
         }
         $delegatedId = \App\Models\Setting::get('delegated_approver_id');
@@ -218,6 +218,18 @@ class User extends Authenticatable implements LdapAuthenticatable
             } catch (\Exception $e) {}
         }
         return true;
+    }
+
+    /**
+     * Returns true if user can view and manage system and inventory settings.
+     */
+    public function canManageSettings(): bool
+    {
+        return (bool)$this->is_admin
+            || $this->isDelegatedApprover()
+            || $this->isStoresHeadUser()
+            || $this->isMainAdminOrSub()
+            || in_array($this->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)']);
     }
 
     /**

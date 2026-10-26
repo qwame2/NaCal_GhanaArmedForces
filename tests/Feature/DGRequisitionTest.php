@@ -931,4 +931,54 @@ class DGRequisitionTest extends TestCase
         $response->assertSee('id="pager-dg-issued-items"', false);
         $response->assertSee('id="pager-dg-returned-items"', false);
     }
+
+    /**
+     * Test delegated store officer can update settings, categories, and inventory rules without unauthorized error.
+     */
+    public function test_delegated_store_officer_can_manage_settings_rules_and_categories(): void
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        Setting::set('delegated_approver_id', $officer->id);
+
+        $this->assertTrue($officer->isDelegatedApprover());
+        $this->assertTrue($officer->canManageSettings());
+
+        // 1. Add Category
+        $catResponse = $this->actingAs($officer)->post(route('admin.settings.category'), [
+            'category_code' => 'Z9',
+            'category_name' => 'Test Delegator Category'
+        ]);
+        $catResponse->assertSessionMissing('error');
+        $catResponse->assertSessionHas('success');
+
+        // 2. Threshold Rule Store
+        $threshResponse = $this->actingAs($officer)->post(route('admin.settings.threshold-rule.store'), [
+            'category' => 'Z9',
+            'keyword' => 'Test Widget',
+            'threshold' => 15
+        ]);
+        $threshResponse->assertStatus(302);
+        $threshResponse->assertSessionHas('success');
+
+        // 3. Unit Rule Store
+        $unitResponse = $this->actingAs($officer)->post(route('admin.settings.unit-rule.store'), [
+            'category' => 'Z9',
+            'keyword' => 'Test Widget',
+            'unit' => 'BOX'
+        ]);
+        $unitResponse->assertStatus(302);
+        $unitResponse->assertSessionHas('success');
+
+        // 4. Delete Category
+        $delCatResponse = $this->actingAs($officer)->post(route('admin.settings.category.destroy', 'Z9'));
+        $delCatResponse->assertSessionMissing('error');
+        $delCatResponse->assertSessionHas('success');
+    }
 }
+

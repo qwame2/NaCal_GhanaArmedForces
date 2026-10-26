@@ -1430,7 +1430,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Item Unit Rules
     Route::post('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         $category = trim($request->input('category'));
         $unit    = strtoupper(trim($request->input('unit')));
 
@@ -1506,7 +1506,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     })->name('admin.settings.unit-rule.store');
 
     Route::delete('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         $keyword = strtoupper(trim($request->input('keyword')));
         $setting = \App\Models\Setting::where('key', 'item_unit_rules')->first();
         if ($setting) {
@@ -1535,7 +1535,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Item Threshold Rules
     Route::post('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         $category = trim($request->input('category'));
         $threshold = (int)$request->input('threshold');
         
@@ -1572,7 +1572,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     })->name('admin.settings.threshold-rule.store');
 
     Route::delete('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         $keyword = strtolower(trim($request->input('keyword')));
         $setting = \App\Models\Setting::where('key', 'item_threshold_rules')->first();
         if ($setting) {
@@ -1586,7 +1586,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Item Request Limits
     Route::post('/admin/settings/request-limit', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         $category = trim($request->input('category'));
         $limit = (int)$request->input('limit');
         
@@ -1659,7 +1659,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     })->name('admin.settings.request-limit.store');
 
     Route::delete('/admin/settings/request-limit', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         $keyword = strtolower(trim($request->input('keyword')));
         $setting = \App\Models\Setting::where('key', 'item_request_limits')->first();
         if ($setting) {
@@ -1673,10 +1673,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Unit Conversion & Requisition Packaging Rules
     Route::post('/admin/settings/unit-conversion-rule', function(\Illuminate\Http\Request $request) {
-        $user = auth()->user();
-        if (!$user->is_admin && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
-            abort(403);
-        }
+        if (!auth()->user()->canManageSettings()) abort(403);
         $category = trim($request->input('category'));
         $receivedUnitInput = trim($request->input('received_unit', ''));
         $requisitionUnit = trim($request->input('requisition_unit', 'Reams'));
@@ -1725,10 +1722,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     })->name('admin.settings.unit-conversion-rule.store');
 
     Route::delete('/admin/settings/unit-conversion-rule', function(\Illuminate\Http\Request $request) {
-        $user = auth()->user();
-        if (!$user->is_admin && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
-            abort(403);
-        }
+        if (!auth()->user()->canManageSettings()) abort(403);
         $keyword = strtolower(trim($request->input('keyword')));
         $setting = \App\Models\Setting::where('key', 'unit_conversion_rules')->first();
         if ($setting) {
@@ -1743,7 +1737,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Supplier Registry
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         
         // Self-heal database schema to ensure delivery_phone exists
         \App\Models\InventoryBatch::selfHealSchema();
@@ -1795,7 +1789,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     })->name('admin.settings.supplier.store');
 
     Route::delete('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->canManageSettings()) abort(403);
         $name = trim($request->input('name'));
         if (!$name) return back()->with('error', 'Supplier name is required.');
 

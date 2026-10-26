@@ -1394,7 +1394,7 @@ class AdminController extends Controller
     public function settings()
     {
         $user = auth()->user();
-        if (!$user->is_admin && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
+        if (!$user->canManageSettings()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -1459,7 +1459,7 @@ class AdminController extends Controller
                 return [strtolower(trim($item->description)) => $item->unit];
             });
 
-        $storeOfficers = \App\Models\User::where('role', 'Officer')
+        $storeOfficers = \App\Models\User::whereIn('role', ['Officer', 'Store Officer'])
             ->where('is_active', true)
             ->where('registration_status', 'approved')
             ->orderBy('name')
@@ -1481,7 +1481,7 @@ class AdminController extends Controller
     public function updateSettings(\Illuminate\Http\Request $request)
     {
         $user = auth()->user();
-        if (!$user->is_admin && $user->role !== 'Director General' && !$user->isDelegatedApprover() && !$user->isStoresHeadUser() && !$user->isMainAdminOrSub() && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)', 'Dept Head (Stores)'])) {
+        if (!$user->canManageSettings() && $user->role !== 'Director General') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -1594,7 +1594,7 @@ class AdminController extends Controller
             }
         }
 
-        $roleName = auth()->user()->role === 'Director General' ? 'Director General' : 'Administrator';
+        $roleName = auth()->user()->role === 'Director General' ? 'Director General' : (auth()->user()->isDelegatedApprover() ? 'Store Officer (Delegator)' : (auth()->user()->is_admin ? 'Administrator' : auth()->user()->role));
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
@@ -1609,7 +1609,7 @@ class AdminController extends Controller
 
     public function addCategory(\Illuminate\Http\Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->canManageSettings()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -1632,11 +1632,12 @@ class AdminController extends Controller
 
         \App\Models\Setting::addCategory($code, $name);
 
+        $creatorTitle = auth()->user()->isDelegatedApprover() ? 'Store Officer (Delegator)' : (auth()->user()->is_admin ? 'Administrator' : auth()->user()->role);
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'INVENTORY',
             'action' => 'ADD_CATEGORY',
-            'description' => "Administrator added a new category: {$name} ({$code}).",
+            'description' => "{$creatorTitle} added a new category: {$name} ({$code}).",
             'severity' => 'info',
             'ip_address' => request()->ip()
         ]);
@@ -1646,7 +1647,7 @@ class AdminController extends Controller
 
     public function updateCategory(\Illuminate\Http\Request $request, $code)
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->canManageSettings()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -1671,11 +1672,12 @@ class AdminController extends Controller
 
         \App\Models\Setting::addCategory($code, $name);
 
+        $updaterTitle = auth()->user()->isDelegatedApprover() ? 'Store Officer (Delegator)' : (auth()->user()->is_admin ? 'Administrator' : auth()->user()->role);
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'INVENTORY',
             'action' => 'UPDATE_CATEGORY',
-            'description' => "Administrator updated category '{$code}' name to: {$name}.",
+            'description' => "{$updaterTitle} updated category '{$code}' name to: {$name}.",
             'severity' => 'info',
             'ip_address' => request()->ip()
         ]);
@@ -1685,7 +1687,7 @@ class AdminController extends Controller
 
     public function deleteCategory($code)
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->canManageSettings()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -1699,11 +1701,12 @@ class AdminController extends Controller
         $name = $categories[$code];
         \App\Models\Setting::removeCategory($code);
 
+        $deleterTitle = auth()->user()->isDelegatedApprover() ? 'Store Officer (Delegator)' : (auth()->user()->is_admin ? 'Administrator' : auth()->user()->role);
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'INVENTORY',
             'action' => 'DELETE_CATEGORY',
-            'description' => "Administrator deleted inventory category: {$name} ({$code}).",
+            'description' => "{$deleterTitle} deleted inventory category: {$name} ({$code}).",
             'severity' => 'warning',
             'ip_address' => request()->ip()
         ]);
@@ -1895,7 +1898,7 @@ class AdminController extends Controller
         ]);
 
         $officer = \App\Models\User::findOrFail($request->user_id);
-        if ($officer->role !== 'Officer') {
+        if (!in_array($officer->role, ['Officer', 'Store Officer'])) {
             return response()->json(['success' => false, 'message' => 'Only Store Officers can be delegated approval authority.'], 422);
         }
 
@@ -1956,7 +1959,7 @@ class AdminController extends Controller
 
     public function claimDelegationOtp(\Illuminate\Http\Request $request)
     {
-        if (auth()->user()->role !== 'Officer') {
+        if (!in_array(auth()->user()->role, ['Officer', 'Store Officer'])) {
             return response()->json(['success' => false, 'message' => 'Only Store Officers can claim delegation access.'], 403);
         }
 
