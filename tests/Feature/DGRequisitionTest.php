@@ -837,6 +837,63 @@ class DGRequisitionTest extends TestCase
     }
 
     /**
+     * Test stores delegator (Store Officer with active delegation) can access User Details page
+     * and see User Details link in the aside bar.
+     */
+    public function test_stores_delegator_has_full_access_to_user_details_page_in_admin_sidebar(): void
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        Setting::set('delegated_approver_id', $officer->id);
+
+        $this->assertTrue($officer->isDelegatedApprover());
+
+        // Access the User Details page
+        $response = $this->actingAs($officer)->get('/admin');
+        $response->assertStatus(200);
+        $response->assertSee('Personnel Access Registry');
+        $response->assertSee('User Details');
+        $response->assertSee('Back to Store Officer Panel');
+
+        // Test status toggle access on User Details page
+        $targetUser = User::factory()->create([
+            'role' => 'Requisitioner',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $toggleResponse = $this->actingAs($officer)->patch("/admin/users/{$targetUser->id}/toggle-status");
+        $toggleResponse->assertRedirect();
+        $this->assertFalse($targetUser->fresh()->is_active);
+    }
+
+    /**
+     * Test store officer without active delegation cannot access User Details page.
+     */
+    public function test_store_officer_without_delegation_cannot_access_user_details_page(): void
+    {
+        $officer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        Setting::set('delegated_approver_id', null);
+
+        $this->assertFalse($officer->isDelegatedApprover());
+
+        $response = $this->actingAs($officer)->get('/admin');
+        $response->assertRedirect('/dashboard');
+        $response->assertSessionHas('error');
+    }
+
+    /**
      * Test that selecting a specific item for DG approval does not force DG approval on other items in the same category.
      */
     public function test_item_override_does_not_force_dg_approval_on_other_items_in_same_category(): void

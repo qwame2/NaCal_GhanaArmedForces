@@ -29,7 +29,7 @@ class AdminController extends Controller
             return redirect()->route('main-admin.requisitions');
         }
 
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && !(auth()->user()->role === 'Head of Stores' || auth()->user()->isStoresHeadUser())) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access to Admin Dashboard.');
         }
 
