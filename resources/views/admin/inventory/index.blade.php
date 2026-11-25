@@ -659,23 +659,34 @@
 
     <!-- Oversight Tabs -->
     <div class="glass-card" id="oversight-container" style="padding: 0; border-radius: 24px; overflow: hidden; background: white; border: 1px solid rgba(0,0,0,0.02); box-shadow: 0 20px 50px rgba(0,0,0,0.03);">
-        <div style="padding: 1rem 2rem; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; gap: 2.5rem;">
-            <button class="tab-trigger active" onclick="switchTab('received')" id="tab-received">
-                <i data-lucide="download"></i>
-                Received Items
-            </button>
-            <button class="tab-trigger" onclick="switchTab('issued')" id="tab-issued">
-                <i data-lucide="upload"></i>
-                Issuance Logs
-            </button>
-            <button class="tab-trigger" onclick="switchTab('returned')" id="tab-returned">
-                <i data-lucide="rotate-ccw"></i>
-                Returns Registry
-            </button>
+        <div style="padding: 1rem 2rem; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;">
+            <div style="display: flex; gap: 2.5rem; flex: 1;">
+                <button class="tab-trigger active" onclick="switchTab('received')" id="tab-received">
+                    <i data-lucide="download"></i>
+                    Received Items
+                </button>
+                <button class="tab-trigger" onclick="switchTab('issued')" id="tab-issued">
+                    <i data-lucide="upload"></i>
+                    Issuance Logs
+                </button>
+                <button class="tab-trigger" onclick="switchTab('returned')" id="tab-returned">
+                    <i data-lucide="rotate-ccw"></i>
+                    Returns Registry
+                </button>
+            </div>
+            <div class="table-scroll-nav">
+                <span class="table-scroll-label">Scroll table</span>
+                <button type="button" class="table-scroll-btn" onclick="scrollOversightTable(-1)" title="Scroll left" aria-label="Scroll table left">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <button type="button" class="table-scroll-btn" onclick="scrollOversightTable(1)" title="Scroll right" aria-label="Scroll table right">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
         </div>
 
         <div id="content-received" class="tab-content active">
-            <div class="table-scroll-wrapper" style="padding: 1.5rem; overflow-x: auto;">
+            <div class="table-scroll-wrapper oversight-scroll" style="padding: 1.5rem; overflow-x: auto;">
                 <table class="activity-table" style="width: 100%; min-width: 1500px; border-collapse: collapse;">
                     <thead>
                         <tr style="background: rgba(0,0,0,0.02); text-align: left;">
@@ -909,7 +920,7 @@
 
         <!-- Issued Items Tab -->
         <div id="content-issued" class="tab-content">
-            <div style="padding: 1.5rem; overflow-x: auto;">
+            <div class="oversight-scroll" style="padding: 1.5rem; overflow-x: auto;">
                 <table class="audit-table" style="min-width: 1200px;">
                     <thead>
                         <tr>
@@ -958,7 +969,7 @@
 
         <!-- Returned Items Tab -->
         <div id="content-returned" class="tab-content">
-            <div style="padding: 2rem;">
+            <div class="oversight-scroll" style="padding: 2rem; overflow-x: auto;">
                 <table class="audit-table">
                     <thead>
                         <tr>
@@ -1047,6 +1058,36 @@
 
     .tab-content { display: none; }
     .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+    .table-scroll-nav { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .table-scroll-label {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-right: 4px;
+        white-space: nowrap;
+    }
+    .table-scroll-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .table-scroll-btn i { width: 18px; height: 18px; }
+    .table-scroll-btn:hover { background: #ecfdf5; color: var(--primary); border-color: var(--primary); }
+    .table-scroll-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    @media (max-width: 768px) {
+        .table-scroll-nav { display: none; }
+    }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -1358,6 +1399,13 @@
             
             rows.forEach(row => row.style.display = '');
         }
+    }
+
+    function scrollOversightTable(direction) {
+        const scroller = document.querySelector('#oversight-container .tab-content.active .oversight-scroll');
+        if (!scroller) return;
+        const step = Math.max(300, Math.round(scroller.clientWidth * 0.6));
+        scroller.scrollBy({ left: direction * step, behavior: 'smooth' });
     }
 
     function switchTab(tabId) {
